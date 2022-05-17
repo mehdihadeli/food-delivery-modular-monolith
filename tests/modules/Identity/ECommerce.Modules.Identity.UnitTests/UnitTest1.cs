@@ -1,6 +1,4 @@
-using Xunit;
-
-namespace ECommerce.Services.Identity.UnitTests;
+namespace ECommerce.Modules.Identity.UnitTests;
 
 public class UnitTest1
 {
