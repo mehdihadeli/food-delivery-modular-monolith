@@ -1,0 +1,18 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+  <ItemGroup>
+    <None Update="xunit.runner.json">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </None>
+  </ItemGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\..\..\..\src\Modules\Catalogs\ECommerce.Modules.Catalogs\ECommerce.Modules.Catalogs.csproj" />
+    <ProjectReference Include="..\..\..\..\src\Modules\Customers\ECommerce.Modules.Customers\ECommerce.Modules.Customers.csproj" />
+    <ProjectReference Include="..\..\..\..\src\Modules\Identity\ECommerce.Modules.Identity\ECommerce.Modules.Identity.csproj" />
+    <ProjectReference Include="..\..\..\..\src\Modules\Orders\ECommerce.Modules.Orders\ECommerce.Modules.Orders.csproj" />
+    <ProjectReference Include="..\..\..\..\src\Modules\Shared\ECommerce.Module.Shared\ECommerce.Modules.Shared.csproj" />
+    <ProjectReference Include="..\..\..\shared\Tests.Shared\Tests.Shared.csproj" />
+  </ItemGroup>
+
+</Project>
