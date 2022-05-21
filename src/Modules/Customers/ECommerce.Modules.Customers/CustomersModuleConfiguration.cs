@@ -1,105 +1,48 @@
-using Ardalis.GuardClauses;
 using BuildingBlocks.Abstractions.Web.Module;
-using BuildingBlocks.Caching.InMemory;
 using BuildingBlocks.Core;
-using BuildingBlocks.Core.Caching;
-using BuildingBlocks.Core.Extensions;
-using BuildingBlocks.Core.IdsGenerator;
-using BuildingBlocks.Core.Persistence.EfCore;
-using BuildingBlocks.Core.Registrations;
-using BuildingBlocks.Email;
-using BuildingBlocks.Integration.MassTransit;
-using BuildingBlocks.Logging;
+using BuildingBlocks.Core.Types;
 using BuildingBlocks.Monitoring;
-using BuildingBlocks.Persistence.EfCore.Postgres;
-using BuildingBlocks.Validation;
-using ECommerce.Modules.Customers.Customers.Extensions;
-using ECommerce.Modules.Customers.Identity;
-using ECommerce.Modules.Customers.Products;
+using ECommerce.Modules.Customers.Customers;
 using ECommerce.Modules.Customers.RestockSubscriptions;
 using ECommerce.Modules.Customers.Shared.Extensions.ApplicationBuilderExtensions;
 using ECommerce.Modules.Customers.Shared.Extensions.ServiceCollectionExtensions;
 
 namespace ECommerce.Modules.Customers;
 
-public class CustomersModuleConfiguration : IRootModuleDefinition
+public class CustomersModuleConfiguration : IModuleDefinition
 {
     public const string CustomerModulePrefixUri = "api/v1/customers";
 
-    public IServiceCollection AddModuleServices(IServiceCollection services, IConfiguration configuration)
+    public string ModuleRootName => TypeMapper.GetTypeName(GetType());
+
+    public void AddModuleServices(IServiceCollection services, IConfiguration configuration)
     {
-        SnowFlakIdGenerator.Configure(2);
-
-        services.AddCore(configuration);
-
-        services.AddMonitoring(healthChecksBuilder =>
-        {
-            var postgresOptions = configuration.GetOptions<PostgresOptions>(nameof(PostgresOptions));
-            Guard.Against.Null(postgresOptions, nameof(postgresOptions));
-
-            healthChecksBuilder.AddNpgSql(
-                postgresOptions.ConnectionString,
-                name: "Customers-Postgres-Check",
-                tags: new[] {"customers-postgres"});
-        });
-
-        services.AddEmailService(configuration);
-
-        services.AddCqrs(
-            doMoreActions: s =>
-            {
-                s.AddScoped(typeof(IPipelineBehavior<,>), typeof(RequestValidationBehavior<,>))
-                    .AddScoped(typeof(IStreamPipelineBehavior<,>), typeof(StreamRequestValidationBehavior<,>))
-                    .AddScoped(typeof(IStreamPipelineBehavior<,>), typeof(StreamLoggingBehavior<,>))
-                    .AddScoped(typeof(IStreamPipelineBehavior<,>), typeof(StreamCachingBehavior<,>))
-                    .AddScoped(typeof(IPipelineBehavior<,>), typeof(LoggingBehavior<,>))
-                    .AddScoped(typeof(IPipelineBehavior<,>), typeof(CachingBehavior<,>))
-                    .AddScoped(typeof(IPipelineBehavior<,>), typeof(InvalidateCachingBehavior<,>))
-                    .AddScoped(typeof(IPipelineBehavior<,>), typeof(EfTxBehavior<,>));
-            });
-
-        services.AddInMemoryMessagePersistence();
-
-        services.AddCustomMassTransit(
-            configuration,
-            (context, cfg) =>
-            {
-                cfg.AddIdentityEndpoints(context);
-                cfg.AddProductEndpoints(context);
-
-                cfg.AddCustomerPublishers();
-                cfg.AddRestockSubscriptionPublishers();
-            },
-            autoConfigEndpoints: false);
-
-        services.AddCustomValidators(Assembly.GetExecutingAssembly());
-
-        services.AddAutoMapper(Assembly.GetExecutingAssembly());
-
-        services.AddCustomInMemoryCache(configuration)
-            .AddCachingRequestPolicies(Assembly.GetExecutingAssembly());
-
-        services.AddCustomHttpClients(configuration);
-
+        services.AddInfrastructure(configuration);
         services.AddStorage(configuration);
 
-        return services;
+        services.AddCustomersServices();
+        services.AddRestockSubscriptionServices();
     }
 
-    public async Task<WebApplication> ConfigureModule(WebApplication app)
+    public async Task ConfigureModule(
+        IApplicationBuilder app,
+        IConfiguration configuration,
+        ILogger logger,
+        IWebHostEnvironment environment)
     {
-        ServiceActivator.Configure(app.Services);
+        ServiceActivator.Configure(app.ApplicationServices);
 
         app.UseMonitoring();
 
-        await app.ApplyDatabaseMigrations(app.Logger);
-        await app.SeedData(app.Logger, app.Environment);
-
-        return app;
+        await app.ApplyDatabaseMigrations(logger);
+        await app.SeedData(logger, environment);
     }
 
-    public IEndpointRouteBuilder MapEndpoints(IEndpointRouteBuilder endpoints)
+    public void MapEndpoints(IEndpointRouteBuilder endpoints)
     {
+        endpoints.MapCustomersEndpoints();
+        endpoints.MapRestockSubscriptionsEndpoints();
+
         endpoints.MapGet("/", (HttpContext context) =>
         {
             var requestId = context.Request.Headers.TryGetValue("X-Request-Id", out var requestIdHeader)
@@ -108,7 +51,5 @@ public class CustomersModuleConfiguration : IRootModuleDefinition
 
             return $"Customers Service Apis, RequestId: {requestId}";
         }).ExcludeFromDescription();
-
-        return endpoints;
     }
 }

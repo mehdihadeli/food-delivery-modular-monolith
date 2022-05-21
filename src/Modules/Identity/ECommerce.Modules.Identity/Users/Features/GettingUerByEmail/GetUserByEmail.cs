@@ -3,7 +3,6 @@ using AutoMapper;
 using BuildingBlocks.Abstractions.CQRS.Query;
 using ECommerce.Modules.Identity.Shared.Models;
 using ECommerce.Modules.Identity.Users.Dtos;
-using FluentValidation;
 using Microsoft.AspNetCore.Identity;
 
 namespace ECommerce.Modules.Identity.Users.Features.GettingUerByEmail;

@@ -69,9 +69,8 @@ public class CustomWebApplicationFactory<TEntryPoint> : WebApplicationFactory<TE
         // //we could read env from our test launch setting or we can set it directly here
         builder.UseEnvironment("test");
 
-
         //The test app's builder.ConfigureTestServices callback is executed after the app's Startup.ConfigureServices code is executed.
-        builder.ConfigureTestServices((services) =>
+        builder.ConfigureTestServices(services =>
         {
             // services.RemoveAll(typeof(IHostedService));
             services.AddHttpContextAccessor();
@@ -79,7 +78,11 @@ public class CustomWebApplicationFactory<TEntryPoint> : WebApplicationFactory<TE
         });
 
         //The test app's builder.ConfigureServices callback is executed before the SUT's Startup.ConfigureServices code.
-        builder.ConfigureServices(services => { });
+        builder.ConfigureServices(services =>
+        {
+            services.AddScoped<TextWriter>(_ => new StringWriter());
+            services.AddScoped<TextReader>(sp => new StringReader(sp.GetRequiredService<TextWriter>().ToString() ?? ""));
+        });
 
         builder.UseDefaultServiceProvider((env, c) =>
         {

@@ -3,7 +3,7 @@ using BuildingBlocks.Abstractions.CQRS.Command;
 using BuildingBlocks.Abstractions.CQRS.Event;
 using BuildingBlocks.Abstractions.CQRS.Event.Internal;
 using BuildingBlocks.Abstractions.CQRS.Query;
-using BuildingBlocks.Abstractions.Scheduler;
+using BuildingBlocks.Abstractions.Scheduling;
 using BuildingBlocks.Core.CQRS.Command;
 using BuildingBlocks.Core.CQRS.Event;
 using BuildingBlocks.Core.CQRS.Query;
@@ -22,7 +22,7 @@ public static class CQRSRegistrationExtensions
         Action<IServiceCollection>? doMoreActions = null)
     {
         services.AddMediatR(
-            assemblies ?? new[] { Assembly.GetCallingAssembly() },
+            assemblies ?? new[] {Assembly.GetCallingAssembly()},
             x =>
             {
                 switch (serviceLifetime)
@@ -42,6 +42,7 @@ public static class CQRSRegistrationExtensions
         services.Add<ICommandProcessor, CommandProcessor>(serviceLifetime)
             .Add<IQueryProcessor, QueryProcessor>(serviceLifetime)
             .Add<IEventProcessor, EventProcessor>(serviceLifetime)
+            .Add<IScheduler, NullScheduler>(serviceLifetime)
             .Add<ICommandScheduler, NullCommandScheduler>(serviceLifetime)
             .Add<IDomainEventPublisher, DomainEventPublisher>(serviceLifetime)
             .Add<IDomainNotificationEventPublisher, DomainNotificationEventPublisher>(serviceLifetime);

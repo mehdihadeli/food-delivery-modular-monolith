@@ -1,3 +1,4 @@
+using BuildingBlocks.Core.Registrations;
 using BuildingBlocks.Logging;
 using BuildingBlocks.Security;
 using BuildingBlocks.Security.Jwt;
@@ -8,10 +9,16 @@ using BuildingBlocks.Web.Extensions.ServiceCollectionExtensions;
 using ECommerce.Api;
 using ECommerce.Api.Extensions.ApplicationBuilderExtensions;
 using ECommerce.Api.Extensions.ServiceCollectionExtensions;
+using ECommerce.Modules.Catalogs;
+using ECommerce.Modules.Customers;
+using ECommerce.Modules.Identity;
+using ECommerce.Modules.Orders;
 using Hellang.Middleware.ProblemDetails;
 using Microsoft.AspNetCore.Mvc.ApplicationModels;
 using Serilog;
 using Serilog.Events;
+
+// https://freecontent.manning.com/dependency-injection-in-net-2nd-edition-understanding-the-composition-root/
 
 // https://docs.microsoft.com/en-us/aspnet/core/fundamentals/minimal-apis
 // https://benfoster.io/blog/mvc-to-minimal-apis-aspnet-6/
@@ -41,6 +48,9 @@ var loggingOptions = builder.Configuration.GetSection(nameof(LoggerOptions)).Get
 builder.AddCompression();
 builder.AddCustomProblemDetails();
 
+builder.Services.AddCore(builder.Configuration);
+builder.Services.AddInMemoryBroker();
+
 builder.Host.AddCustomSerilog(
     optionsBuilder =>
     {
@@ -56,7 +66,13 @@ builder.Host.AddCustomSerilog(
             rollOnFileSizeLimit: true);
     });
 
-builder.AddCustomSwagger(builder.Configuration, typeof(ApiRoot).Assembly);
+builder.AddCustomSwagger(
+    builder.Configuration,
+    false,
+    typeof(CustomersRoot).Assembly,
+    typeof(IdentityRoot).Assembly,
+    typeof(CatalogRoot).Assembly,
+    typeof(OrdersRoot).Assembly);
 
 builder.Services.AddHttpContextAccessor();
 
@@ -69,7 +85,7 @@ builder.Services.AddCustomAuthorization(
     });
 
 /*----------------- Module Services Setup ------------------*/
-builder.AddModulesServices();
+// builder.AddModulesServices(useNewCompositionRoot: true);
 
 var app = builder.Build();
 
@@ -95,7 +111,7 @@ app.UseProblemDetails();
 app.UseSerilogRequestLogging();
 
 /*----------------- Module Middleware Setup ------------------*/
-await app.ConfigureModules();
+// await app.ConfigureModules();
 
 app.UseAuthentication();
 app.UseAuthorization();
@@ -106,10 +122,10 @@ app.UseAppCors();
 app.MapControllers();
 
 /*----------------- Module Routes Setup ------------------*/
-app.MapModulesEndpoints();
+// app.MapModulesEndpoints();
 
 // automatic discover minimal endpoints
-app.MapEndpoints();
+// app.MapEndpoints();
 
 Log.Logger = new LoggerConfiguration()
     .WriteTo.Console()

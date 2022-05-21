@@ -244,6 +244,17 @@ public class IntegrationTestFixture<TEntryPoint> : IAsyncLifetime
         return result;
     }
 
+    // Ref: https://tech.energyhelpline.com/in-memory-testing-with-masstransit/
+    public async Task WaitUntilConditionMetOrTimedOut(Func<bool> conditionToMet)
+    {
+        var meet = conditionToMet.Invoke();
+        while (!meet)
+        {
+            await Task.Delay(100);
+            meet = conditionToMet.Invoke();
+        }
+    }
+
     public virtual async Task InitializeAsync()
     {
         await ResetState();

@@ -1,11 +1,12 @@
 using BuildingBlocks.Abstractions.CQRS.Command;
+using BuildingBlocks.Abstractions.Messaging;
+using BuildingBlocks.Abstractions.Messaging.Context;
 using ECommerce.Modules.Customers.Customers.Features.CreatingCustomer;
 using ECommerce.Modules.Shared.Identity.Users.Events.Integration;
-using MassTransit;
 
 namespace ECommerce.Modules.Customers.Identity.Features.RegisteringUser.Events.External;
 
-public class UserRegisteredConsumer : IConsumer<UserRegistered>
+public class UserRegisteredConsumer : IMessageHandler<UserRegistered>
 {
     private readonly ICommandProcessor _commandProcessor;
 
@@ -14,12 +15,14 @@ public class UserRegisteredConsumer : IConsumer<UserRegistered>
         _commandProcessor = commandProcessor;
     }
 
-    public async Task Consume(ConsumeContext<UserRegistered> context)
+    public async Task HandleAsync(
+        IConsumeContext<UserRegistered> messageContext,
+        CancellationToken cancellationToken = default)
     {
-        var userRegistered = context.Message;
+        var userRegistered = messageContext.Message;
         if (userRegistered.Roles is null || !userRegistered.Roles.Contains(CustomersConstants.Role.User))
             return;
 
-        await _commandProcessor.SendAsync(new CreateCustomer(userRegistered.Email));
+        await _commandProcessor.SendAsync(new CreateCustomer(userRegistered.Email), cancellationToken);
     }
 }

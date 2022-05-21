@@ -1,4 +1,5 @@
 using System.Collections;
+using System.Linq;
 using System.Linq.Expressions;
 using System.Reflection;
 using BuildingBlocks.Core.Utils;
@@ -97,8 +98,8 @@ public static class ReflectionExtensions
             .GetType()
             .GetMethods(BindingFlags.NonPublic | BindingFlags.Public | BindingFlags.Instance)
             .Where(x => x.Name == methodName)
-            .FirstOrDefault(x =>
-                x.GetParameters().Select(p => p.ParameterType).All(parameters.Select(p => p.GetType()).Contains));
+            .FirstOrDefault(x => x.GetParameters().Select(pi => pi.ParameterType)
+                .All(d => parameters.Select(c => c.GetType()).Any(a => a.IsAssignableTo(d))));
 
         if (method is null)
             return null!;
@@ -183,9 +184,9 @@ public static class ReflectionExtensions
     {
         var methodInfo =
             typeof(ReflectionUtilities).GetMethod(nameof(CastTo), BindingFlags.Static | BindingFlags.Public);
-        var genericArguments = new[] { type };
+        var genericArguments = new[] {type};
         var genericMethodInfo = methodInfo?.MakeGenericMethod(genericArguments);
-        return genericMethodInfo?.Invoke(null, new[] { o });
+        return genericMethodInfo?.Invoke(null, new[] {o});
     }
 
     private static bool GenericParametersMatch(
@@ -289,21 +290,21 @@ public static class ReflectionExtensions
 
         var instanceArgument = Expression.Parameter(genericArguments[0]);
 
-        var argumentPairs = funcArgumentList.Zip(methodArgumentList, (s, d) => new { Source = s, Destination = d })
+        var argumentPairs = funcArgumentList.Zip(methodArgumentList, (s, d) => new {Source = s, Destination = d})
             .ToList();
         if (argumentPairs.All(a => a.Source == a.Destination))
         {
             // No need to do anything fancy, the types are the same
             var parameters = funcArgumentList.Select(Expression.Parameter).ToList();
             return Expression.Lambda<TResult>(Expression.Call(instanceArgument, methodInfo, parameters),
-                new[] { instanceArgument }.Concat(parameters)).Compile();
+                new[] {instanceArgument}.Concat(parameters)).Compile();
         }
 
-        var lambdaArgument = new List<ParameterExpression> { instanceArgument, };
+        var lambdaArgument = new List<ParameterExpression> {instanceArgument,};
 
         var type = methodInfo.DeclaringType;
         var instanceVariable = Expression.Variable(type);
-        var blockVariables = new List<ParameterExpression> { instanceVariable, };
+        var blockVariables = new List<ParameterExpression> {instanceVariable,};
         var blockExpressions = new List<Expression>
         {
             Expression.Assign(instanceVariable, Expression.ConvertChecked(instanceArgument, type))

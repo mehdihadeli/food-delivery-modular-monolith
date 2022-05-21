@@ -46,6 +46,16 @@ public static class TypeExtensions
         return genericMethod.Invoke(null, parameters);
     }
 
+    public static dynamic? InvokeGenericExtensionMethod(
+        this Type extensionType,
+        string methodName,
+        Type[] genericTypes,
+        Type? returnType = null,
+        params object[] parameters)
+    {
+        return InvokeGenericMethod(extensionType, methodName, genericTypes, returnType, parameters);
+    }
+
     // Ref: https://stackoverflow.com/a/588596/581476
     public static MethodInfo? GetGenericMethod(
         this Type t,

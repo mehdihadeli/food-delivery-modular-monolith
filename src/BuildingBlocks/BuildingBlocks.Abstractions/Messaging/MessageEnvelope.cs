@@ -3,13 +3,13 @@ namespace BuildingBlocks.Abstractions.Messaging;
 // Ref: https://www.enterpriseintegrationpatterns.com/patterns/messaging/EnvelopeWrapper.html
 public class MessageEnvelope
 {
-    public MessageEnvelope(object? message, IDictionary<string, object?>? headers = null)
+    public MessageEnvelope(object message, IDictionary<string, object?>? headers = null)
     {
         Message = message;
         Headers = headers ?? new Dictionary<string, object?>();
     }
 
-    public object? Message { get; init; }
+    public object Message { get; init; }
     public IDictionary<string, object?> Headers { get; init; }
 }
 
@@ -21,5 +21,5 @@ public class MessageEnvelope<TMessage> : MessageEnvelope
         Message = message;
     }
 
-    public new TMessage? Message { get; }
+    public new TMessage Message { get; }
 }

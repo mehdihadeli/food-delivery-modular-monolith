@@ -4,27 +4,21 @@ using ECommerce.Modules.Customers.Customers.Data;
 
 namespace ECommerce.Modules.Customers.Customers;
 
-internal class CustomersConfigs : IModuleDefinition
+internal static class CustomersConfigs
 {
     public const string Tag = "Customers";
     public const string CustomersPrefixUri = $"{CustomersModuleConfiguration.CustomerModulePrefixUri}";
 
-    public IServiceCollection AddModuleServices(IServiceCollection services, IConfiguration configuration)
+    internal static IServiceCollection AddCustomersServices(this IServiceCollection services)
     {
         services.AddScoped<IDataSeeder, CustomersDataSeeder>();
-
-        // services.AddScoped<CustomerCreatedConsumer>();
 
         return services;
     }
 
-    public IEndpointRouteBuilder MapEndpoints(IEndpointRouteBuilder endpoints)
+    internal static IEndpointRouteBuilder MapCustomersEndpoints(this IEndpointRouteBuilder endpoints)
     {
+        // Routes mapped by conventions with implementing `IMinimalEndpointDefinition` but we can map them here without convention.
         return endpoints;
-    }
-
-    public Task<WebApplication> ConfigureModule(WebApplication app)
-    {
-        return Task.FromResult(app);
     }
 }

@@ -1,11 +1,12 @@
 using BuildingBlocks.Abstractions.CQRS.Command;
+using BuildingBlocks.Abstractions.Messaging;
+using BuildingBlocks.Abstractions.Messaging.Context;
 using ECommerce.Modules.Customers.RestockSubscriptions.Features.ProcessingRestockNotification;
 using ECommerce.Modules.Shared.Catalogs.Products.Events.Integration;
-using MassTransit;
 
 namespace ECommerce.Modules.Customers.Products.Features.ReplenishingProductStock.Events.External;
 
-public class ProductStockReplenishedConsumer : IConsumer<ProductStockReplenished>
+public class ProductStockReplenishedConsumer : IMessageHandler<ProductStockReplenished>
 {
     private readonly ICommandProcessor _commandProcessor;
     private readonly ILogger<ProductStockReplenishedConsumer> _logger;
@@ -20,12 +21,15 @@ public class ProductStockReplenishedConsumer : IConsumer<ProductStockReplenished
 
     // If this handler is called successfully, it will send a ACK to rabbitmq for removing message from the queue and if we have an exception it send an NACK to rabbitmq
     // and with NACK we can retry the message with re-queueing this message to the broker
-    public async Task Consume(ConsumeContext<ProductStockReplenished> context)
+    public async Task HandleAsync(
+        IConsumeContext<ProductStockReplenished> messageContext,
+        CancellationToken cancellationToken = default)
     {
-        var productStockReplenished = context.Message;
+        var productStockReplenished = messageContext.Message;
 
         await _commandProcessor.SendAsync(
-            new ProcessRestockNotification(productStockReplenished.ProductId, productStockReplenished.NewStock));
+            new ProcessRestockNotification(productStockReplenished.ProductId, productStockReplenished.NewStock),
+            cancellationToken);
 
         _logger.LogInformation(
             "Sending restock notification command for product {ProductId}",

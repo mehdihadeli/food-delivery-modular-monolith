@@ -10,6 +10,7 @@ using BuildingBlocks.Core.Extensions;
 using BuildingBlocks.Core.Extensions.ServiceCollection;
 using BuildingBlocks.Core.IdsGenerator;
 using BuildingBlocks.Core.Messaging.BackgroundServices;
+using BuildingBlocks.Core.Messaging.Broker;
 using BuildingBlocks.Core.Messaging.MessagePersistence;
 using BuildingBlocks.Core.Serialization;
 using BuildingBlocks.Core.Types;
@@ -78,6 +79,10 @@ public static class CoreRegistrationExtensions
         AddMessagingMediator(services, serviceLifetime, assembliesToScan);
 
         AddPersistenceMessage(services, configuration, serviceLifetime);
+
+        services.Add<IBus, NullBus>();
+
+        services.AddHostedService<BusBackgroundService>();
     }
 
     private static void AddPersistenceMessage(

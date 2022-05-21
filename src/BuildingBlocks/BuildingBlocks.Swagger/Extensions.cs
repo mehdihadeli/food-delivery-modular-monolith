@@ -17,9 +17,10 @@ public static class Extensions
     public static WebApplicationBuilder AddCustomSwagger(
         this WebApplicationBuilder builder,
         IConfiguration configuration,
-        Assembly assembly)
+        bool useApiVersioning = false,
+        params Assembly[] assemblies)
     {
-        builder.Services.AddCustomSwagger(configuration, assembly);
+        builder.Services.AddCustomSwagger(configuration, useApiVersioning, assemblies);
 
         return builder;
     }
@@ -27,9 +28,10 @@ public static class Extensions
     public static IServiceCollection AddCustomSwagger(
         this IServiceCollection services,
         IConfiguration configuration,
-        Assembly assembly,
-        bool useApiVersioning = false)
+        bool useApiVersioning = false,
+        params Assembly[] assemblies)
     {
+        var assembliesToScan = assemblies.Any() ? assemblies : new[] {Assembly.GetCallingAssembly()};
         if (useApiVersioning)
         {
             services.AddVersionedApiExplorer(options =>
@@ -58,8 +60,15 @@ public static class Extensions
             options =>
             {
                 options.OperationFilter<SwaggerDefaultValues>();
-                var xmlFile = XmlCommentsFilePath(assembly);
-                if (File.Exists(xmlFile)) options.IncludeXmlComments(xmlFile);
+
+                foreach (var assembly in assembliesToScan)
+                {
+                    var xmlFile = XmlCommentsFilePath(assembly);
+                    if (File.Exists(xmlFile))
+                    {
+                        options.IncludeXmlComments(xmlFile);
+                    }
+                }
 
                 options.AddSecurityDefinition("Bearer", new OpenApiSecurityScheme
                 {
@@ -87,7 +96,7 @@ public static class Extensions
                     {
                         new OpenApiSecurityScheme
                         {
-                            Reference = new OpenApiReference { Type = ReferenceType.SecurityScheme, Id = "Bearer" },
+                            Reference = new OpenApiReference {Type = ReferenceType.SecurityScheme, Id = "Bearer"},
                             Scheme = "oauth2",
                             Name = "Bearer",
                             In = ParameterLocation.Header

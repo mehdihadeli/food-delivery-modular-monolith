@@ -1,11 +1,10 @@
 using System.Data;
 using Ardalis.GuardClauses;
 using BuildingBlocks.Abstractions.Persistence.EfCore;
-using BuildingBlocks.Persistence.EfCore.Postgres;
 using Microsoft.Extensions.Options;
 using Npgsql;
 
-namespace Core.Persistence.Postgres;
+namespace BuildingBlocks.Persistence.EfCore.Postgres;
 
 public class NpgsqlConnectionFactory : IConnectionFactory
 {

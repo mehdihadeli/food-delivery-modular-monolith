@@ -1,18 +1,47 @@
 using System.Reflection;
 using BuildingBlocks.Abstractions.Web.Module;
+using BuildingBlocks.Web.Extensions.ServiceCollectionExtensions;
+using BuildingBlocks.Web.Module;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Routing;
 using Microsoft.Extensions.Configuration;
 
 namespace BuildingBlocks.Web.Extensions;
 
+// https://freecontent.manning.com/dependency-injection-in-net-2nd-edition-understanding-the-composition-root/
+// https://blog.ploeh.dk/2011/07/28/CompositionRoot/
 public static class ModuleExtensions
 {
-    public static IServiceCollection AddModulesServices(
-        this IServiceCollection services,
-        IConfiguration configuration,
+    public static void AddModuleServices<TModule>(
+        this WebApplicationBuilder webApplicationBuilder,
+        bool useNewComposition = false)
+        where TModule : class, IModuleDefinition
+    {
+        AddModuleServices<TModule>(
+            webApplicationBuilder.Services,
+            webApplicationBuilder.Configuration,
+            useNewComposition);
+    }
+
+    public static void AddModulesServices(
+        this WebApplicationBuilder webApplicationBuilder,
+        bool useNewCompositionRoot = false,
         params Assembly[] scanAssemblies)
     {
+        AddModulesServices(
+            webApplicationBuilder.Services,
+            webApplicationBuilder.Configuration,
+            useNewCompositionRoot,
+            scanAssemblies);
+    }
+
+    public static void AddModulesServices(
+        this IServiceCollection services,
+        IConfiguration configuration,
+        bool useNewCompositionRoot = false,
+        params Assembly[] scanAssemblies)
+    {
+
         var assemblies = scanAssemblies.Any() ? scanAssemblies : AppDomain.CurrentDomain.GetAssemblies();
 
         var modules = assemblies.SelectMany(x => x.GetTypes()).Where(t =>
@@ -20,120 +49,108 @@ public static class ModuleExtensions
             && t.GetConstructor(Type.EmptyTypes) != null
             && typeof(IModuleDefinition).IsAssignableFrom(t)).ToList();
 
-        var rootModules = modules.Where(x => x.IsAssignableTo(typeof(IRootModuleDefinition))).ToList();
-        var childModules = modules.Where(x => x.IsAssignableTo(typeof(IRootModuleDefinition)) == false).ToList();
-
-        if (rootModules.Count > 1)
+        foreach (var module in modules)
         {
-            throw new System.Exception(
-                "Can't define more than one `IRootModuleDefinition` or RootModule in the current app domain.");
+            AddModulesDependency(services, configuration, module, useNewCompositionRoot);
         }
-
-        var rootModule = rootModules.SingleOrDefault();
-        if (rootModule is { })
-            AddModulesDependency(services, configuration, rootModule);
-
-        foreach (var module in childModules)
-        {
-            AddModulesDependency(services, configuration, module);
-        }
-
-        return services;
     }
 
-    public static IServiceCollection AddModulesServices(
-        this WebApplicationBuilder webApplicationBuilder,
-        params Assembly[] scanAssemblies)
-    {
-        return AddModulesServices(webApplicationBuilder.Services, webApplicationBuilder.Configuration, scanAssemblies);
-    }
-
-    public static IServiceCollection AddModuleServices<TModule>(this WebApplicationBuilder webApplicationBuilder)
-        where TModule : class, IModuleDefinition
-    {
-        return AddModuleServices<TModule>(webApplicationBuilder.Services, webApplicationBuilder.Configuration);
-    }
-
-    public static IServiceCollection AddModuleServices<TModule>(
+    public static void AddModuleServices<TModule>(
         this IServiceCollection services,
-        IConfiguration configuration)
+        IConfiguration configuration,
+        bool useNewCompositionRoot = false)
         where TModule : class, IModuleDefinition
     {
-        if (!typeof(TModule).IsAssignableTo(typeof(IModuleDefinition)))
-        {
-            throw new ArgumentException(
-                $"{nameof(TModule)} must be implemented {nameof(IModuleDefinition)} or {nameof(IRootModuleDefinition)}");
-        }
+        IServiceCollection newServiceCollection = useNewCompositionRoot ? services.CreatNewCollection() : services;
 
-        AddModulesDependency(services, configuration, typeof(TModule));
-
-        return services;
+        AddModulesDependency(newServiceCollection, configuration, typeof(TModule), useNewCompositionRoot);
     }
 
     private static void AddModulesDependency(
         IServiceCollection services,
         IConfiguration configuration,
-        Type module)
+        Type module,
+        bool useNewCompositionRoot)
     {
+        IServiceCollection newServiceCollection = useNewCompositionRoot ? services.CreatNewCollection() : services;
+
         var instantiatedType = (IModuleDefinition)Activator.CreateInstance(module)!;
-        instantiatedType.AddModuleServices(services, configuration);
+        instantiatedType.AddModuleServices(newServiceCollection, configuration);
 
-        if (instantiatedType is IRootModuleDefinition rootInstantiateType)
-            services.AddSingleton(rootInstantiateType);
-        else
-            services.AddSingleton(instantiatedType);
-    }
+        ModuleRegistry.Add(instantiatedType);
 
-    public static async Task<WebApplication> ConfigureModules(this WebApplication app)
-    {
-        var childModules = app.Services.GetServices<IModuleDefinition>();
-        var rootModule = app.Services.GetService<IRootModuleDefinition>();
-
-        if (rootModule is { })
-            await rootModule.ConfigureModule(app);
-
-        foreach (var module in childModules)
+        if (useNewCompositionRoot)
         {
-            await module.ConfigureModule(app);
+            CompositionRootRegistry.Add(new CompositionRoot(newServiceCollection.BuildServiceProvider(), instantiatedType));
         }
-
-        return app;
     }
 
-    public static async Task<WebApplication> ConfigureModule<TModule>(
+    public static async Task ConfigureModules(this WebApplication app)
+    {
+        var modules = ModuleRegistry.ModuleDefinitions;
+
+        foreach (var module in modules)
+        {
+            await ConfigureModule(app, module);
+        }
+    }
+
+    public static async Task ConfigureModule<TModule>(
         this WebApplication app)
         where TModule : class, IModuleDefinition
     {
-        var module = app.Services.GetRequiredService<TModule>();
-        await module.ConfigureModule(app);
+        var module = ModuleRegistry.Get<TModule>();
+        if (module is null)
+        {
+            return;
+        }
 
-        return app;
+        await ConfigureModule(app, module);
     }
 
-    public static IEndpointRouteBuilder MapModulesEndpoints(
+    public static async Task ConfigureModule(this WebApplication app, IModuleDefinition module)
+    {
+        var compositionRoot = CompositionRootRegistry.GetByModule(module);
+        if (compositionRoot is { })
+        {
+            await module.ConfigureModule(
+                new ApplicationBuilder(compositionRoot.ServiceProvider),
+                app.Configuration,
+                app.Logger,
+                app.Environment);
+        }
+        else
+        {
+            await module.ConfigureModule(app, app.Configuration, app.Logger, app.Environment);
+        }
+    }
+
+    public static void MapModulesEndpoints(
         this IEndpointRouteBuilder builder,
         params Assembly[] scanAssemblies)
     {
-        var modules = builder.ServiceProvider.GetServices<IModuleDefinition>();
-        var rootModule = builder.ServiceProvider.GetService<IRootModuleDefinition>();
-
-        if (rootModule is { })
-            rootModule.MapEndpoints(builder);
+        var modules = ModuleRegistry.ModuleDefinitions;
 
         foreach (var module in modules)
         {
             module.MapEndpoints(builder);
         }
-
-        return builder;
     }
 
-    public static IEndpointRouteBuilder MapModuleEndpoints<TModule>(this IEndpointRouteBuilder builder)
+    public static void MapModuleEndpoints<TModule>(this IEndpointRouteBuilder builder)
         where TModule : class, IModuleDefinition
     {
-        var module = builder.ServiceProvider.GetRequiredService<TModule>();
-        module.MapEndpoints(builder);
+        var module = ModuleRegistry.Get<TModule>();
+        if (module is null)
+        {
+            return;
+        }
 
-        return builder;
+        module.MapEndpoints(builder);
+    }
+
+    public static void MapModuleEndpoints(this IEndpointRouteBuilder builder, IModuleDefinition module)
+    {
+        module.MapEndpoints(builder);
     }
 }

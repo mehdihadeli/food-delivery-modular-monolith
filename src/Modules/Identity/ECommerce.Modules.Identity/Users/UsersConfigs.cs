@@ -2,8 +2,6 @@ using ECommerce.Modules.Identity.Users.Features.GettingUerByEmail;
 using ECommerce.Modules.Identity.Users.Features.GettingUserById;
 using ECommerce.Modules.Identity.Users.Features.RegisteringUser;
 using ECommerce.Modules.Identity.Users.Features.UpdatingUserState;
-using Microsoft.AspNetCore.Routing;
-using Microsoft.Extensions.Configuration;
 
 namespace ECommerce.Modules.Identity.Users;
 

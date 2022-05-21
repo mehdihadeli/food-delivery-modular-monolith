@@ -1,8 +1,9 @@
 namespace BuildingBlocks.Core.Extensions.ServiceCollection;
 
+// Ref: https://github.com/AnthonyGiretti/calzolari-dependencyinjection-extensions/blob/main/Calzolari.DependencyInjection.Extensions/IServiceCollectionExtensions.cs
 public static partial class ServiceCollectionExtensions
 {
-    public static void Unregister<TService>(this IServiceCollection services)
+    public static void RemoveDependency<TService>(this IServiceCollection services)
     {
         var descriptor = services.FirstOrDefault(d => d.ServiceType == typeof(TService));
         services.Remove(descriptor);
@@ -12,7 +13,7 @@ public static partial class ServiceCollectionExtensions
         this IServiceCollection services,
         ServiceLifetime lifetime)
     {
-        services.Unregister<TService>();
+        services.RemoveDependency<TService>();
         services.Add(new ServiceDescriptor(typeof(TService), typeof(TImplementation), lifetime));
 
         return services;
@@ -55,7 +56,7 @@ public static partial class ServiceCollectionExtensions
         where TService : class
         where TImplementation : class, TService
     {
-        services.Unregister<TService>();
+        services.RemoveDependency<TService>();
 
         return services.AddScoped<TService, TImplementation>();
     }
@@ -65,7 +66,7 @@ public static partial class ServiceCollectionExtensions
         Func<IServiceProvider, TService> implementationFactory)
         where TService : class
     {
-        services.Unregister<TService>();
+        services.RemoveDependency<TService>();
 
         return services.AddScoped(implementationFactory);
     }
@@ -74,7 +75,7 @@ public static partial class ServiceCollectionExtensions
         where TService : class
         where TImplementation : class, TService
     {
-        services.Unregister<TService>();
+        services.RemoveDependency<TService>();
 
         return services.AddTransient<TService, TImplementation>();
     }
@@ -84,7 +85,7 @@ public static partial class ServiceCollectionExtensions
         Func<IServiceProvider, TService> implementationFactory)
         where TService : class
     {
-        services.Unregister<TService>();
+        services.RemoveDependency<TService>();
 
         return services.AddTransient(implementationFactory);
     }
@@ -93,7 +94,7 @@ public static partial class ServiceCollectionExtensions
         where TService : class
         where TImplementation : class, TService
     {
-        services.Unregister<TService>();
+        services.RemoveDependency<TService>();
 
         return services.AddSingleton<TService, TImplementation>();
     }
@@ -103,7 +104,7 @@ public static partial class ServiceCollectionExtensions
         Func<IServiceProvider, TService> implementationFactory)
         where TService : class
     {
-        services.Unregister<TService>();
+        services.RemoveDependency<TService>();
 
         services.AddSingleton(implementationFactory);
 

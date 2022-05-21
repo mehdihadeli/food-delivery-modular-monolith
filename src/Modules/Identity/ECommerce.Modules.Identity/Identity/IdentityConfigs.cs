@@ -9,11 +9,6 @@ using ECommerce.Modules.Identity.Identity.Features.SendEmailVerificationCode;
 using ECommerce.Modules.Identity.Identity.Features.VerifyEmail;
 using ECommerce.Modules.Identity.Shared.Extensions.ServiceCollectionExtensions;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
-using Microsoft.AspNetCore.Authorization;
-using Microsoft.AspNetCore.Builder;
-using Microsoft.AspNetCore.Http;
-using Microsoft.AspNetCore.Routing;
-using Microsoft.Extensions.Configuration;
 
 namespace ECommerce.Modules.Identity.Identity;
 

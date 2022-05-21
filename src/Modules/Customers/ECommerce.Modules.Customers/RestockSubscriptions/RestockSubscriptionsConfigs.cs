@@ -1,26 +1,21 @@
-using BuildingBlocks.Abstractions.Web.Module;
-
 namespace ECommerce.Modules.Customers.RestockSubscriptions;
 
-public class RestockSubscriptionsConfigs : IModuleDefinition
+internal static class RestockSubscriptionsConfigs
 {
     public const string Tag = "RestockSubscriptions";
 
     public const string RestockSubscriptionsUrl =
         $"{CustomersModuleConfiguration.CustomerModulePrefixUri}/restock-subscriptions";
 
-    public IServiceCollection AddModuleServices(IServiceCollection services, IConfiguration configuration)
+
+    internal static IServiceCollection AddRestockSubscriptionServices(this IServiceCollection services)
     {
         return services;
     }
 
-    public IEndpointRouteBuilder MapEndpoints(IEndpointRouteBuilder endpoints)
+    internal static IEndpointRouteBuilder MapRestockSubscriptionsEndpoints(this IEndpointRouteBuilder endpoints)
     {
+        // Routes mapped by conventions with implementing `IMinimalEndpointDefinition` but we can map them here without convention.
         return endpoints;
-    }
-
-    public Task<WebApplication> ConfigureModule(WebApplication app)
-    {
-        return Task.FromResult(app);
     }
 }

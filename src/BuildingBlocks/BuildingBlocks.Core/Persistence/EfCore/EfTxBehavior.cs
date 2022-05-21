@@ -1,4 +1,3 @@
-using System.Diagnostics;
 using System.Text.Json;
 using BuildingBlocks.Abstractions.CQRS.Event.Internal;
 using BuildingBlocks.Abstractions.Persistence;
@@ -8,6 +7,7 @@ using Microsoft.Extensions.Logging;
 
 namespace BuildingBlocks.Core.Persistence.EfCore;
 
+// Ref: https://github.com/thangchung/clean-architecture-dotnet/blob/main/src/N8T.Infrastructure.EfCore/TxBehavior.cs
 public class EfTxBehavior<TRequest, TResponse> : IPipelineBehavior<TRequest, TResponse>
     where TRequest : notnull, IRequest<TResponse>
     where TResponse : notnull
@@ -73,7 +73,7 @@ public class EfTxBehavior<TRequest, TResponse> : IPipelineBehavior<TRequest, TRe
                 var domainEvents = _domainEventContext.GetAllUncommittedEvents();
                 await _domainEventPublisher.PublishAsync(domainEvents.ToArray(), cancellationToken);
 
-                if (isInnerTransaction == false)
+                if (!isInnerTransaction)
                     await transaction.CommitAsync(cancellationToken);
 
                 _domainEventContext.MarkUncommittedDomainEventAsCommitted();
@@ -82,7 +82,7 @@ public class EfTxBehavior<TRequest, TResponse> : IPipelineBehavior<TRequest, TRe
             }
             catch (System.Exception e)
             {
-                if (isInnerTransaction == false)
+                if (!isInnerTransaction)
                     await transaction.RollbackAsync(cancellationToken);
                 throw;
             }
