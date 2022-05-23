@@ -1,4 +1,4 @@
-using BuildingBlocks.Abstractions.CQRS.Command;
+using BuildingBlocks.Abstractions.Web;
 
 namespace ECommerce.Modules.Catalogs.Products.Features.ReplenishingProductStock;
 
@@ -22,14 +22,17 @@ public static class ReplenishingProductStockEndpoint
         return endpoints;
     }
 
-    private static async Task<IResult> ReplenishProductStock(
+    private static Task<IResult> ReplenishProductStock(
         long productId,
         int quantity,
-        ICommandProcessor commandProcessor,
+        IGatewayProcessor<CatalogModuleConfiguration> gatewayProcessor,
         CancellationToken cancellationToken)
     {
-        await commandProcessor.SendAsync(new ReplenishingProductStock(productId, quantity), cancellationToken);
+        return gatewayProcessor.ExecuteCommand(async commandProcessor =>
+        {
+            await commandProcessor.SendAsync(new ReplenishingProductStock(productId, quantity), cancellationToken);
 
-        return Results.NoContent();
+            return Results.NoContent();
+        });
     }
 }

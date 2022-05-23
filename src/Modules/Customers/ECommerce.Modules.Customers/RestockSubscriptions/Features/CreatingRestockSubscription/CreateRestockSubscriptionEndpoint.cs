@@ -1,5 +1,5 @@
 using Ardalis.GuardClauses;
-using BuildingBlocks.Abstractions.CQRS.Command;
+using BuildingBlocks.Abstractions.Web;
 using BuildingBlocks.Abstractions.Web.MinimalApi;
 
 namespace ECommerce.Modules.Customers.RestockSubscriptions.Features.CreatingRestockSubscription;
@@ -20,19 +20,22 @@ public class CreateRestockSubscriptionEndpoint : IMinimalEndpointDefinition
         return builder;
     }
 
-    private static async Task<IResult> CreateRestockSubscription(
+    private static Task<IResult> CreateRestockSubscription(
         CreateRestockSubscriptionRequest request,
-        ICommandProcessor commandProcessor,
+        IGatewayProcessor<CustomersModuleConfiguration> gatewayProcessor,
         CancellationToken cancellationToken)
     {
         Guard.Against.Null(request, nameof(request));
 
-        var command = new CreateRestockSubscription(request.CustomerId, request.ProductId, request.Email);
+        return gatewayProcessor.ExecuteCommand(async commandProcessor =>
+        {
+            var command = new CreateRestockSubscription(request.CustomerId, request.ProductId, request.Email);
 
-        var result = await commandProcessor.SendAsync(command, cancellationToken);
+            var result = await commandProcessor.SendAsync(command, cancellationToken);
 
-        return Results.Created(
-            $"{RestockSubscriptionsConfigs.RestockSubscriptionsUrl}/{result.RestockSubscription.Id}",
-            result);
+            return Results.Created(
+                $"{RestockSubscriptionsConfigs.RestockSubscriptionsUrl}/{result.RestockSubscription.Id}",
+                result);
+        });
     }
 }

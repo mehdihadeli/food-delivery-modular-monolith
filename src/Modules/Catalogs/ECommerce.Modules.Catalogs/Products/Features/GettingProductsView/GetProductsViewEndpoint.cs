@@ -1,4 +1,4 @@
-using BuildingBlocks.Abstractions.CQRS.Query;
+using BuildingBlocks.Abstractions.Web;
 
 namespace ECommerce.Modules.Catalogs.Products.Features.GettingProductsView;
 
@@ -20,16 +20,19 @@ public static class GetProductsViewEndpoint
         return endpoints;
     }
 
-    private static async Task<IResult> GetProductsView(
-        IQueryProcessor queryProcessor,
+    private static Task<IResult> GetProductsView(
+        IGatewayProcessor<CatalogModuleConfiguration> gatewayProcessor,
         CancellationToken cancellationToken,
         int page = 1,
         int pageSize = 20)
     {
-        var result = await queryProcessor.SendAsync(
-            new GetProductsView { Page = page, PageSize = pageSize },
-            cancellationToken);
+        return gatewayProcessor.ExecuteQuery(async queryProcessor =>
+        {
+            var result = await queryProcessor.SendAsync(
+                new GetProductsView {Page = page, PageSize = pageSize},
+                cancellationToken);
 
-        return Results.Ok(result);
+            return Results.Ok(result);
+        });
     }
 }

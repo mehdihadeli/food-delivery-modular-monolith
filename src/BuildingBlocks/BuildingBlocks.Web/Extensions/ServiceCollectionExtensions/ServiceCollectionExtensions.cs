@@ -1,3 +1,4 @@
+using BuildingBlocks.Abstractions.Web;
 using Microsoft.Extensions.DependencyInjection.Extensions;
 
 namespace BuildingBlocks.Web.Extensions.ServiceCollectionExtensions;
@@ -13,5 +14,12 @@ public static partial class ServiceCollectionExtensions
         }
 
         return newServiceCollection;
+    }
+
+    public static IServiceCollection AddGatewayProcessor(this IServiceCollection services)
+    {
+        services.Replace(ServiceDescriptor.Singleton(typeof(IGatewayProcessor<>), typeof(GatewayProcessor<>)));
+
+        return services;
     }
 }

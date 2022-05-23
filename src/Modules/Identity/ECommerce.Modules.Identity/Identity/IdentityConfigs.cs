@@ -35,14 +35,14 @@ internal static class IdentityConfigs
             [Authorize(
                 AuthenticationSchemes = JwtBearerDefaults.AuthenticationScheme,
                 Roles = Constants.Role.User)]
-            () => new { Role = Constants.Role.User }).WithTags("Identity");
+            () => new {Role = Constants.Role.User}).WithTags("Identity");
 
         endpoints.MapGet(
             $"{IdentityPrefixUri}/admin-role",
             [Authorize(
                 AuthenticationSchemes = JwtBearerDefaults.AuthenticationScheme,
                 Roles = Constants.Role.Admin)]
-            () => new { Role = Constants.Role.Admin }).WithTags("Identity");
+            () => new {Role = Constants.Role.Admin}).WithTags("Identity");
 
         endpoints.MapLoginUserEndpoint();
         endpoints.MapLogoutEndpoint();

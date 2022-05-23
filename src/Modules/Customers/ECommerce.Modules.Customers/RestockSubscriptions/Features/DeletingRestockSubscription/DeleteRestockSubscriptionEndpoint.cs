@@ -1,4 +1,4 @@
-using BuildingBlocks.Abstractions.CQRS.Command;
+using BuildingBlocks.Abstractions.Web;
 using BuildingBlocks.Abstractions.Web.MinimalApi;
 
 namespace ECommerce.Modules.Customers.RestockSubscriptions.Features.DeletingRestockSubscription;
@@ -19,15 +19,18 @@ public class DeleteRestockSubscriptionEndpoint : IMinimalEndpointDefinition
         return builder;
     }
 
-    private static async Task<IResult> DeleteRestockSubscription(
+    private static Task<IResult> DeleteRestockSubscription(
         long id,
-        ICommandProcessor commandProcessor,
+        IGatewayProcessor<CustomersModuleConfiguration> gatewayProcessor,
         CancellationToken cancellationToken)
     {
-        var command = new DeleteRestockSubscription(id);
+        return gatewayProcessor.ExecuteCommand(async commandProcessor =>
+        {
+            var command = new DeleteRestockSubscription(id);
 
-        await commandProcessor.SendAsync(command, cancellationToken);
+            await commandProcessor.SendAsync(command, cancellationToken);
 
-        return Results.NoContent();
+            return Results.NoContent();
+        });
     }
 }

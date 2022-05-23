@@ -18,9 +18,9 @@ public static class ModuleRegistry
         _moduleDefinitions.Add(moduleDefinition);
     }
 
-    public static IModuleDefinition? GetByName(string name)
+    public static IModuleDefinition? GetByAssemblyName(string assemblyName)
     {
-        return _moduleDefinitions.FirstOrDefault(x => x?.ModuleRootName == name);
+        return _moduleDefinitions.FirstOrDefault(x => x.GetType().Assembly.GetName().Name == assemblyName);
     }
 
     public static IModuleDefinition? Get(IModuleDefinition moduleDefinition)

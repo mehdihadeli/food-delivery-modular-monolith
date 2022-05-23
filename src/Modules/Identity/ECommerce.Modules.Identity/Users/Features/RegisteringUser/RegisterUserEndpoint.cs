@@ -1,7 +1,4 @@
-using BuildingBlocks.Abstractions.CQRS.Command;
-using Microsoft.AspNetCore.Builder;
-using Microsoft.AspNetCore.Http;
-using Microsoft.AspNetCore.Routing;
+using BuildingBlocks.Abstractions.Web;
 
 namespace ECommerce.Modules.Identity.Users.Features.RegisteringUser;
 
@@ -19,22 +16,25 @@ public static class RegisterUserEndpoint
         return endpoints;
     }
 
-    private static async Task<IResult> RegisterUser(
+    private static Task<IResult> RegisterUser(
         RegisterUserRequest request,
-        ICommandProcessor commandProcessor,
+        IGatewayProcessor<IdentityModuleConfiguration> gatewayProcessor,
         CancellationToken cancellationToken)
     {
-        var command = new RegisterUser(
-            request.FirstName,
-            request.LastName,
-            request.UserName,
-            request.Email,
-            request.Password,
-            request.ConfirmPassword,
-            request.Roles?.ToList());
+        return gatewayProcessor.ExecuteCommand(async commandProcessor =>
+        {
+            var command = new RegisterUser(
+                request.FirstName,
+                request.LastName,
+                request.UserName,
+                request.Email,
+                request.Password,
+                request.ConfirmPassword,
+                request.Roles?.ToList());
 
-        var result = await commandProcessor.SendAsync(command, cancellationToken);
+            var result = await commandProcessor.SendAsync(command, cancellationToken);
 
-        return Results.Created($"{UsersConfigs.UsersPrefixUri}/{result.UserIdentity?.Id}", result);
+            return Results.Created($"{UsersConfigs.UsersPrefixUri}/{result.UserIdentity?.Id}", result);
+        });
     }
 }

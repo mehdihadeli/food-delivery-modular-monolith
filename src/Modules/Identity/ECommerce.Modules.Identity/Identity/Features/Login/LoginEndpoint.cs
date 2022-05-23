@@ -1,15 +1,26 @@
-using BuildingBlocks.Abstractions.CQRS.Command;
-using Microsoft.AspNetCore.Builder;
-using Microsoft.AspNetCore.Http;
-using Microsoft.AspNetCore.Routing;
+using BuildingBlocks.Abstractions.Web;
 
 namespace ECommerce.Modules.Identity.Identity.Features.Login;
 
 public static class LoginEndpoint
 {
-    internal static IEndpointRouteBuilder MapLoginUserEndpoint(this IEndpointRouteBuilder endpoints)
+    internal static IEndpointRouteBuilder MapLoginUserEndpoint(
+        this IEndpointRouteBuilder endpoints)
     {
-        endpoints.MapPost($"{IdentityConfigs.IdentityPrefixUri}/login", LoginUser)
+        endpoints.MapPost($"{IdentityConfigs.IdentityPrefixUri}/login", (
+                LoginUserRequest request,
+                IGatewayProcessor<IdentityModuleConfiguration> gatewayProcessor,
+                CancellationToken cancellationToken) =>
+            {
+                return gatewayProcessor.ExecuteCommand(async commandProcessor =>
+                {
+                    var command = new Login(request.UserNameOrEmail, request.Password, request.Remember);
+
+                    var result = await commandProcessor.SendAsync(command, cancellationToken);
+
+                    return Results.Ok(result);
+                });
+            })
             .AllowAnonymous()
             .WithTags(IdentityConfigs.Tag)
             .Produces<LoginResponse>()
@@ -18,17 +29,5 @@ public static class LoginEndpoint
             .WithDisplayName("Login User.");
 
         return endpoints;
-    }
-
-    private static async Task<IResult> LoginUser(
-        LoginUserRequest request,
-        ICommandProcessor commandProcessor,
-        CancellationToken cancellationToken)
-    {
-        var command = new Login(request.UserNameOrEmail, request.Password, request.Remember);
-
-        var result = await commandProcessor.SendAsync(command, cancellationToken);
-
-        return Results.Ok(result);
     }
 }

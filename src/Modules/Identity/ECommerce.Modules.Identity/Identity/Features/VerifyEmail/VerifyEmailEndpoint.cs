@@ -1,7 +1,4 @@
-using BuildingBlocks.Abstractions.CQRS.Command;
-using Microsoft.AspNetCore.Builder;
-using Microsoft.AspNetCore.Http;
-using Microsoft.AspNetCore.Routing;
+using BuildingBlocks.Abstractions.Web;
 
 namespace ECommerce.Modules.Identity.Identity.Features.VerifyEmail;
 
@@ -22,15 +19,18 @@ public static class VerifyEmailEndpoint
         return endpoints;
     }
 
-    private static async Task<IResult> VerifyEmail(
+    private static Task<IResult> VerifyEmail(
         VerifyEmailRequest request,
-        ICommandProcessor commandProcessor,
+        IGatewayProcessor<IdentityModuleConfiguration> gatewayProcessor,
         CancellationToken cancellationToken)
     {
-        var command = new VerifyEmailCommand(request.Email, request.Code);
+        return gatewayProcessor.ExecuteCommand(async commandProcessor =>
+        {
+            var command = new VerifyEmailCommand(request.Email, request.Code);
 
-        await commandProcessor.SendAsync(command, cancellationToken);
+            await commandProcessor.SendAsync(command, cancellationToken);
 
-        return Results.Ok();
+            return Results.Ok();
+        });
     }
 }

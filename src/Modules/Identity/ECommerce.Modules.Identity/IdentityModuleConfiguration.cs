@@ -1,5 +1,4 @@
 using BuildingBlocks.Abstractions.Web.Module;
-using BuildingBlocks.Core.Types;
 using BuildingBlocks.Monitoring;
 using ECommerce.Modules.Identity.Identity;
 using ECommerce.Modules.Identity.Shared.Extensions.ApplicationBuilderExtensions;
@@ -11,8 +10,6 @@ namespace ECommerce.Modules.Identity;
 public class IdentityModuleConfiguration : IModuleDefinition
 {
     public const string IdentityModulePrefixUri = "api/v1/identity";
-
-    public string ModuleRootName => TypeMapper.GetTypeName(GetType());
 
     public void AddModuleServices(IServiceCollection services, IConfiguration configuration)
     {

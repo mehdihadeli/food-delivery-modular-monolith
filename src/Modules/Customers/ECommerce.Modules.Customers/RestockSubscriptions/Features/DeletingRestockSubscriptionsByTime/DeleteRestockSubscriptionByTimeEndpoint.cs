@@ -1,5 +1,5 @@
 using Ardalis.GuardClauses;
-using BuildingBlocks.Abstractions.CQRS.Command;
+using BuildingBlocks.Abstractions.Web;
 using BuildingBlocks.Abstractions.Web.MinimalApi;
 
 namespace ECommerce.Modules.Customers.RestockSubscriptions.Features.DeletingRestockSubscriptionsByTime;
@@ -20,17 +20,20 @@ public class DeleteRestockSubscriptionByTimeEndpoint : IMinimalEndpointDefinitio
     }
 
     [Authorize(Roles = CustomersConstants.Role.Admin)]
-    private static async Task<IResult> DeleteRestockSubscriptionByTime(
-        [FromBody]DeleteRestockSubscriptionByTimeRequest request,
-        ICommandProcessor commandProcessor,
+    private static Task<IResult> DeleteRestockSubscriptionByTime(
+        [FromBody] DeleteRestockSubscriptionByTimeRequest request,
+        IGatewayProcessor<CustomersModuleConfiguration> gatewayProcessor,
         CancellationToken cancellationToken)
     {
         Guard.Against.Null(request, nameof(request));
 
-        var command = new DeleteRestockSubscriptionsByTime(request.From, request.To);
+        return gatewayProcessor.ExecuteCommand(async commandProcessor =>
+        {
+            var command = new DeleteRestockSubscriptionsByTime(request.From, request.To);
 
-        await commandProcessor.SendAsync(command, cancellationToken);
+            await commandProcessor.SendAsync(command, cancellationToken);
 
-        return Results.NoContent();
+            return Results.NoContent();
+        });
     }
 }

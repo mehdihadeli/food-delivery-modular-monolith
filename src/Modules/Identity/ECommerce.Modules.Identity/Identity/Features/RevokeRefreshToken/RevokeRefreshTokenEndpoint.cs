@@ -1,7 +1,4 @@
-using BuildingBlocks.Abstractions.CQRS.Command;
-using Microsoft.AspNetCore.Builder;
-using Microsoft.AspNetCore.Http;
-using Microsoft.AspNetCore.Routing;
+using BuildingBlocks.Abstractions.Web;
 
 namespace ECommerce.Modules.Identity.Identity.Features.RevokeRefreshToken;
 
@@ -20,15 +17,18 @@ public static class RevokeRefreshTokenEndpoint
         return endpoints;
     }
 
-    private static async Task<IResult> RevokeToken(
+    private static Task<IResult> RevokeToken(
         RevokeRefreshTokenRequest request,
-        ICommandProcessor commandProcessor,
+        IGatewayProcessor<IdentityModuleConfiguration> gatewayProcessor,
         CancellationToken cancellationToken)
     {
-        var command = new RevokeRefreshTokenCommand(request.RefreshToken);
+       return gatewayProcessor.ExecuteCommand(async commandProcessor =>
+        {
+            var command = new RevokeRefreshTokenCommand(request.RefreshToken);
 
-        await commandProcessor.SendAsync(command, cancellationToken);
+            await commandProcessor.SendAsync(command, cancellationToken);
 
-        return Results.NoContent();
+            return Results.NoContent();
+        });
     }
 }

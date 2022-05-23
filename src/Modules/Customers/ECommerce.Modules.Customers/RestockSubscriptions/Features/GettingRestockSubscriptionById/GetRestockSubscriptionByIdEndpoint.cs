@@ -1,5 +1,5 @@
 using Ardalis.GuardClauses;
-using BuildingBlocks.Abstractions.CQRS.Query;
+using BuildingBlocks.Abstractions.Web;
 using BuildingBlocks.Abstractions.Web.MinimalApi;
 
 namespace ECommerce.Modules.Customers.RestockSubscriptions.Features.GettingRestockSubscriptionById;
@@ -23,15 +23,18 @@ public class GetRestockSubscriptionByIdEndpoint : IMinimalEndpointDefinition
         return builder;
     }
 
-    private static async Task<IResult> GetRestockSubscriptionById(
+    private static Task<IResult> GetRestockSubscriptionById(
         long id,
-        IQueryProcessor queryProcessor,
+        IGatewayProcessor<CustomersModuleConfiguration> gatewayProcessor,
         CancellationToken cancellationToken)
     {
         Guard.Against.Null(id, nameof(id));
 
-        var result = await queryProcessor.SendAsync(new GetRestockSubscriptionById(id), cancellationToken);
+        return gatewayProcessor.ExecuteQuery(async queryProcessor =>
+        {
+            var result = await queryProcessor.SendAsync(new GetRestockSubscriptionById(id), cancellationToken);
 
-        return Results.Ok(result);
+            return Results.Ok(result);
+        });
     }
 }

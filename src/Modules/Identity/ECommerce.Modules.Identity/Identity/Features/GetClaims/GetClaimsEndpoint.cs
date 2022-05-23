@@ -1,7 +1,4 @@
-using BuildingBlocks.Abstractions.CQRS.Query;
-using Microsoft.AspNetCore.Builder;
-using Microsoft.AspNetCore.Http;
-using Microsoft.AspNetCore.Routing;
+using BuildingBlocks.Abstractions.Web;
 
 namespace ECommerce.Modules.Identity.Identity.Features.GetClaims;
 
@@ -19,11 +16,15 @@ public static class GetClaimsEndpoint
         return endpoints;
     }
 
-    private static async Task<IResult> GetClaims(
-        IQueryProcessor queryProcessor, CancellationToken cancellationToken)
+    private static Task<IResult> GetClaims(
+        IGatewayProcessor<IdentityModuleConfiguration> gatewayProcessor,
+        CancellationToken cancellationToken)
     {
-        var result = await queryProcessor.SendAsync(new GetClaimsQuery(), cancellationToken);
+       return gatewayProcessor.ExecuteQuery(async queryProcessor =>
+       {
+           var result = await queryProcessor.SendAsync(new GetClaimsQuery(), cancellationToken);
 
-        return Results.Ok(result);
+           return Results.Ok(result);
+       });
     }
 }

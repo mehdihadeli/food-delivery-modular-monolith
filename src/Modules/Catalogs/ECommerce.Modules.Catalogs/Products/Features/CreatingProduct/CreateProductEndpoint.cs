@@ -1,6 +1,5 @@
 using Ardalis.GuardClauses;
-using AutoMapper;
-using BuildingBlocks.Abstractions.CQRS.Command;
+using BuildingBlocks.Abstractions.Web;
 using ECommerce.Modules.Catalogs.Products.Features.CreatingProduct.Requests;
 
 namespace ECommerce.Modules.Catalogs.Products.Features.CreatingProduct;
@@ -22,17 +21,19 @@ public static class CreateProductEndpoint
         return endpoints;
     }
 
-    private static async Task<IResult> CreateProducts(
+    private static Task<IResult> CreateProducts(
         CreateProductRequest request,
-        ICommandProcessor commandProcessor,
-        IMapper mapper,
+        IGatewayProcessor<CatalogModuleConfiguration> gatewayProcessor,
         CancellationToken cancellationToken)
     {
         Guard.Against.Null(request, nameof(request));
 
-        var command = mapper.Map<CreateProduct>(request);
-        var result = await commandProcessor.SendAsync(command, cancellationToken);
+        return gatewayProcessor.ExecuteCommand(async (commandProcessor, mapper) =>
+        {
+            var command = mapper.Map<CreateProduct>(request);
+            var result = await commandProcessor.SendAsync(command, cancellationToken);
 
-        return Results.CreatedAtRoute("GetProductById", new { id = result.Product.Id }, result);
+            return Results.CreatedAtRoute("GetProductById", new {id = result.Product.Id}, result);
+        });
     }
 }

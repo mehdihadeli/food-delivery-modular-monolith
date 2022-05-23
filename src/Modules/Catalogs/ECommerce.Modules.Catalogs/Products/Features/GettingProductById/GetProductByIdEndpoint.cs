@@ -1,5 +1,5 @@
 using Ardalis.GuardClauses;
-using BuildingBlocks.Abstractions.CQRS.Query;
+using BuildingBlocks.Abstractions.Web;
 
 namespace ECommerce.Modules.Catalogs.Products.Features.GettingProductById;
 
@@ -23,15 +23,18 @@ public static class GetProductByIdEndpoint
         return endpoints;
     }
 
-    private static async Task<IResult> GetProductById(
+    private static Task<IResult> GetProductById(
         long id,
-        IQueryProcessor queryProcessor,
+        IGatewayProcessor<CatalogModuleConfiguration> gatewayProcessor,
         CancellationToken cancellationToken)
     {
         Guard.Against.Null(id, nameof(id));
 
-        var result = await queryProcessor.SendAsync(new GetProductById(id), cancellationToken);
+        return gatewayProcessor.ExecuteQuery(async queryProcessor =>
+        {
+            var result = await queryProcessor.SendAsync(new GetProductById(id), cancellationToken);
 
-        return Results.Ok(result);
+            return Results.Ok(result);
+        });
     }
 }

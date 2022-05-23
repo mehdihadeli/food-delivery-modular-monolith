@@ -1,5 +1,5 @@
 using Ardalis.GuardClauses;
-using BuildingBlocks.Abstractions.CQRS.Command;
+using BuildingBlocks.Abstractions.Web;
 using BuildingBlocks.Abstractions.Web.MinimalApi;
 
 namespace ECommerce.Modules.Customers.Customers.Features.CreatingCustomer;
@@ -19,17 +19,20 @@ public class CreateCustomerEndpoint : IMinimalEndpointDefinition
         return builder;
     }
 
-    private static async Task<IResult> CreateCustomer(
+    private static Task<IResult> CreateCustomer(
         CreateCustomerRequest request,
-        ICommandProcessor commandProcessor,
+        IGatewayProcessor<CustomersModuleConfiguration> gatewayProcessor,
         CancellationToken cancellationToken)
     {
         Guard.Against.Null(request, nameof(request));
 
-        var command = new CreateCustomer(request.Email);
+        return gatewayProcessor.ExecuteCommand(async commandProcessor =>
+        {
+            var command = new CreateCustomer(request.Email);
 
-        var result = await commandProcessor.SendAsync(command, cancellationToken);
+            var result = await commandProcessor.SendAsync(command, cancellationToken);
 
-        return Results.Created($"{CustomersConfigs.CustomersPrefixUri}/{result.CustomerId}", result);
+            return Results.Created($"{CustomersConfigs.CustomersPrefixUri}/{result.CustomerId}", result);
+        });
     }
 }

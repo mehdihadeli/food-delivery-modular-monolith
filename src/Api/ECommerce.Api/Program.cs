@@ -1,3 +1,4 @@
+using BuildingBlocks.Core.Extensions.ServiceCollection;
 using BuildingBlocks.Core.Registrations;
 using BuildingBlocks.Logging;
 using BuildingBlocks.Security;
@@ -15,6 +16,7 @@ using ECommerce.Modules.Identity;
 using ECommerce.Modules.Orders;
 using Hellang.Middleware.ProblemDetails;
 using Microsoft.AspNetCore.Mvc.ApplicationModels;
+using Microsoft.AspNetCore.Mvc.Controllers;
 using Serilog;
 using Serilog.Events;
 
@@ -37,19 +39,20 @@ builder.Host.UseDefaultServiceProvider((env, c) =>
     }
 });
 
+// https://andrewlock.net/controller-activation-and-dependency-injection-in-asp-net-core-mvc/
 builder.Services.AddControllers(options =>
         options.Conventions.Add(new RouteTokenTransformerConvention(new SlugifyParameterTransformer())))
+    .AddControllersAsServices()
     .AddNewtonsoftJson(options =>
         options.SerializerSettings.ReferenceLoopHandling = Newtonsoft.Json.ReferenceLoopHandling.Ignore);
+
+builder.Services.ReplaceSingleton<IControllerActivator, CustomServiceBasedControllerActivator>();
 
 builder.Services.AddApplicationOptions(builder.Configuration);
 var loggingOptions = builder.Configuration.GetSection(nameof(LoggerOptions)).Get<LoggerOptions>();
 
 builder.AddCompression();
 builder.AddCustomProblemDetails();
-
-builder.Services.AddCore(builder.Configuration);
-builder.Services.AddInMemoryBroker();
 
 builder.Host.AddCustomSerilog(
     optionsBuilder =>
@@ -75,7 +78,6 @@ builder.AddCustomSwagger(
     typeof(OrdersRoot).Assembly);
 
 builder.Services.AddHttpContextAccessor();
-
 builder.Services.AddCustomJwtAuthentication(builder.Configuration);
 builder.Services.AddCustomAuthorization(
     rolePolicies: new List<RolePolicy>
@@ -84,8 +86,10 @@ builder.Services.AddCustomAuthorization(
         new(ApiConstants.Role.User, new List<string> {ApiConstants.Role.User})
     });
 
+builder.Services.AddInMemoryBroker();
+
 /*----------------- Module Services Setup ------------------*/
-// builder.AddModulesServices(useNewCompositionRoot: true);
+builder.AddModulesServices(useCompositionRootForModules: true);
 
 var app = builder.Build();
 
@@ -111,7 +115,7 @@ app.UseProblemDetails();
 app.UseSerilogRequestLogging();
 
 /*----------------- Module Middleware Setup ------------------*/
-// await app.ConfigureModules();
+await app.ConfigureModules();
 
 app.UseAuthentication();
 app.UseAuthorization();
@@ -121,8 +125,11 @@ app.UseAppCors();
 
 app.MapControllers();
 
+
+
 /*----------------- Module Routes Setup ------------------*/
-// app.MapModulesEndpoints();
+app.MapModulesEndpoints();
+
 
 // automatic discover minimal endpoints
 // app.MapEndpoints();

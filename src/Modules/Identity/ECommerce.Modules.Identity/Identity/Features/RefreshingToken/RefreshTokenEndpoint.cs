@@ -1,4 +1,5 @@
 using BuildingBlocks.Abstractions.CQRS.Command;
+using BuildingBlocks.Abstractions.Web;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Routing;
@@ -20,15 +21,18 @@ public static class RefreshTokenEndpoint
         return endpoints;
     }
 
-    private static async Task<IResult> RefreshToken(
+    private static Task<IResult> RefreshToken(
         RefreshTokenRequest request,
-        ICommandProcessor commandProcessor,
+        IGatewayProcessor<IdentityModuleConfiguration> gatewayProcessor,
         CancellationToken cancellationToken)
     {
-        var command = new RefreshTokenCommand(request.AccessToken, request.RefreshToken);
+        return gatewayProcessor.ExecuteCommand(async commandProcessor =>
+        {
+            var command = new RefreshTokenCommand(request.AccessToken, request.RefreshToken);
 
-        var result = await commandProcessor.SendAsync(command, cancellationToken);
+            var result = await commandProcessor.SendAsync(command, cancellationToken);
 
-        return Results.Ok(result);
+            return Results.Ok(result);
+        });
     }
 }

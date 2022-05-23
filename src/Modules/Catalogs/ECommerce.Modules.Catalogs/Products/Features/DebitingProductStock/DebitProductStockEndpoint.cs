@@ -1,4 +1,4 @@
-using BuildingBlocks.Abstractions.CQRS.Command;
+using BuildingBlocks.Abstractions.Web;
 
 namespace ECommerce.Modules.Catalogs.Products.Features.DebitingProductStock;
 
@@ -22,14 +22,17 @@ public static class DebitProductStockEndpoint
         return endpoints;
     }
 
-    private static async Task<IResult> DebitProductStock(
+    private static Task<IResult> DebitProductStock(
         long productId,
         int quantity,
-        ICommandProcessor commandProcessor,
+        IGatewayProcessor<CatalogModuleConfiguration> gatewayProcessor,
         CancellationToken cancellationToken)
     {
-        await commandProcessor.SendAsync(new DebitProductStock(productId, quantity), cancellationToken);
+        return gatewayProcessor.ExecuteCommand(async commandProcessor =>
+        {
+            await commandProcessor.SendAsync(new DebitProductStock(productId, quantity), cancellationToken);
 
-        return Results.NoContent();
+            return Results.NoContent();
+        });
     }
 }

@@ -1,7 +1,4 @@
-using BuildingBlocks.Abstractions.CQRS.Command;
-using Microsoft.AspNetCore.Builder;
-using Microsoft.AspNetCore.Http;
-using Microsoft.AspNetCore.Routing;
+using BuildingBlocks.Abstractions.Web;
 
 namespace ECommerce.Modules.Identity.Identity.Features.SendEmailVerificationCode;
 
@@ -22,15 +19,18 @@ public static class SendEmailVerificationCodeEndpoint
         return endpoints;
     }
 
-    private static async Task<IResult> SendEmailVerificationCode(
+    private static Task<IResult> SendEmailVerificationCode(
         SendEmailVerificationCodeRequest request,
-        ICommandProcessor commandProcessor,
+        IGatewayProcessor<IdentityModuleConfiguration> gatewayProcessor,
         CancellationToken cancellationToken)
     {
-        var command = new SendEmailVerificationCodeCommand(request.Email);
+       return gatewayProcessor.ExecuteCommand(async commandProcessor =>
+       {
+           var command = new SendEmailVerificationCodeCommand(request.Email);
 
-        var result = await commandProcessor.SendAsync(command, cancellationToken);
+           var result = await commandProcessor.SendAsync(command, cancellationToken);
 
-        return Results.Ok(result);
+           return Results.Ok(result);
+       });
     }
 }

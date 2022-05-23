@@ -1,64 +1,21 @@
+using Microsoft.Extensions.DependencyInjection.Extensions;
+
 namespace BuildingBlocks.Core.Extensions.ServiceCollection;
 
-// Ref: https://github.com/AnthonyGiretti/calzolari-dependencyinjection-extensions/blob/main/Calzolari.DependencyInjection.Extensions/IServiceCollectionExtensions.cs
 public static partial class ServiceCollectionExtensions
 {
-    public static void RemoveDependency<TService>(this IServiceCollection services)
-    {
-        var descriptor = services.FirstOrDefault(d => d.ServiceType == typeof(TService));
-        services.Remove(descriptor);
-    }
-
     public static IServiceCollection Replace<TService, TImplementation>(
         this IServiceCollection services,
         ServiceLifetime lifetime)
     {
-        services.RemoveDependency<TService>();
-        services.Add(new ServiceDescriptor(typeof(TService), typeof(TImplementation), lifetime));
-
-        return services;
-    }
-
-    private static IServiceCollection TryAddTransientExact(
-        this IServiceCollection services,
-        Type serviceType,
-        Type implementationType)
-    {
-        if (services.Any(reg => reg.ServiceType == serviceType && reg.ImplementationType == implementationType))
-            return services;
-
-        return services.AddTransient(serviceType, implementationType);
-    }
-
-    private static IServiceCollection TryAddScopeExact(
-        this IServiceCollection services,
-        Type serviceType,
-        Type implementationType)
-    {
-        if (services.Any(reg => reg.ServiceType == serviceType && reg.ImplementationType == implementationType))
-            return services;
-
-        return services.AddScoped(serviceType, implementationType);
-    }
-
-    private static IServiceCollection TryAddSingletonExact(
-        this IServiceCollection services,
-        Type serviceType,
-        Type implementationType)
-    {
-        if (services.Any(reg => reg.ServiceType == serviceType && reg.ImplementationType == implementationType))
-            return services;
-
-        return services.AddSingleton(serviceType, implementationType);
+        return services.Replace(new ServiceDescriptor(typeof(TService), typeof(TImplementation), lifetime));
     }
 
     public static IServiceCollection ReplaceScoped<TService, TImplementation>(this IServiceCollection services)
         where TService : class
         where TImplementation : class, TService
     {
-        services.RemoveDependency<TService>();
-
-        return services.AddScoped<TService, TImplementation>();
+        return services.Replace(ServiceDescriptor.Scoped<TService, TImplementation>());
     }
 
     public static IServiceCollection ReplaceScoped<TService>(
@@ -66,18 +23,14 @@ public static partial class ServiceCollectionExtensions
         Func<IServiceProvider, TService> implementationFactory)
         where TService : class
     {
-        services.RemoveDependency<TService>();
-
-        return services.AddScoped(implementationFactory);
+        return services.Replace(ServiceDescriptor.Scoped(implementationFactory));
     }
 
     public static IServiceCollection ReplaceTransient<TService, TImplementation>(this IServiceCollection services)
         where TService : class
         where TImplementation : class, TService
     {
-        services.RemoveDependency<TService>();
-
-        return services.AddTransient<TService, TImplementation>();
+        return services.Replace(ServiceDescriptor.Transient<TService, TImplementation>());
     }
 
     public static IServiceCollection ReplaceTransient<TService>(
@@ -85,18 +38,14 @@ public static partial class ServiceCollectionExtensions
         Func<IServiceProvider, TService> implementationFactory)
         where TService : class
     {
-        services.RemoveDependency<TService>();
-
-        return services.AddTransient(implementationFactory);
+        return services.Replace(ServiceDescriptor.Transient(implementationFactory));
     }
 
     public static IServiceCollection ReplaceSingleton<TService, TImplementation>(this IServiceCollection services)
         where TService : class
         where TImplementation : class, TService
     {
-        services.RemoveDependency<TService>();
-
-        return services.AddSingleton<TService, TImplementation>();
+        return services.Replace(ServiceDescriptor.Singleton<TService, TImplementation>());
     }
 
     public static IServiceCollection ReplaceSingleton<TService>(
@@ -104,11 +53,7 @@ public static partial class ServiceCollectionExtensions
         Func<IServiceProvider, TService> implementationFactory)
         where TService : class
     {
-        services.RemoveDependency<TService>();
-
-        services.AddSingleton(implementationFactory);
-
-        return services;
+        return services.Replace(ServiceDescriptor.Singleton(implementationFactory));
     }
 
     public static IServiceCollection Add<TService, TImplementation>(

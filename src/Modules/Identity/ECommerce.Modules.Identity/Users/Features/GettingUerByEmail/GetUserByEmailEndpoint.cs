@@ -1,4 +1,4 @@
-using BuildingBlocks.Abstractions.CQRS.Query;
+using BuildingBlocks.Abstractions.Web;
 using ECommerce.Modules.Identity.Users.Features.RegisteringUser;
 
 namespace ECommerce.Modules.Identity.Users.Features.GettingUerByEmail;
@@ -21,13 +21,16 @@ public static class GetUserByEmailEndpoint
         return endpoints;
     }
 
-    private static async Task<IResult> GetUserByEmail(
-        [FromRoute]string email,
-        IQueryProcessor queryProcessor,
+    private static Task<IResult> GetUserByEmail(
+        [FromRoute] string email,
+        IGatewayProcessor<IdentityModuleConfiguration> gatewayProcessor,
         CancellationToken cancellationToken)
     {
-        var result = await queryProcessor.SendAsync(new GetUserByEmail(email), cancellationToken);
+        return gatewayProcessor.ExecuteQuery(async queryProcessor =>
+        {
+            var result = await queryProcessor.SendAsync(new GetUserByEmail(email), cancellationToken);
 
-        return Results.Ok(result);
+            return Results.Ok(result);
+        });
     }
 }

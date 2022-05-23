@@ -1,5 +1,5 @@
 using Ardalis.GuardClauses;
-using BuildingBlocks.Abstractions.CQRS.Command;
+using BuildingBlocks.Abstractions.Web;
 
 namespace ECommerce.Modules.Catalogs.Products.Features.UpdatingProduct;
 
@@ -21,31 +21,34 @@ public static class UpdateProductEndpoint
         return endpoints;
     }
 
-    private static async Task<IResult> UpdateProducts(
+    private static Task<IResult> UpdateProducts(
         long id,
         UpdateProductRequest request,
-        ICommandProcessor commandProcessor,
+        IGatewayProcessor<CatalogModuleConfiguration> gatewayProcessor,
         CancellationToken cancellationToken)
     {
         Guard.Against.Null(request, nameof(request));
-        var command = new UpdateProduct(
-            id,
-            request.Name,
-            request.Price,
-            request.RestockThreshold,
-            request.MaxStockThreshold,
-            request.Status,
-            request.Width,
-            request.Height,
-            request.Depth,
-            request.Size,
-            request.CategoryId,
-            request.SupplierId,
-            request.BrandId,
-            request.Description);
 
-        await commandProcessor.SendAsync(command, cancellationToken);
+        return gatewayProcessor.ExecuteCommand(async commandProcessor =>
+        {
+            var command = new UpdateProduct(
+                id,
+                request.Name,
+                request.Price,
+                request.RestockThreshold,
+                request.MaxStockThreshold,
+                request.Status,
+                request.Width,
+                request.Height,
+                request.Depth,
+                request.Size,
+                request.CategoryId,
+                request.SupplierId,
+                request.BrandId,
+                request.Description);
 
-        return Results.NoContent();
+            await commandProcessor.SendAsync(command, cancellationToken);
+            return Results.NoContent();
+        });
     }
 }

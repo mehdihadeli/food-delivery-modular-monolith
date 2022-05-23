@@ -1,8 +1,5 @@
-using BuildingBlocks.Abstractions.CQRS.Command;
+using BuildingBlocks.Abstractions.Web;
 using ECommerce.Modules.Identity.Users.Features.RegisteringUser;
-using Microsoft.AspNetCore.Builder;
-using Microsoft.AspNetCore.Http;
-using Microsoft.AspNetCore.Routing;
 
 namespace ECommerce.Modules.Identity.Users.Features.UpdatingUserState;
 
@@ -21,16 +18,19 @@ public static class UpdateUserStateEndpoint
         return endpoints;
     }
 
-    private static async Task<IResult> UpdateUserState(
+    private static Task<IResult> UpdateUserState(
         Guid userId,
         UpdateUserStateRequest request,
-        ICommandProcessor commandProcessor,
+        IGatewayProcessor<IdentityModuleConfiguration> gatewayProcessor,
         CancellationToken cancellationToken)
     {
-        var command = new UpdateUserState(userId, request.UserState);
+        return gatewayProcessor.ExecuteCommand(async commandProcessor =>
+        {
+            var command = new UpdateUserState(userId, request.UserState);
 
-        await commandProcessor.SendAsync(command, cancellationToken);
+            await commandProcessor.SendAsync(command, cancellationToken);
 
-        return Results.NoContent();
+            return Results.NoContent();
+        });
     }
 }

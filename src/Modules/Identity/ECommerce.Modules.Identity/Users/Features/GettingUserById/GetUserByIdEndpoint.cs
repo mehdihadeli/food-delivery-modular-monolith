@@ -1,8 +1,5 @@
-using BuildingBlocks.Abstractions.CQRS.Query;
+using BuildingBlocks.Abstractions.Web;
 using ECommerce.Modules.Identity.Users.Features.RegisteringUser;
-using Microsoft.AspNetCore.Builder;
-using Microsoft.AspNetCore.Http;
-using Microsoft.AspNetCore.Routing;
 
 namespace ECommerce.Modules.Identity.Users.Features.GettingUserById;
 
@@ -22,13 +19,16 @@ public static class GetUserByIdEndpoint
         return endpoints;
     }
 
-    private static async Task<IResult> GetUserById(
+    private static Task<IResult> GetUserById(
         Guid userId,
-        IQueryProcessor queryProcessor,
+        IGatewayProcessor<IdentityModuleConfiguration> gatewayProcessor,
         CancellationToken cancellationToken)
     {
-        var result = await queryProcessor.SendAsync(new GetUserById(userId), cancellationToken);
+        return gatewayProcessor.ExecuteQuery(async queryProcessor =>
+        {
+            var result = await queryProcessor.SendAsync(new GetUserById(userId), cancellationToken);
 
-        return Results.Ok(result);
+            return Results.Ok(result);
+        });
     }
 }

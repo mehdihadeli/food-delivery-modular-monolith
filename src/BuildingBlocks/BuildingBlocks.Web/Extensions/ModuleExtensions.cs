@@ -25,23 +25,22 @@ public static class ModuleExtensions
 
     public static void AddModulesServices(
         this WebApplicationBuilder webApplicationBuilder,
-        bool useNewCompositionRoot = false,
+        bool useCompositionRootForModules = false,
         params Assembly[] scanAssemblies)
     {
         AddModulesServices(
             webApplicationBuilder.Services,
             webApplicationBuilder.Configuration,
-            useNewCompositionRoot,
+            useCompositionRootForModules,
             scanAssemblies);
     }
 
     public static void AddModulesServices(
         this IServiceCollection services,
         IConfiguration configuration,
-        bool useNewCompositionRoot = false,
+        bool useCompositionRootForModules = false,
         params Assembly[] scanAssemblies)
     {
-
         var assemblies = scanAssemblies.Any() ? scanAssemblies : AppDomain.CurrentDomain.GetAssemblies();
 
         var modules = assemblies.SelectMany(x => x.GetTypes()).Where(t =>
@@ -51,37 +50,53 @@ public static class ModuleExtensions
 
         foreach (var module in modules)
         {
-            AddModulesDependency(services, configuration, module, useNewCompositionRoot);
+            AddModuleServices(services, configuration, module, useCompositionRootForModules);
         }
+
+        // For handling specific composition root for processing commands and queries based on module
+        services.AddGatewayProcessor();
     }
 
     public static void AddModuleServices<TModule>(
         this IServiceCollection services,
         IConfiguration configuration,
-        bool useNewCompositionRoot = false)
+        bool useCompositionRootForModules = false)
         where TModule : class, IModuleDefinition
     {
-        IServiceCollection newServiceCollection = useNewCompositionRoot ? services.CreatNewCollection() : services;
+        AddModuleServices(services, configuration, typeof(TModule), useCompositionRootForModules);
 
-        AddModulesDependency(newServiceCollection, configuration, typeof(TModule), useNewCompositionRoot);
+        // For handling specific composition root for processing commands and queries based on module
+        services.AddGatewayProcessor();
+    }
+
+    public static void AddModuleServices(
+        this IServiceCollection services,
+        IConfiguration configuration,
+        Type moduleType,
+        bool useCompositionRootForModules = false)
+    {
+        AddModulesDependency(services, configuration, moduleType, useCompositionRootForModules);
     }
 
     private static void AddModulesDependency(
         IServiceCollection services,
         IConfiguration configuration,
         Type module,
-        bool useNewCompositionRoot)
+        bool useCompositionRootForModules)
     {
-        IServiceCollection newServiceCollection = useNewCompositionRoot ? services.CreatNewCollection() : services;
+        IServiceCollection newServiceCollection =
+            useCompositionRootForModules ? services.CreatNewCollection() : services;
 
         var instantiatedType = (IModuleDefinition)Activator.CreateInstance(module)!;
         instantiatedType.AddModuleServices(newServiceCollection, configuration);
 
         ModuleRegistry.Add(instantiatedType);
 
-        if (useNewCompositionRoot)
+        if (useCompositionRootForModules)
         {
-            CompositionRootRegistry.Add(new CompositionRoot(newServiceCollection.BuildServiceProvider(), instantiatedType));
+            CompositionRootRegistry.Add(new CompositionRoot(
+                newServiceCollection.BuildServiceProvider(),
+                instantiatedType));
         }
     }
 
@@ -121,19 +136,18 @@ public static class ModuleExtensions
         }
         else
         {
+            CompositionRootRegistry.Add(new CompositionRoot(app.Services, module));
             await module.ConfigureModule(app, app.Configuration, app.Logger, app.Environment);
         }
     }
 
-    public static void MapModulesEndpoints(
-        this IEndpointRouteBuilder builder,
-        params Assembly[] scanAssemblies)
+    public static void MapModulesEndpoints(this IEndpointRouteBuilder builder)
     {
         var modules = ModuleRegistry.ModuleDefinitions;
 
         foreach (var module in modules)
         {
-            module.MapEndpoints(builder);
+            MapModuleEndpoints(builder, module);
         }
     }
 
@@ -146,11 +160,28 @@ public static class ModuleExtensions
             return;
         }
 
-        module.MapEndpoints(builder);
+        MapModuleEndpoints(builder, module);
     }
 
     public static void MapModuleEndpoints(this IEndpointRouteBuilder builder, IModuleDefinition module)
     {
+        var compositionRoot = CompositionRootRegistry.GetByModule(module);
+        if (compositionRoot is null)
+        {
+            compositionRoot = new CompositionRoot(builder.ServiceProvider, module);
+            CompositionRootRegistry.Add(compositionRoot);
+        }
+
         module.MapEndpoints(builder);
+    }
+
+    public static ICompositionRoot? GetCurrentCompositionRoot(this Assembly assembly)
+    {
+        return CompositionRootRegistry.GetByModuleByAssemblyName(assembly.GetName().Name);
+    }
+
+    public static ICompositionRoot? GetCurrentCompositionRoot(this object instance)
+    {
+        return CompositionRootRegistry.GetByModuleByAssemblyName(instance.GetType().Assembly.GetName().Name);
     }
 }

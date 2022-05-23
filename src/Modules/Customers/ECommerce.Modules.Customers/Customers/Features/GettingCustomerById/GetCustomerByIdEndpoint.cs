@@ -1,5 +1,5 @@
 using Ardalis.GuardClauses;
-using BuildingBlocks.Abstractions.CQRS.Query;
+using BuildingBlocks.Abstractions.Web;
 using BuildingBlocks.Abstractions.Web.MinimalApi;
 
 namespace ECommerce.Modules.Customers.Customers.Features.GettingCustomerById;
@@ -23,15 +23,18 @@ public class GetCustomerByIdEndpointEndpoint : IMinimalEndpointDefinition
         return builder;
     }
 
-    private static async Task<IResult> GetCustomerById(
+    private static Task<IResult> GetCustomerById(
         long id,
-        IQueryProcessor queryProcessor,
+        IGatewayProcessor<CustomersModuleConfiguration> gatewayProcessor,
         CancellationToken cancellationToken)
     {
         Guard.Against.Null(id, nameof(id));
 
-        var result = await queryProcessor.SendAsync(new GetCustomerById(id), cancellationToken);
+        return gatewayProcessor.ExecuteQuery(async queryProcessor =>
+        {
+            var result = await queryProcessor.SendAsync(new GetCustomerById(id), cancellationToken);
 
-        return Results.Ok(result);
+            return Results.Ok(result);
+        });
     }
 }

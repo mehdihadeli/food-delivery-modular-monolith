@@ -131,6 +131,9 @@ dotnet_diagnostic.CA1305.severity = None
 ## CA1063: Implement IDisposable correctly
 dotnet_diagnostic.CA1063.severity = None
 
+## CA2201: Do not raise reserved exception types
+dotnet_diagnostic.CA2201.severity = Suggestion
+
 ##################################################################################
 ## https://github.com/DotNetAnalyzers/StyleCopAnalyzers/tree/master/documentation
 ## https://documentation.help/StyleCop/StyleCop.html
@@ -361,6 +364,12 @@ dotnet_diagnostic.RCS1046.severity = Suggestion
 # RCS1047: Non-asynchronous method name should not end with 'Async'.
 dotnet_diagnostic.RCS1047.severity = error
 
+# https://github.com/JosefPihrt/Roslynator/blob/master/docs/analyzers/RCS1174.md
+# RCS1174: Remove redundant async/await
+dotnet_diagnostic.RCS1174.severity = Suggestion
+
+
+
 ##################################################################################
 ## https://github.com/semihokur/asyncfixer
 ## AsyncFixer01
@@ -442,3 +451,12 @@ dotnet_diagnostic.AsyncifyInvocation.severity = error
 # https://cezarypiatek.github.io/post/async-analyzers-p2/#8-synchronous-waits
 # AsyncifyVariable: Use Task Async
 dotnet_diagnostic.AsyncifyVariable.severity = error
+
+
+##################################################################################
+## https://github.com/cezarypiatek/ExceptionAnalyzer
+
+dotnet_diagnostic.EX001.severity = Suggestion
+
+
+

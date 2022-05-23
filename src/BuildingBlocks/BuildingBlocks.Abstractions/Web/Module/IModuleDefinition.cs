@@ -8,8 +8,6 @@ namespace BuildingBlocks.Abstractions.Web.Module;
 
 public interface IModuleDefinition
 {
-    string ModuleRootName { get; }
-
     void AddModuleServices(IServiceCollection services, IConfiguration configuration);
 
     Task ConfigureModule(
