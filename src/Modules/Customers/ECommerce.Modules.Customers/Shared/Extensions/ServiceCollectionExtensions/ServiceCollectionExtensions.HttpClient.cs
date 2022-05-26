@@ -10,10 +10,13 @@ public static partial class ServiceCollectionExtensions
         this IServiceCollection services,
         IConfiguration configuration)
     {
-        services.AddOptions<IdentityApiClientOptions>().Bind(configuration.GetSection(nameof(IdentityApiClientOptions)))
+        services.AddOptions<IdentityApiClientOptions>().Bind(configuration.GetSection(
+                $"{CustomersModuleConfiguration.ModuleName}:{nameof(IdentityApiClientOptions)}"))
             .ValidateDataAnnotations();
 
-        services.AddOptions<CatalogsApiClientOptions>().Bind(configuration.GetSection(nameof(CatalogsApiClientOptions)))
+        services.AddOptions<CatalogsApiClientOptions>().Bind(
+                configuration.GetSection(
+                    $"{CustomersModuleConfiguration.ModuleName}:{nameof(CatalogsApiClientOptions)}"))
             .ValidateDataAnnotations();
 
         services.AddHttpApiClient<ICatalogApiClient, CatalogApiClient>();

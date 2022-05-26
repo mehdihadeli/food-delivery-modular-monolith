@@ -32,6 +32,7 @@ public static partial class ServiceCollectionExtensions
                 var env = ctx.RequestServices.GetRequiredService<IHostEnvironment>();
                 return env.IsDevelopment() || env.IsStaging();
             };
+
             x.Map<ConflictException>(ex => new ProblemDetails
             {
                 Title = "Application rule broken",
@@ -48,6 +49,7 @@ public static partial class ServiceCollectionExtensions
                 Detail = JsonConvert.SerializeObject(ex.ValidationResultModel.Errors),
                 Type = "https://somedomain/input-validation-rules-error"
             });
+
             x.Map<ArgumentException>(ex => new ProblemDetails
             {
                 Title = "argument is invalid",
@@ -55,6 +57,7 @@ public static partial class ServiceCollectionExtensions
                 Detail = ex.Message,
                 Type = "https://somedomain/argument-error"
             });
+
             x.Map<DomainException>(ex => new ProblemDetails
             {
                 Title = "domain rules broken",
@@ -62,6 +65,7 @@ public static partial class ServiceCollectionExtensions
                 Detail = ex.Message,
                 Type = "https://somedomain/domain-rules-error"
             });
+
             x.Map<BadRequestException>(ex => new ProblemDetails
             {
                 Title = "bad request exception",
@@ -69,6 +73,7 @@ public static partial class ServiceCollectionExtensions
                 Detail = ex.Message,
                 Type = "https://somedomain/bad-request-error"
             });
+
             x.Map<NotFoundException>(ex => new ProblemDetails
             {
                 Title = "not found exception",
@@ -76,6 +81,7 @@ public static partial class ServiceCollectionExtensions
                 Detail = ex.Message,
                 Type = "https://somedomain/not-found-error"
             });
+
             x.Map<ApiException>(ex => new ProblemDetails
             {
                 Title = "api server exception",
@@ -83,6 +89,7 @@ public static partial class ServiceCollectionExtensions
                 Detail = ex.Message,
                 Type = "https://somedomain/api-server-error"
             });
+
             x.Map<AppException>(ex => new ProblemDetails
             {
                 Title = "application exception",
@@ -90,6 +97,7 @@ public static partial class ServiceCollectionExtensions
                 Detail = ex.Message,
                 Type = "https://somedomain/application-error"
             });
+
             x.Map<IdentityException>(ex =>
             {
                 var pd = new ProblemDetails
@@ -103,6 +111,8 @@ public static partial class ServiceCollectionExtensions
                 return pd;
             });
             x.MapToStatusCode<ArgumentNullException>(StatusCodes.Status400BadRequest);
+
+            x.MapStatusCode = context => new StatusCodeProblemDetails(context.Response.StatusCode);
         });
         return services;
     }

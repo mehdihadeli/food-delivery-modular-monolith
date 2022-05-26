@@ -4,7 +4,7 @@ namespace ECommerce.Modules.Customers.Shared.Data;
 
 public class CustomerDbContextDesignFactory : DbContextDesignFactoryBase<CustomersDbContext>
 {
-    public CustomerDbContextDesignFactory() : base("CustomersServiceConnection")
+    public CustomerDbContextDesignFactory() : base("Customers:PostgresOptions")
     {
     }
 }

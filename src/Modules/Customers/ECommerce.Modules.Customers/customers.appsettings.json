@@ -1,0 +1,32 @@
+{
+  "Customers": {
+    "PostgresOptions": {
+      "ConnectionString": "Server=localhost;Port=5432;Database=ecommerce.services.customers;User Id=postgres;Password=postgres;",
+      "UseInMemory": false
+    },
+    "MongoOptions": {
+      "ConnectionString": "mongodb://localhost:27017",
+      "DatabaseName": "ecommerce-services-customers"
+    },
+    "EmailOptions": {
+      "From": "info@e-commerce.modular-monolith.com",
+      "Enable": true,
+      "DisplayName": "ECommerce Application Mail",
+      "MimeKitOptions": {
+        "Host": "smtp.ethereal.email",
+        "Port": 587,
+        "UserName": "justina.white@ethereal.email",
+        "Password": "Zdecj2Qq8SZHqgvcb9"
+      }
+    },
+    "IdentityApiClientOptions": {
+      "BaseApiAddress": "http://localhost:5000",
+      "UsersEndpoint": "api/v1/identity/users"
+    },
+    "CatalogsApiClientOptions": {
+      "BaseApiAddress": "http://localhost:5000",
+      "ProductsEndpoint": "api/v1/catalogs/products"
+    }
+  }
+}
+

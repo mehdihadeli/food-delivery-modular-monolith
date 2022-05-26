@@ -12,6 +12,7 @@ using ECommerce.Modules.Catalogs.Products.ValueObjects;
 using ECommerce.Modules.Catalogs.Shared.Contracts;
 using ECommerce.Modules.Catalogs.Shared.Extensions;
 using ECommerce.Modules.Catalogs.Suppliers.Exceptions.Application;
+using FluentValidation;
 using Microsoft.EntityFrameworkCore;
 
 namespace ECommerce.Modules.Catalogs.Products.Features.CreatingProduct;

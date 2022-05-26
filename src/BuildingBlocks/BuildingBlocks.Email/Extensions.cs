@@ -9,10 +9,11 @@ public static class Extensions
     public static IServiceCollection AddEmailService(
         this IServiceCollection services,
         IConfiguration configuration,
+        string optionSection = nameof(EmailOptions),
         EmailProvider provider = EmailProvider.MimKit,
         Action<EmailOptions>? configureOptions = null)
     {
-        var config = configuration.GetOptions<EmailOptions>(nameof(EmailOptions));
+        var config = configuration.GetOptions<EmailOptions>(optionSection);
         configureOptions?.Invoke(config ?? new EmailOptions());
 
         if (provider == EmailProvider.SendGrid)
@@ -26,11 +27,11 @@ public static class Extensions
 
         if (configureOptions is { })
         {
-            services.Configure(nameof(EmailOptions), configureOptions);
+            services.Configure(optionSection, configureOptions);
         }
         else
         {
-            services.AddOptions<EmailOptions>().Bind(configuration.GetSection(nameof(EmailOptions)))
+            services.AddOptions<EmailOptions>().Bind(configuration.GetSection(optionSection))
                 .ValidateDataAnnotations();
         }
 

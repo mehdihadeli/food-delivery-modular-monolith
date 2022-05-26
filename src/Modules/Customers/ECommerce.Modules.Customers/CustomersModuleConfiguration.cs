@@ -1,7 +1,6 @@
 using BuildingBlocks.Abstractions.Web.Module;
 using BuildingBlocks.Core;
-using BuildingBlocks.Core.Types;
-using BuildingBlocks.Monitoring;
+using BuildingBlocks.Core.Messaging.Extensions;
 using ECommerce.Modules.Customers.Customers;
 using ECommerce.Modules.Customers.RestockSubscriptions;
 using ECommerce.Modules.Customers.Shared.Extensions.ApplicationBuilderExtensions;
@@ -12,8 +11,7 @@ namespace ECommerce.Modules.Customers;
 public class CustomersModuleConfiguration : IModuleDefinition
 {
     public const string CustomerModulePrefixUri = "api/v1/customers";
-
-    public string ModuleRootName => TypeMapper.GetTypeName(GetType());
+    public const string ModuleName = "Customers";
 
     public void AddModuleServices(IServiceCollection services, IConfiguration configuration)
     {
@@ -32,7 +30,7 @@ public class CustomersModuleConfiguration : IModuleDefinition
     {
         ServiceActivator.Configure(app.ApplicationServices);
 
-        app.UseMonitoring();
+        app.SubscribeAllMessageFromAssemblyOfType<CustomersRoot>();
 
         await app.ApplyDatabaseMigrations(logger);
         await app.SeedData(logger, environment);

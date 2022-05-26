@@ -5,11 +5,10 @@ using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 using Npgsql.EntityFrameworkCore.PostgreSQL.Metadata;
-using ECommerce.Services.Catalogs.Shared.Data;
 
 #nullable disable
 
-namespace ECommerce.Services.Catalogs.Shared.Data.Migrations.Catalogs
+namespace ECommerce.Modules.Catalogs.Shared.Data.Migrations.Catalogs
 {
     [DbContext(typeof(CatalogDbContext))]
     partial class CatalogDbContextModelSnapshot : ModelSnapshot
@@ -23,7 +22,7 @@ namespace ECommerce.Services.Catalogs.Shared.Data.Migrations.Catalogs
 
             NpgsqlModelBuilderExtensions.UseIdentityByDefaultColumns(modelBuilder);
 
-            modelBuilder.Entity("ECommerce.Services.Catalogs.Brands.Brand", b =>
+            modelBuilder.Entity("ECommerce.Modules.Catalogs.Brands.Brand", b =>
                 {
                     b.Property<long>("Id")
                         .HasColumnType("bigint")
@@ -59,7 +58,7 @@ namespace ECommerce.Services.Catalogs.Shared.Data.Migrations.Catalogs
                     b.ToTable("brands", "catalog");
                 });
 
-            modelBuilder.Entity("ECommerce.Services.Catalogs.Categories.Category", b =>
+            modelBuilder.Entity("ECommerce.Modules.Catalogs.Categories.Category", b =>
                 {
                     b.Property<long>("Id")
                         .HasColumnType("bigint")
@@ -105,7 +104,7 @@ namespace ECommerce.Services.Catalogs.Shared.Data.Migrations.Catalogs
                     b.ToTable("categories", "catalog");
                 });
 
-            modelBuilder.Entity("ECommerce.Services.Catalogs.Products.Models.Product", b =>
+            modelBuilder.Entity("ECommerce.Modules.Catalogs.Products.Models.Product", b =>
                 {
                     b.Property<long>("Id")
                         .HasColumnType("bigint")
@@ -191,7 +190,7 @@ namespace ECommerce.Services.Catalogs.Shared.Data.Migrations.Catalogs
                     b.ToTable("products", "catalog");
                 });
 
-            modelBuilder.Entity("ECommerce.Services.Catalogs.Products.Models.ProductImage", b =>
+            modelBuilder.Entity("ECommerce.Modules.Catalogs.Products.Models.ProductImage", b =>
                 {
                     b.Property<long>("Id")
                         .HasColumnType("bigint")
@@ -231,7 +230,7 @@ namespace ECommerce.Services.Catalogs.Shared.Data.Migrations.Catalogs
                     b.ToTable("product_images", "catalog");
                 });
 
-            modelBuilder.Entity("ECommerce.Services.Catalogs.Products.Models.ProductView", b =>
+            modelBuilder.Entity("ECommerce.Modules.Catalogs.Products.Models.ProductView", b =>
                 {
                     b.Property<long>("ProductId")
                         .ValueGeneratedOnAdd()
@@ -282,7 +281,7 @@ namespace ECommerce.Services.Catalogs.Shared.Data.Migrations.Catalogs
                     b.ToTable("product_views", "catalog");
                 });
 
-            modelBuilder.Entity("ECommerce.Services.Catalogs.Suppliers.Supplier", b =>
+            modelBuilder.Entity("ECommerce.Modules.Catalogs.Suppliers.Supplier", b =>
                 {
                     b.Property<long>("Id")
                         .HasColumnType("bigint")
@@ -313,30 +312,30 @@ namespace ECommerce.Services.Catalogs.Shared.Data.Migrations.Catalogs
                     b.ToTable("suppliers", "catalog");
                 });
 
-            modelBuilder.Entity("ECommerce.Services.Catalogs.Products.Models.Product", b =>
+            modelBuilder.Entity("ECommerce.Modules.Catalogs.Products.Models.Product", b =>
                 {
-                    b.HasOne("ECommerce.Services.Catalogs.Brands.Brand", "Brand")
+                    b.HasOne("ECommerce.Modules.Catalogs.Brands.Brand", "Brand")
                         .WithMany()
                         .HasForeignKey("BrandId")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired()
                         .HasConstraintName("fk_products_brands_brand_temp_id");
 
-                    b.HasOne("ECommerce.Services.Catalogs.Categories.Category", "Category")
+                    b.HasOne("ECommerce.Modules.Catalogs.Categories.Category", "Category")
                         .WithMany()
                         .HasForeignKey("CategoryId")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired()
                         .HasConstraintName("fk_products_categories_category_temp_id");
 
-                    b.HasOne("ECommerce.Services.Catalogs.Suppliers.Supplier", "Supplier")
+                    b.HasOne("ECommerce.Modules.Catalogs.Suppliers.Supplier", "Supplier")
                         .WithMany()
                         .HasForeignKey("SupplierId")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired()
                         .HasConstraintName("fk_products_suppliers_supplier_temp_id");
 
-                    b.OwnsOne("ECommerce.Services.Catalogs.Products.ValueObjects.Dimensions", "Dimensions", b1 =>
+                    b.OwnsOne("ECommerce.Modules.Catalogs.Products.ValueObjects.Dimensions", "Dimensions", b1 =>
                         {
                             b1.Property<long>("ProductId")
                                 .HasColumnType("bigint")
@@ -363,7 +362,7 @@ namespace ECommerce.Services.Catalogs.Shared.Data.Migrations.Catalogs
                                 .HasConstraintName("fk_products_products_id");
                         });
 
-                    b.OwnsOne("ECommerce.Services.Catalogs.Products.ValueObjects.Stock", "Stock", b1 =>
+                    b.OwnsOne("ECommerce.Modules.Catalogs.Products.ValueObjects.Stock", "Stock", b1 =>
                         {
                             b1.Property<long>("ProductId")
                                 .HasColumnType("bigint")
@@ -403,9 +402,9 @@ namespace ECommerce.Services.Catalogs.Shared.Data.Migrations.Catalogs
                     b.Navigation("Supplier");
                 });
 
-            modelBuilder.Entity("ECommerce.Services.Catalogs.Products.Models.ProductImage", b =>
+            modelBuilder.Entity("ECommerce.Modules.Catalogs.Products.Models.ProductImage", b =>
                 {
-                    b.HasOne("ECommerce.Services.Catalogs.Products.Models.Product", "Product")
+                    b.HasOne("ECommerce.Modules.Catalogs.Products.Models.Product", "Product")
                         .WithMany("Images")
                         .HasForeignKey("ProductId")
                         .OnDelete(DeleteBehavior.Cascade)
@@ -415,11 +414,11 @@ namespace ECommerce.Services.Catalogs.Shared.Data.Migrations.Catalogs
                     b.Navigation("Product");
                 });
 
-            modelBuilder.Entity("ECommerce.Services.Catalogs.Products.Models.Product", b =>
+            modelBuilder.Entity("ECommerce.Modules.Catalogs.Products.Models.Product", b =>
                 {
                     b.Navigation("Images");
                 });
-#pragma warning reecommerce 612, 618
+#pragma warning restore 612, 618
         }
     }
 }

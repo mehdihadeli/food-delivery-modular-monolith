@@ -28,16 +28,19 @@ public static partial class ServiceCollectionExtensions
 
     private static void AddPostgresWriteStorage(IServiceCollection services, IConfiguration configuration)
     {
-        if (configuration.GetValue<bool>("PostgresOptions.UseInMemory"))
+        if (configuration.GetValue<bool>(
+                $"{OrdersModuleConfiguration.ModuleName}:{nameof(PostgresOptions)}:UseInMemory"))
         {
             services.AddDbContext<OrdersDbContext>(options =>
-                options.UseInMemoryDatabase("ECommerce.Services.Customers"));
+                options.UseInMemoryDatabase("ECommerce.Modules.Customers"));
 
             services.AddScoped<IDbFacadeResolver>(provider => provider.GetService<OrdersDbContext>()!);
         }
         else
         {
-            services.AddPostgresDbContext<OrdersDbContext>(configuration);
+            services.AddPostgresDbContext<OrdersDbContext>(
+                configuration,
+                $"{OrdersModuleConfiguration.ModuleName}:{nameof(PostgresOptions)}");
         }
 
         services.AddScoped<IOrdersDbContext>(provider => provider.GetRequiredService<OrdersDbContext>());
@@ -45,6 +48,8 @@ public static partial class ServiceCollectionExtensions
 
     private static void AddMongoReadStorage(IServiceCollection services, IConfiguration configuration)
     {
-        services.AddMongoDbContext<OrderReadDbContext>(configuration);
+        services.AddMongoDbContext<OrderReadDbContext>(
+            configuration,
+            $"{OrdersModuleConfiguration.ModuleName}:{nameof(MongoOptions)}");
     }
 }

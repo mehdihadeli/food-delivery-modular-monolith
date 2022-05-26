@@ -7,6 +7,7 @@ using BuildingBlocks.Email;
 using BuildingBlocks.Email.Options;
 using ECommerce.Modules.Customers.RestockSubscriptions.Exceptions.Domain;
 using ECommerce.Modules.Customers.Shared.Data;
+using FluentValidation;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Options;
 

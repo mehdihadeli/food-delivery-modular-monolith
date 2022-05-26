@@ -12,7 +12,7 @@
   </PropertyGroup>
 
   <ItemGroup>
-    <Content Include="appsettings.json">
+    <Content Include="identity.appsettings.json">
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
     </Content>
   </ItemGroup>
@@ -42,7 +42,6 @@
 
   <ItemGroup>
     <Using Include="MediatR" />
-    <Using Include="FluentValidation" />
     <Using Include="System.Collections.Generic" />
     <Using Include="System.Reflection" />
     <Using Include="System.Threading.Tasks" />

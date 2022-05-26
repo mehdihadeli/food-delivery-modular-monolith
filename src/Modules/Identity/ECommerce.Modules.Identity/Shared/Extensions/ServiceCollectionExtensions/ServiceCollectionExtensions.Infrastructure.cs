@@ -5,6 +5,7 @@ using BuildingBlocks.Core.Extensions;
 using BuildingBlocks.Core.Persistence.EfCore;
 using BuildingBlocks.Core.Registrations;
 using BuildingBlocks.Email;
+using BuildingBlocks.Email.Options;
 using BuildingBlocks.Logging;
 using BuildingBlocks.Monitoring;
 using BuildingBlocks.Persistence.EfCore.Postgres;
@@ -16,9 +17,12 @@ public static partial class ServiceCollectionExtensions
 {
     public static IServiceCollection AddInfrastructure(this IServiceCollection services, IConfiguration configuration)
     {
-        services.AddCore(configuration);
-        services.AddEmailService(configuration);
+        services.AddCore(configuration, Assembly.GetExecutingAssembly());
+
+        services.AddEmailService(configuration, $"{IdentityModuleConfiguration.ModuleName}:{nameof(EmailOptions)}");
+
         services.AddCustomValidators(Assembly.GetExecutingAssembly());
+
         services.AddAutoMapper(Assembly.GetExecutingAssembly());
 
         services.AddCqrs(doMoreActions: s =>
@@ -35,20 +39,23 @@ public static partial class ServiceCollectionExtensions
 
         services.AddInMemoryMessagePersistence();
         services.AddInMemoryCommandScheduler();
+        services.AddInMemoryBroker(configuration);
 
-        services.AddMonitoring(healthChecksBuilder =>
-        {
-            var postgresOptions = configuration.GetOptions<PostgresOptions>(nameof(PostgresOptions));
-            Guard.Against.Null(postgresOptions, nameof(postgresOptions));
-
-            healthChecksBuilder.AddNpgSql(
-                postgresOptions.ConnectionString,
-                name: "Identity-Postgres-Check",
-                tags: new[] {"identity-postgres"});
-        });
+        // services.AddMonitoring(healthChecksBuilder =>
+        // {
+        //     var postgresOptions = configuration.GetOptions<PostgresOptions>(
+        //         $"{IdentityModuleConfiguration.ModuleName}:{nameof(PostgresOptions)}");
+        //     Guard.Against.Null(postgresOptions, nameof(postgresOptions));
+        //
+        //     healthChecksBuilder.AddNpgSql(
+        //         postgresOptions.ConnectionString,
+        //         name: "Identity-Module-Postgres-Check",
+        //         tags: new[] {"identity-postgres"});
+        // });
 
         services.AddCustomInMemoryCache(configuration)
             .AddCachingRequestPolicies(Assembly.GetExecutingAssembly());
+
         return services;
     }
 }

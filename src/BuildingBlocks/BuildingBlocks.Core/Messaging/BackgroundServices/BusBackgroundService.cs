@@ -3,7 +3,7 @@ using Microsoft.Extensions.Hosting;
 
 namespace BuildingBlocks.Core.Messaging.BackgroundServices;
 
-public class BusBackgroundService : BackgroundService
+public class BusBackgroundService : IHostedService
 {
     private readonly IBus _bus;
 
@@ -12,13 +12,13 @@ public class BusBackgroundService : BackgroundService
         _bus = bus;
     }
 
-    protected override Task ExecuteAsync(CancellationToken stoppingToken)
+    public async Task StartAsync(CancellationToken cancellationToken)
     {
-        return _bus.StartAsync(stoppingToken);
+        await _bus.StartAsync(cancellationToken);
     }
 
-    public override Task StopAsync(CancellationToken cancellationToken)
+    public Task StopAsync(CancellationToken cancellationToken)
     {
-        return _bus.StopAsync(cancellationToken);
+        return _bus.StartAsync(cancellationToken);
     }
 }

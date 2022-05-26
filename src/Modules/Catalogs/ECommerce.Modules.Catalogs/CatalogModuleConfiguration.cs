@@ -1,7 +1,6 @@
 using BuildingBlocks.Abstractions.Web.Module;
 using BuildingBlocks.Core;
-using BuildingBlocks.Core.Types;
-using BuildingBlocks.Monitoring;
+using BuildingBlocks.Core.Messaging.Extensions;
 using ECommerce.Modules.Catalogs.Brands;
 using ECommerce.Modules.Catalogs.Categories;
 using ECommerce.Modules.Catalogs.Products;
@@ -14,8 +13,7 @@ namespace ECommerce.Modules.Catalogs;
 public class CatalogModuleConfiguration : IModuleDefinition
 {
     public const string CatalogModulePrefixUri = "api/v1/catalogs";
-
-    public string ModuleRootName => TypeMapper.GetTypeName(GetType());
+    public const string ModuleName = "Catalogs";
 
     public void AddModuleServices(IServiceCollection services, IConfiguration configuration)
     {
@@ -35,7 +33,8 @@ public class CatalogModuleConfiguration : IModuleDefinition
         IWebHostEnvironment environment)
     {
         ServiceActivator.Configure(app.ApplicationServices);
-        app.UseMonitoring();
+
+        app.SubscribeAllMessageFromAssemblyOfType<CatalogRoot>();
 
         await app.ApplyDatabaseMigrations(logger);
         await app.SeedData(logger, environment);

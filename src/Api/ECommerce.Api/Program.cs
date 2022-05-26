@@ -1,6 +1,8 @@
 using BuildingBlocks.Core.Extensions.ServiceCollection;
+using BuildingBlocks.Core.Messaging.BackgroundServices;
 using BuildingBlocks.Core.Registrations;
 using BuildingBlocks.Logging;
+using BuildingBlocks.Monitoring;
 using BuildingBlocks.Security;
 using BuildingBlocks.Security.Jwt;
 using BuildingBlocks.Swagger;
@@ -39,20 +41,16 @@ builder.Host.UseDefaultServiceProvider((env, c) =>
     }
 });
 
-// https://andrewlock.net/controller-activation-and-dependency-injection-in-asp-net-core-mvc/
-builder.Services.AddControllers(options =>
-        options.Conventions.Add(new RouteTokenTransformerConvention(new SlugifyParameterTransformer())))
-    .AddControllersAsServices()
-    .AddNewtonsoftJson(options =>
-        options.SerializerSettings.ReferenceLoopHandling = Newtonsoft.Json.ReferenceLoopHandling.Ignore);
+builder.Configuration.AddModulesSettingsFile(builder.Environment.ContentRootPath, builder.Environment.EnvironmentName);
+builder.Configuration.AddEnvironmentVariables("ecommerce_env_");
 
-builder.Services.ReplaceSingleton<IControllerActivator, CustomServiceBasedControllerActivator>();
+// https://github.com/tonerdo/dotnet-env
+DotNetEnv.Env.TraversePath().Load();
+
+builder.Services.AddHttpContextAccessor();
 
 builder.Services.AddApplicationOptions(builder.Configuration);
 var loggingOptions = builder.Configuration.GetSection(nameof(LoggerOptions)).Get<LoggerOptions>();
-
-builder.AddCompression();
-builder.AddCustomProblemDetails();
 
 builder.Host.AddCustomSerilog(
     optionsBuilder =>
@@ -69,6 +67,21 @@ builder.Host.AddCustomSerilog(
             rollOnFileSizeLimit: true);
     });
 
+/*----------------- Module Services Setup ------------------*/
+builder.AddModulesServices(useCompositionRootForModules: true);
+
+// https://andrewlock.net/controller-activation-and-dependency-injection-in-asp-net-core-mvc/
+builder.Services.AddControllers(options =>
+        options.Conventions.Add(new RouteTokenTransformerConvention(new SlugifyParameterTransformer())))
+    .AddControllersAsServices()
+    .AddNewtonsoftJson(options =>
+        options.SerializerSettings.ReferenceLoopHandling = Newtonsoft.Json.ReferenceLoopHandling.Ignore);
+
+builder.Services.ReplaceSingleton<IControllerActivator, CustomServiceBasedControllerActivator>();
+
+builder.Services.AddCustomProblemDetails();
+builder.Services.AddCompression();
+
 builder.AddCustomSwagger(
     builder.Configuration,
     false,
@@ -77,7 +90,6 @@ builder.AddCustomSwagger(
     typeof(CatalogRoot).Assembly,
     typeof(OrdersRoot).Assembly);
 
-builder.Services.AddHttpContextAccessor();
 builder.Services.AddCustomJwtAuthentication(builder.Configuration);
 builder.Services.AddCustomAuthorization(
     rolePolicies: new List<RolePolicy>
@@ -85,11 +97,6 @@ builder.Services.AddCustomAuthorization(
         new(ApiConstants.Role.Admin, new List<string> {ApiConstants.Role.Admin}),
         new(ApiConstants.Role.User, new List<string> {ApiConstants.Role.User})
     });
-
-builder.Services.AddInMemoryBroker();
-
-/*----------------- Module Services Setup ------------------*/
-builder.AddModulesServices(useCompositionRootForModules: true);
 
 var app = builder.Build();
 
@@ -114,8 +121,7 @@ app.UseProblemDetails();
 
 app.UseSerilogRequestLogging();
 
-/*----------------- Module Middleware Setup ------------------*/
-await app.ConfigureModules();
+//app.UseMonitoring();
 
 app.UseAuthentication();
 app.UseAuthorization();
@@ -125,14 +131,14 @@ app.UseAppCors();
 
 app.MapControllers();
 
-
+/*----------------- Module Middleware Setup ------------------*/
+await app.ConfigureModules();
 
 /*----------------- Module Routes Setup ------------------*/
 app.MapModulesEndpoints();
 
-
 // automatic discover minimal endpoints
-// app.MapEndpoints();
+app.MapEndpoints();
 
 Log.Logger = new LoggerConfiguration()
     .WriteTo.Console()

@@ -9,6 +9,7 @@ using ECommerce.Modules.Identity.Identity.Features.SendEmailVerificationCode;
 using ECommerce.Modules.Identity.Identity.Features.VerifyEmail;
 using ECommerce.Modules.Identity.Shared.Extensions.ServiceCollectionExtensions;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
+using Microsoft.AspNetCore.Identity;
 
 namespace ECommerce.Modules.Identity.Identity;
 
@@ -22,7 +23,10 @@ internal static class IdentityConfigs
         IConfiguration configuration)
     {
         services.AddScoped<IDataSeeder, IdentityDataSeeder>();
-        services.AddCustomIdentity(configuration);
+        services.AddCustomIdentity(
+            configuration,
+            $"{IdentityModuleConfiguration.ModuleName}:{nameof(IdentityOptions)}");
+
         services.AddCustomIdentityServer();
 
         return services;

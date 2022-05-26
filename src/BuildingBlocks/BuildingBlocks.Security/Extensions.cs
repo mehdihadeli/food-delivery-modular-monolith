@@ -91,13 +91,13 @@ public static class Extensions
                     },
                     OnChallenge = context =>
                     {
-                        // context.HandleResponse();
-                        // if (!context.Response.HasStarted)
-                        // {
-                        //     throw new IdentityException(
-                        //         "You are not Authorized.",
-                        //         statusCode: HttpStatusCode.Unauthorized);
-                        // }
+                        context.HandleResponse();
+                        if (!context.Response.HasStarted)
+                        {
+                            throw new IdentityException(
+                                "You are not Authorized.",
+                                statusCode: HttpStatusCode.Unauthorized);
+                        }
 
                         return Task.CompletedTask;
                     },

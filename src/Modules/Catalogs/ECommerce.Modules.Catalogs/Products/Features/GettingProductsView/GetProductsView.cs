@@ -3,6 +3,7 @@ using BuildingBlocks.Abstractions.CQRS.Query;
 using BuildingBlocks.Abstractions.Persistence;
 using Dapper;
 using ECommerce.Modules.Catalogs.Products.Models;
+using FluentValidation;
 using Microsoft.EntityFrameworkCore;
 
 namespace ECommerce.Modules.Catalogs.Products.Features.GettingProductsView;

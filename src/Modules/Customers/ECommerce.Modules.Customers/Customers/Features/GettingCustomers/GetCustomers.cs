@@ -6,6 +6,7 @@ using BuildingBlocks.Persistence.Mongo;
 using ECommerce.Modules.Customers.Customers.Dtos;
 using ECommerce.Modules.Customers.Customers.Models.Reads;
 using ECommerce.Modules.Customers.Shared.Data;
+using FluentValidation;
 using MongoDB.Driver;
 using MongoDB.Driver.Linq;
 

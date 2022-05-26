@@ -6,27 +6,31 @@ namespace BuildingBlocks.Persistence.Mongo
     public static class Extensions
     {
         public static IServiceCollection AddMongoDbContext<TContext>(
-            this IServiceCollection services, IConfiguration configuration, Action<MongoOptions>? configurator = null)
+            this IServiceCollection services,
+            IConfiguration configuration,
+            string optionSection = nameof(MongoOptions),
+            Action<MongoOptions>? configurator = null)
             where TContext : MongoDbContext
         {
-            return services.AddMongoDbContext<TContext, TContext>(configuration, configurator);
+            return services.AddMongoDbContext<TContext, TContext>(configuration, optionSection, configurator);
         }
 
         public static IServiceCollection AddMongoDbContext<TContextService, TContextImplementation>(
-            this IServiceCollection services, IConfiguration configuration, Action<MongoOptions>? configurator = null)
+            this IServiceCollection services,
+            IConfiguration configuration,
+            string optionSection = nameof(MongoOptions),
+            Action<MongoOptions>? configurator = null)
             where TContextService : IMongoDbContext
             where TContextImplementation : MongoDbContext, TContextService
         {
-            var mongoOptions = configuration.GetSection(nameof(MongoOptions)).Get<MongoOptions>() ?? new MongoOptions();
-
-            services.Configure<MongoOptions>(configuration.GetSection(nameof(MongoOptions)));
+            services.Configure<MongoOptions>(configuration.GetSection(optionSection));
             if (configurator is { })
             {
-                services.Configure(nameof(MongoOptions), configurator);
+                services.Configure(optionSection, configurator);
             }
             else
             {
-                services.AddOptions<MongoOptions>().Bind(configuration.GetSection(nameof(MongoOptions)))
+                services.AddOptions<MongoOptions>().Bind(configuration.GetSection(optionSection))
                     .ValidateDataAnnotations();
             }
 

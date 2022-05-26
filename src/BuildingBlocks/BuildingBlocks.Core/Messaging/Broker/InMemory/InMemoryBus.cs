@@ -6,7 +6,6 @@ using BuildingBlocks.Core.Messaging.Context;
 using BuildingBlocks.Core.Messaging.Extensions;
 using BuildingBlocks.Core.Types;
 using Humanizer;
-using Microsoft.Extensions.Logging;
 
 namespace BuildingBlocks.Core.Messaging.Broker.InMemory;
 
@@ -16,17 +15,13 @@ namespace BuildingBlocks.Core.Messaging.Broker.InMemory;
 // https://deniskyashif.com/2019/12/08/csharp-channels-part-1/
 public class InMemoryBus : IBus
 {
-    private readonly ILogger<InMemoryBus> _logger;
-    private readonly IServiceScopeFactory _scopeFactory;
-    private readonly Channel<MessageEnvelope> _channel;
-    private readonly Dictionary<Type, object> _handlers = new();
-    private readonly Dictionary<Type, Func<object, CancellationToken, Task>> _delegateHandlers = new();
+    private readonly IServiceProvider _serviceProvider;
+    private static readonly Channel<MessageEnvelope> _channel;
+    private static readonly Dictionary<Type, Type> _handlers = new();
+    private static readonly Dictionary<Type, Func<object, CancellationToken, Task>> _delegateHandlers = new();
 
-    public InMemoryBus(ILogger<InMemoryBus> logger, IServiceScopeFactory scopeFactory)
+    static InMemoryBus()
     {
-        _logger = logger;
-        _scopeFactory = scopeFactory;
-
         // We can use unbounded channel if we want to store unlimited message to channel.
         _channel = Channel.CreateBounded<MessageEnvelope>(new BoundedChannelOptions(500)
         {
@@ -37,26 +32,21 @@ public class InMemoryBus : IBus
         });
     }
 
-    public Task StartAsync(CancellationToken cancellationToken = default)
+    public InMemoryBus(IServiceProvider serviceProvider)
     {
-#pragma warning disable VSTHRD105
-#pragma warning disable VSTHRD110
+        _serviceProvider = serviceProvider;
+    }
 
-        // create 10 separate thread for consuming
-        for (int i = 0; i < 10; i++)
-        {
-            Task.Factory.StartNew(
-                async () =>
-                {
-                    await ReceivingMessages(cancellationToken);
-                },
-                TaskCreationOptions.LongRunning);
-        }
-
-#pragma warning restore VSTHRD110
-#pragma warning restore VSTHRD105
-
-        return Task.CompletedTask;
+    public async Task StartAsync(CancellationToken cancellationToken = default)
+    {
+        await Task.WhenAll(
+            Enumerable.Range(0, 10)
+                .Select(_ => Task.Factory.StartNew(
+                    () => ReceivingMessages(cancellationToken),
+                    cancellationToken,
+                    TaskCreationOptions.LongRunning,
+                    TaskScheduler.Default)).ToArray()
+        );
     }
 
 
@@ -73,7 +63,7 @@ public class InMemoryBus : IBus
         await foreach (MessageEnvelope messageEnvelope in _channel.Reader.ReadAllAsync(cancellationToken))
         {
             bool handlerExists =
-                _handlers.TryGetValue(messageEnvelope.Message.GetType(), out object? handler);
+                _handlers.TryGetValue(messageEnvelope.Message.GetType(), out Type? handlerType);
 
             bool delegateHandlerExists = _delegateHandlers.TryGetValue(
                 messageEnvelope.Message.GetType(),
@@ -101,8 +91,14 @@ public class InMemoryBus : IBus
                 await delegateHandler.Invoke(typedConsumedContext, cancellationToken);
             }
 
-            if (handlerExists && handler is { })
+            if (handlerExists && handlerType is { })
             {
+                using var scope = _serviceProvider.CreateScope();
+                object handler = _serviceProvider.GetService(handlerType);
+
+                if (handler is null)
+                    return;
+
                 ReflectionExtensions.InvokeMethodAsync(
                     handler,
                     nameof(IMessageHandler<IMessage>.HandleAsync),
@@ -154,80 +150,104 @@ public class InMemoryBus : IBus
         await PublishAsync(message, headers, cancellationToken);
     }
 
-    public Task Consume<TMessage>(
+    public void Consume<TMessage>(
         IMessageHandler<TMessage> handler,
-        Action<IConsumeConfigurationBuilder>? consumeBuilder = null,
-        CancellationToken cancellationToken = default)
+        Action<IConsumeConfigurationBuilder>? consumeBuilder = null)
         where TMessage : class, IMessage
     {
-        _handlers.Add(typeof(TMessage), handler);
-
-        return Task.CompletedTask;
+        _handlers.Add(typeof(TMessage), handler.GetType());
     }
 
-    public Task Consume<TMessage>(
+    public void Consume<TMessage>(
         MessageHandler<TMessage> subscribeMethod,
-        Action<IConsumeConfigurationBuilder>? consumeBuilder = null,
-        CancellationToken cancellationToken = default)
+        Action<IConsumeConfigurationBuilder>? consumeBuilder = null)
         where TMessage : class, IMessage
     {
         Func<object, CancellationToken, Task> genericHandler =
             (context, ct) => subscribeMethod((IConsumeContext<TMessage>)context, ct);
 
         _delegateHandlers.Add(typeof(TMessage), genericHandler);
-
-        return Task.CompletedTask;
     }
 
-    public Task Consume<TMessage>(CancellationToken cancellationToken = default)
+    public void Consume<TMessage>()
         where TMessage : class, IMessage
     {
         var handlerType = typeof(IMessageHandler<>).MakeGenericType(typeof(TMessage));
 
-        using var scope = _scopeFactory.CreateScope();
-        object handler = scope.ServiceProvider.GetService(handlerType);
+        // using var scope = _serviceProvider.CreateScope();
+        // object handler = scope.ServiceProvider.GetService(handlerType);
+        //
+        // if (handler is null)
+        //     return;
 
-        if (handler is null)
-            return Task.CompletedTask;
-
-        _handlers.AddOrReplace(typeof(TMessage), handler);
-
-        return Task.CompletedTask;
+        _handlers.AddOrReplace(typeof(TMessage), handlerType);
     }
 
-    public Task Consume(Type messageType, CancellationToken cancellationToken = default)
+    public void Consume(Type messageType)
     {
         var handlerType = typeof(IMessageHandler<>).MakeGenericType(messageType);
 
-        _handlers.AddOrReplace(messageType, handlerType);
+        // using var scope = _serviceProvider.CreateScope();
+        // object handler = scope.ServiceProvider.GetService(handlerType);
+        //
+        // if (handler is null)
+        //     return;
 
-        return Task.CompletedTask;
+        _handlers.AddOrReplace(messageType, handlerType);
     }
 
-    public Task Consume<THandler, TMessage>(CancellationToken cancellationToken = default)
+    public void Consume<THandler, TMessage>()
         where THandler : IMessageHandler<TMessage>
         where TMessage : class, IMessage
     {
+        // using var scope = _serviceProvider.CreateScope();
+        // object handler = scope.ServiceProvider.GetService(typeof(THandler));
+        //
+        // if (handler is null)
+        //     return;
+
         _handlers.AddOrReplace(typeof(TMessage), typeof(THandler));
-
-        return Task.CompletedTask;
     }
 
-    public Task ConsumeAll(CancellationToken cancellationToken = default)
+    public void ConsumeAll()
     {
-        return Task.CompletedTask;
+        var assemblies = AppDomain.CurrentDomain.GetAssemblies();
+
+        foreach (var assembly in assemblies)
+        {
+            var messageTypes = assembly.GetHandledMessageTypes();
+
+            foreach (var messageType in messageTypes)
+            {
+                Consume(messageType);
+            }
+        }
     }
 
-    public Task ConsumeAllFromAssemblyOf<TType>(CancellationToken cancellationToken = default)
+    public void ConsumeAllFromAssemblyOf<TType>()
     {
-        return Task.CompletedTask;
+        var messageTypes = typeof(TType).Assembly.GetHandledMessageTypes();
+
+        foreach (var messageType in messageTypes)
+        {
+            Consume(messageType);
+        }
     }
 
-    public Task ConsumeAllFromAssemblyOf(
-        CancellationToken cancellationToken = default,
-        params Type[] assemblyMarkerTypes)
+    public void ConsumeAllFromAssemblyOf(params Type[] assemblyMarkerTypes)
     {
-        return Task.CompletedTask;
+        var assemblies = assemblyMarkerTypes.Select(x => x.Assembly).Distinct();
+
+        foreach (var assembly in assemblies)
+        {
+            var messageTypes = assembly.GetHandledMessageTypes();
+
+            foreach (var messageType in messageTypes)
+            {
+                var handlerType = typeof(IMessageHandler<>).MakeGenericType(messageType);
+                _handlers.AddOrReplace(messageType, handlerType);
+            }
+        }
     }
 
     private static IDictionary<string, object?> GetMetadata<TMessage>(

@@ -1,5 +1,6 @@
 using BuildingBlocks.Abstractions.Web;
 using Microsoft.Extensions.DependencyInjection.Extensions;
+using Microsoft.Extensions.Hosting;
 
 namespace BuildingBlocks.Web.Extensions.ServiceCollectionExtensions;
 
@@ -12,6 +13,8 @@ public static partial class ServiceCollectionExtensions
         {
             newServiceCollection.Add(service);
         }
+
+        newServiceCollection.RemoveAll<IHostedService>();
 
         return newServiceCollection;
     }

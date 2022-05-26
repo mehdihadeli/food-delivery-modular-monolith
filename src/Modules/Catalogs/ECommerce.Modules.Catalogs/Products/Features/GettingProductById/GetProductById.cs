@@ -6,6 +6,7 @@ using ECommerce.Modules.Catalogs.Products.Dtos;
 using ECommerce.Modules.Catalogs.Products.Exceptions.Application;
 using ECommerce.Modules.Catalogs.Shared.Contracts;
 using ECommerce.Modules.Catalogs.Shared.Extensions;
+using FluentValidation;
 
 namespace ECommerce.Modules.Catalogs.Products.Features.GettingProductById;
 

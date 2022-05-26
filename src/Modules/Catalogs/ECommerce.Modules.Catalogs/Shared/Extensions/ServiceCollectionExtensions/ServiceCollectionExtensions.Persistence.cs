@@ -26,16 +26,19 @@ public static partial class ServiceCollectionExtensions
 
     private static void AddPostgresWriteStorage(IServiceCollection services, IConfiguration configuration)
     {
-        if (configuration.GetValue<bool>("PostgresOptions.UseInMemory"))
+        if (configuration.GetValue<bool>(
+                $"{CatalogModuleConfiguration.ModuleName}:{nameof(PostgresOptions)}:UseInMemory"))
         {
             services.AddDbContext<CatalogDbContext>(options =>
-                options.UseInMemoryDatabase("ECommerce.Services.ECommerce.Services.Catalogs"));
+                options.UseInMemoryDatabase("ECommerce.Modules.Catalogs"));
 
             services.AddScoped<IDbFacadeResolver>(provider => provider.GetService<CatalogDbContext>()!);
         }
         else
         {
-            services.AddPostgresDbContext<CatalogDbContext>(configuration);
+            services.AddPostgresDbContext<CatalogDbContext>(
+                configuration,
+                $"{CatalogModuleConfiguration.ModuleName}:{nameof(PostgresOptions)}");
         }
 
         services.AddScoped<ICatalogDbContext>(provider => provider.GetRequiredService<CatalogDbContext>());
@@ -43,6 +46,8 @@ public static partial class ServiceCollectionExtensions
 
     private static void AddMongoReadStorage(IServiceCollection services, IConfiguration configuration)
     {
-        services.AddMongoDbContext<CatalogReadDbContext>(configuration);
+        services.AddMongoDbContext<CatalogReadDbContext>(
+            configuration,
+            $"{CatalogModuleConfiguration.ModuleName}:{nameof(MongoOptions)}");
     }
 }

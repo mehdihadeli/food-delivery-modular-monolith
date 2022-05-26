@@ -42,59 +42,6 @@ public class NullBus : IBus
         return Task.CompletedTask;
     }
 
-    public Task Consume<TMessage>(
-        IMessageHandler<TMessage> subscribeMethod,
-        Action<IConsumeConfigurationBuilder>? consumeBuilder = null,
-        CancellationToken cancellationToken = default)
-        where TMessage : class, IMessage
-    {
-        return Task.CompletedTask;
-    }
-
-    public Task Consume<TMessage>(
-        MessageHandler<TMessage> subscribeMethod,
-        Action<IConsumeConfigurationBuilder>? consumeBuilder = null,
-        CancellationToken cancellationToken = default)
-        where TMessage : class, IMessage
-    {
-        return Task.CompletedTask;
-    }
-
-    public Task Consume<TMessage>(CancellationToken cancellationToken = default)
-        where TMessage : class, IMessage
-    {
-        return Task.CompletedTask;
-    }
-
-    public Task Consume(Type messageType, CancellationToken cancellationToken = default)
-    {
-        return Task.CompletedTask;
-    }
-
-    public Task Consume<THandler, TMessage>(CancellationToken cancellationToken = default)
-        where THandler : IMessageHandler<TMessage>
-        where TMessage : class, IMessage
-    {
-        return Task.CompletedTask;
-    }
-
-    public Task ConsumeAll(CancellationToken cancellationToken = default)
-    {
-        return Task.CompletedTask;
-    }
-
-    public Task ConsumeAllFromAssemblyOf<TType>(CancellationToken cancellationToken = default)
-    {
-        return Task.CompletedTask;
-    }
-
-    public Task ConsumeAllFromAssemblyOf(
-        CancellationToken cancellationToken = default,
-        params Type[] assemblyMarkerTypes)
-    {
-        return Task.CompletedTask;
-    }
-
     public Task StartAsync(CancellationToken cancellationToken = default)
     {
         return Task.CompletedTask;
@@ -103,5 +50,44 @@ public class NullBus : IBus
     public Task StopAsync(CancellationToken cancellationToken = default)
     {
         return Task.CompletedTask;
+    }
+
+    public void Consume<TMessage>(IMessageHandler<TMessage> handler,
+        Action<IConsumeConfigurationBuilder>? consumeBuilder = null)
+        where TMessage : class, IMessage
+    {
+    }
+
+    public void Consume<TMessage>(MessageHandler<TMessage> subscribeMethod,
+        Action<IConsumeConfigurationBuilder>? consumeBuilder = null)
+        where TMessage : class, IMessage
+    {
+    }
+
+    public void Consume<TMessage>()
+        where TMessage : class, IMessage
+    {
+    }
+
+    public void Consume(Type messageType)
+    {
+    }
+
+    public void Consume<THandler, TMessage>()
+        where THandler : IMessageHandler<TMessage>
+        where TMessage : class, IMessage
+    {
+    }
+
+    public void ConsumeAll()
+    {
+    }
+
+    public void ConsumeAllFromAssemblyOf<TType>()
+    {
+    }
+
+    public void ConsumeAllFromAssemblyOf(params Type[] assemblyMarkerTypes)
+    {
     }
 }

@@ -4,6 +4,7 @@ using BuildingBlocks.Core.Exception;
 using ECommerce.Modules.Customers.RestockSubscriptions.Exceptions.Domain;
 using ECommerce.Modules.Customers.RestockSubscriptions.Features.SendingRestockNotification;
 using ECommerce.Modules.Customers.Shared.Data;
+using FluentValidation;
 
 namespace ECommerce.Modules.Customers.RestockSubscriptions.Features.ProcessingRestockNotification;
 

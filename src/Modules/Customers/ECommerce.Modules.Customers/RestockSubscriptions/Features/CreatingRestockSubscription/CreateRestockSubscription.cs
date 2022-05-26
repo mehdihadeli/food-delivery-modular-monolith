@@ -13,6 +13,7 @@ using ECommerce.Modules.Customers.RestockSubscriptions.ValueObjects;
 using ECommerce.Modules.Customers.Shared.Clients.Catalogs;
 using ECommerce.Modules.Customers.Shared.Data;
 using ECommerce.Modules.Customers.Shared.Extensions;
+using FluentValidation;
 
 namespace ECommerce.Modules.Customers.RestockSubscriptions.Features.CreatingRestockSubscription;
 

@@ -11,6 +11,13 @@ public static class CompositionRootRegistry
 
     public static IReadOnlyList<ICompositionRoot> CompositionRoots => _compositionRoots.AsReadOnly();
 
+    public static IServiceProvider RootServiceProvider { get; private set; } = null!;
+
+    public static void SetRootServiceProvider(IServiceProvider serviceProvider)
+    {
+        RootServiceProvider = serviceProvider;
+    }
+
     public static void Add(ICompositionRoot compositionRoot)
     {
         _compositionRoots.Add(compositionRoot);
@@ -23,7 +30,8 @@ public static class CompositionRootRegistry
 
     public static ICompositionRoot? GetByModuleByAssemblyName(string assemblyName)
     {
-        return _compositionRoots.FirstOrDefault(x => x.ModuleDefinition.GetType().Assembly.GetName().Name == assemblyName);
+        return _compositionRoots.FirstOrDefault(x =>
+            x.ModuleDefinition.GetType().Assembly.GetName().Name == assemblyName);
     }
 
     public static ICompositionRoot? GetByModule(IModuleDefinition moduleDefinition)

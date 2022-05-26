@@ -31,16 +31,12 @@ public class BusPublishTests : IntegrationTestBase<ECommerce.Api.Program>
             .For<UserRegistered>()
             .Any(x => x == message);
 
-        // await IntegrationTestFixture.Bus.Consume(
-        //     hypothesis.AsMessageHandler(),
-        //     cancellationToken: CancellationToken.None);
+        // IntegrationTestFixture.Bus.Consume(hypothesis.AsMessageHandler());
 
-        await IntegrationTestFixture.Bus.Consume<UserRegistered>((consumeContext, cancellationToken) =>
+        IntegrationTestFixture.Bus.Consume<UserRegistered>(async (consumeContext, ct) =>
         {
-            hypothesis.Test(consumeContext.Message, cancellationToken);
-
-            return Task.CompletedTask;
-        }, cancellationToken: CancellationToken.None);
+            await hypothesis.Test(consumeContext.Message);
+        });
 
         // should receive in customer service.
         await IntegrationTestFixture.Bus.PublishAsync(message, null, CancellationToken.None);

@@ -5,6 +5,7 @@ using BuildingBlocks.Abstractions.CQRS.Event.Internal;
 using BuildingBlocks.Abstractions.Domain;
 using BuildingBlocks.Abstractions.Persistence;
 using BuildingBlocks.Abstractions.Persistence.EfCore;
+using BuildingBlocks.Core.Extensions;
 using BuildingBlocks.Core.Persistence.EfCore;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.EntityFrameworkCore;
@@ -21,6 +22,7 @@ public static class ServiceCollectionExtensions
     public static IServiceCollection AddPostgresDbContext<TDbContext>(
         this IServiceCollection services,
         IConfiguration configuration,
+        string optionSection = nameof(PostgresOptions),
         Assembly? migrationAssembly = null,
         Action<PostgresOptions>? configurator = null,
         Action<DbContextOptionsBuilder>? builder = null)
@@ -28,13 +30,13 @@ public static class ServiceCollectionExtensions
     {
         AppContext.SetSwitch("Npgsql.EnableLegacyTimestampBehavior", true);
 
-        var config = configuration.GetSection(nameof(PostgresOptions)).Get<PostgresOptions>();
+        var config = configuration.GetOptions<PostgresOptions>(optionSection);
 
-        services.Configure<PostgresOptions>(configuration.GetSection(nameof(PostgresOptions)));
+        services.Configure<PostgresOptions>(configuration.GetSection(optionSection));
         if (configurator is { })
-            services.Configure(nameof(PostgresOptions), configurator);
+            services.Configure(optionSection, configurator);
 
-        Guard.Against.NullOrEmpty(config.ConnectionString, nameof(config.ConnectionString));
+        Guard.Against.NullOrEmpty(config?.ConnectionString, nameof(config.ConnectionString));
 
         services.AddDbContext<TDbContext>(options =>
         {

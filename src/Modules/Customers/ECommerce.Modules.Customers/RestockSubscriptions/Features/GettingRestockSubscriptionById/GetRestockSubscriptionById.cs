@@ -5,6 +5,7 @@ using BuildingBlocks.Core.Exception;
 using ECommerce.Modules.Customers.RestockSubscriptions.Dtos;
 using ECommerce.Modules.Customers.RestockSubscriptions.Exceptions.Application;
 using ECommerce.Modules.Customers.Shared.Data;
+using FluentValidation;
 using MongoDB.Driver;
 using MongoDB.Driver.Linq;
 

@@ -6,6 +6,7 @@ using BuildingBlocks.Core.Types;
 using ECommerce.Modules.Catalogs.Products.Dtos;
 using ECommerce.Modules.Catalogs.Products.Models;
 using ECommerce.Modules.Catalogs.Shared.Contracts;
+using FluentValidation;
 using Microsoft.EntityFrameworkCore;
 
 namespace ECommerce.Modules.Catalogs.Products.Features.GettingProducts;

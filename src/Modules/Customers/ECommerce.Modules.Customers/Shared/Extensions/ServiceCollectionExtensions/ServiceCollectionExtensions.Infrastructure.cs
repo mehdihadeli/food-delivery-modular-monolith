@@ -1,13 +1,11 @@
-using Ardalis.GuardClauses;
 using BuildingBlocks.Caching.InMemory;
 using BuildingBlocks.Core.Caching;
-using BuildingBlocks.Core.Extensions;
+using BuildingBlocks.Core.IdsGenerator;
 using BuildingBlocks.Core.Persistence.EfCore;
 using BuildingBlocks.Core.Registrations;
 using BuildingBlocks.Email;
+using BuildingBlocks.Email.Options;
 using BuildingBlocks.Logging;
-using BuildingBlocks.Monitoring;
-using BuildingBlocks.Persistence.EfCore.Postgres;
 using BuildingBlocks.Validation;
 
 namespace ECommerce.Modules.Customers.Shared.Extensions.ServiceCollectionExtensions;
@@ -16,20 +14,7 @@ public static partial class ServiceCollectionExtensions
 {
     public static IServiceCollection AddInfrastructure(this IServiceCollection services, IConfiguration configuration)
     {
-        services.AddCore(configuration);
-
-        services.AddMonitoring(healthChecksBuilder =>
-        {
-            var postgresOptions = configuration.GetOptions<PostgresOptions>(nameof(PostgresOptions));
-            Guard.Against.Null(postgresOptions, nameof(postgresOptions));
-
-            healthChecksBuilder.AddNpgSql(
-                postgresOptions.ConnectionString,
-                name: "Customers-Postgres-Check",
-                tags: new[] {"customers-postgres"});
-        });
-
-        services.AddEmailService(configuration);
+        SnowFlakIdGenerator.Configure(2);
 
         services.AddCqrs(
             doMoreActions: s =>
@@ -44,8 +29,26 @@ public static partial class ServiceCollectionExtensions
                     .AddScoped(typeof(IPipelineBehavior<,>), typeof(EfTxBehavior<,>));
             });
 
+        services.AddCore(configuration, Assembly.GetExecutingAssembly());
+
+        // services.AddMonitoring(healthChecksBuilder =>
+        // {
+        //     var postgresOptions = configuration.GetOptions<PostgresOptions>(
+        //         $"{CustomersModuleConfiguration.ModuleName}:{nameof(PostgresOptions)}");
+        //
+        //     Guard.Against.Null(postgresOptions, nameof(postgresOptions));
+        //
+        //     healthChecksBuilder.AddNpgSql(
+        //         postgresOptions.ConnectionString,
+        //         name: "Customers-Module-Postgres-Check",
+        //         tags: new[] {"customers-postgres"});
+        // });
+
+        services.AddEmailService(configuration, $"{CustomersModuleConfiguration.ModuleName}:{nameof(EmailOptions)}");
+
         services.AddInMemoryMessagePersistence();
         services.AddInMemoryCommandScheduler();
+        services.AddInMemoryBroker(configuration);
 
         services.AddCustomValidators(Assembly.GetExecutingAssembly());
 
@@ -53,7 +56,9 @@ public static partial class ServiceCollectionExtensions
 
         services.AddCustomInMemoryCache(configuration)
             .AddCachingRequestPolicies(Assembly.GetExecutingAssembly());
+
         services.AddCustomHttpClients(configuration);
+
         return services;
     }
 }

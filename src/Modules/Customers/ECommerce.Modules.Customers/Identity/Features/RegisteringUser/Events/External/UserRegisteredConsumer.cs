@@ -9,10 +9,12 @@ namespace ECommerce.Modules.Customers.Identity.Features.RegisteringUser.Events.E
 public class UserRegisteredConsumer : IMessageHandler<UserRegistered>
 {
     private readonly ICommandProcessor _commandProcessor;
+    private readonly IServiceProvider _serviceProvider;
 
-    public UserRegisteredConsumer(ICommandProcessor commandProcessor)
+    public UserRegisteredConsumer(ICommandProcessor commandProcessor, IServiceProvider serviceProvider)
     {
         _commandProcessor = commandProcessor;
+        _serviceProvider = serviceProvider;
     }
 
     public async Task HandleAsync(

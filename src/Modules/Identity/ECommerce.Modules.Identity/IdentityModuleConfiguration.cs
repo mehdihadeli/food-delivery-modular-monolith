@@ -1,5 +1,5 @@
 using BuildingBlocks.Abstractions.Web.Module;
-using BuildingBlocks.Monitoring;
+using BuildingBlocks.Core.Messaging.Extensions;
 using ECommerce.Modules.Identity.Identity;
 using ECommerce.Modules.Identity.Shared.Extensions.ApplicationBuilderExtensions;
 using ECommerce.Modules.Identity.Shared.Extensions.ServiceCollectionExtensions;
@@ -10,6 +10,7 @@ namespace ECommerce.Modules.Identity;
 public class IdentityModuleConfiguration : IModuleDefinition
 {
     public const string IdentityModulePrefixUri = "api/v1/identity";
+    public const string ModuleName = "Identity";
 
     public void AddModuleServices(IServiceCollection services, IConfiguration configuration)
     {
@@ -25,9 +26,9 @@ public class IdentityModuleConfiguration : IModuleDefinition
         ILogger logger,
         IWebHostEnvironment environment)
     {
-        app.UseMonitoring();
-
         app.UseIdentityServer();
+
+        app.SubscribeAllMessageFromAssemblyOfType<IdentityRoot>();
 
         await app.ApplyDatabaseMigrations(logger);
         await app.SeedData(logger, environment);

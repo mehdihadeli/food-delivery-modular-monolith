@@ -6,14 +6,14 @@ namespace BuildingBlocks.Core.Messaging.Extensions;
 
 public static class MessageExtensions
 {
-    public static IEnumerable<Type> GetHandledMessageTypes(this Assembly[] assemblies)
+    public static IEnumerable<Type> GetHandledMessageTypes(this Assembly assembly)
     {
-        var messageHandlerTypes = typeof(IMessageHandler<>).GetAllTypesImplementingOpenGenericInterface(assemblies)
+        var messageHandlerTypes = typeof(IMessageHandler<>)
+            .GetAllTypesImplementingOpenGenericInterface(new[] {assembly})
             .ToList();
 
         var inheritsTypes = messageHandlerTypes.SelectMany(x => x.GetInterfaces())
-            .Where(x => x.GetInterfaces().Any(i => i.IsGenericType) &&
-                        x.GetGenericTypeDefinition() == typeof(IMessageHandler<>));
+            .Where(x => x.GetGenericTypeDefinition() == typeof(IMessageHandler<>));
 
         foreach (var inheritsType in inheritsTypes)
         {

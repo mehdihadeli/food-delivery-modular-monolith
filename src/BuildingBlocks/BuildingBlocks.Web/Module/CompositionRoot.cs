@@ -12,8 +12,9 @@ public class CompositionRoot : ICompositionRoot
 
     public IServiceProvider ServiceProvider { get; }
     public IModuleDefinition ModuleDefinition { get; }
+
     public IServiceScope CreateScope()
     {
-       return ServiceProvider.CreateScope();
+        return ServiceProvider.CreateScope();
     }
 }

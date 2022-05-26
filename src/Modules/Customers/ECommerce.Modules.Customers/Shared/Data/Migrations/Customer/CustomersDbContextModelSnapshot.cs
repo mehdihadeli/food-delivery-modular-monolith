@@ -5,11 +5,10 @@ using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 using Npgsql.EntityFrameworkCore.PostgreSQL.Metadata;
-using ECommerce.Services.Customers.Shared.Data;
 
 #nullable disable
 
-namespace ECommerce.Services.Customers.Shared.Data.Migrations.Customer
+namespace ECommerce.Modules.Customers.Shared.Data.Migrations.Customer
 {
     [DbContext(typeof(CustomersDbContext))]
     partial class CustomersDbContextModelSnapshot : ModelSnapshot
@@ -24,7 +23,7 @@ namespace ECommerce.Services.Customers.Shared.Data.Migrations.Customer
             NpgsqlModelBuilderExtensions.HasPostgresExtension(modelBuilder, "uuid-ossp");
             NpgsqlModelBuilderExtensions.UseIdentityByDefaultColumns(modelBuilder);
 
-            modelBuilder.Entity("ECommerce.Services.Customers.Customers.Models.Customer", b =>
+            modelBuilder.Entity("ECommerce.Modules.Customers.Customers.Models.Customer", b =>
                 {
                     b.Property<long>("Id")
                         .HasColumnType("bigint")
@@ -91,7 +90,7 @@ namespace ECommerce.Services.Customers.Shared.Data.Migrations.Customer
                     b.ToTable("customers", "customer");
                 });
 
-            modelBuilder.Entity("ECommerce.Services.Customers.RestockSubscriptions.Models.Write.RestockSubscription", b =>
+            modelBuilder.Entity("ECommerce.Modules.Customers.RestockSubscriptions.Models.Write.RestockSubscription", b =>
                 {
                     b.Property<long>("Id")
                         .HasColumnType("bigint")
@@ -148,7 +147,7 @@ namespace ECommerce.Services.Customers.Shared.Data.Migrations.Customer
                     b.ToTable("restock_subscriptions", "customer");
                 });
 
-            modelBuilder.Entity("ECommerce.Services.Customers.Customers.Models.Customer", b =>
+            modelBuilder.Entity("ECommerce.Modules.Customers.Customers.Models.Customer", b =>
                 {
                     b.OwnsOne("BuildingBlocks.Core.Domain.ValueObjects.Address", "Address", b1 =>
                         {
@@ -183,7 +182,7 @@ namespace ECommerce.Services.Customers.Shared.Data.Migrations.Customer
                                 .HasConstraintName("fk_customers_customers_id");
                         });
 
-                    b.OwnsOne("ECommerce.Services.Customers.Customers.Models.CustomerName", "Name", b1 =>
+                    b.OwnsOne("ECommerce.Modules.Customers.Customers.Models.CustomerName", "Name", b1 =>
                         {
                             b1.Property<long>("CustomerId")
                                 .HasColumnType("bigint")
@@ -216,16 +215,16 @@ namespace ECommerce.Services.Customers.Shared.Data.Migrations.Customer
                         .IsRequired();
                 });
 
-            modelBuilder.Entity("ECommerce.Services.Customers.RestockSubscriptions.Models.Write.RestockSubscription", b =>
+            modelBuilder.Entity("ECommerce.Modules.Customers.RestockSubscriptions.Models.Write.RestockSubscription", b =>
                 {
-                    b.HasOne("ECommerce.Services.Customers.Customers.Models.Customer", null)
+                    b.HasOne("ECommerce.Modules.Customers.Customers.Models.Customer", null)
                         .WithMany()
                         .HasForeignKey("CustomerId")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired()
                         .HasConstraintName("fk_restock_subscriptions_customers_customer_id");
 
-                    b.OwnsOne("ECommerce.Services.Customers.RestockSubscriptions.ValueObjects.ProductInformation", "ProductInformation", b1 =>
+                    b.OwnsOne("ECommerce.Modules.Customers.RestockSubscriptions.ValueObjects.ProductInformation", "ProductInformation", b1 =>
                         {
                             b1.Property<long>("RestockSubscriptionId")
                                 .HasColumnType("bigint")
@@ -253,7 +252,7 @@ namespace ECommerce.Services.Customers.Shared.Data.Migrations.Customer
                     b.Navigation("ProductInformation")
                         .IsRequired();
                 });
-#pragma warning reecommerce 612, 618
+#pragma warning restore 612, 618
         }
     }
 }

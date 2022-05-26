@@ -6,6 +6,7 @@ using Microsoft.Extensions.Options;
 
 namespace ECommerce.Modules.Customers.Shared.Clients.Identity;
 
+// Ref: http://www.kamilgrzybek.com/design/modular-monolith-integration-styles/
 public class IdentityApiClient : IIdentityApiClient
 {
     private readonly HttpClient _httpClient;

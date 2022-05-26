@@ -5,6 +5,7 @@ using BuildingBlocks.Web.Module;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Routing;
 using Microsoft.Extensions.Configuration;
+using Microsoft.Extensions.Hosting;
 
 namespace BuildingBlocks.Web.Extensions;
 
@@ -125,20 +126,33 @@ public static class ModuleExtensions
 
     public static async Task ConfigureModule(this WebApplication app, IModuleDefinition module)
     {
+        CompositionRootRegistry.SetRootServiceProvider(app.Services);
+
         var compositionRoot = CompositionRootRegistry.GetByModule(module);
         if (compositionRoot is { })
         {
+            // For composition roots we have to execute them manually because hosted services only runs for root service provider
             await module.ConfigureModule(
                 new ApplicationBuilder(compositionRoot.ServiceProvider),
                 app.Configuration,
                 app.Logger,
                 app.Environment);
+
+            await RunCompositionsBackgroundServices(compositionRoot);
         }
         else
         {
             CompositionRootRegistry.Add(new CompositionRoot(app.Services, module));
             await module.ConfigureModule(app, app.Configuration, app.Logger, app.Environment);
         }
+    }
+
+    private static async Task RunCompositionsBackgroundServices(ICompositionRoot compositionRoot)
+    {
+        var sp = compositionRoot.ServiceProvider;
+        IEnumerable<IHostedService> hostedServices = sp.GetServices<IHostedService>();
+
+        await Task.WhenAll(hostedServices.Select(s => s.StartAsync(CancellationToken.None)));
     }
 
     public static void MapModulesEndpoints(this IEndpointRouteBuilder builder)
@@ -183,5 +197,24 @@ public static class ModuleExtensions
     public static ICompositionRoot? GetCurrentCompositionRoot(this object instance)
     {
         return CompositionRootRegistry.GetByModuleByAssemblyName(instance.GetType().Assembly.GetName().Name);
+    }
+
+    public static void AddModulesSettingsFile(
+        this ConfigurationManager configurationManager,
+        string root,
+        string environment)
+    {
+        foreach (string file in Directory.GetFiles(root, "*.appsettings.json", SearchOption.AllDirectories))
+        {
+            configurationManager.AddJsonFile(file);
+        }
+
+        foreach (string file in Directory.GetFiles(
+                     root,
+                     $"*.appsettings.{environment}.json",
+                     SearchOption.AllDirectories))
+        {
+            configurationManager.AddJsonFile(file);
+        }
     }
 }

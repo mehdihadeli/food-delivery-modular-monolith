@@ -4,6 +4,7 @@ using AutoMapper.QueryableExtensions;
 using BuildingBlocks.Abstractions.CQRS.Query;
 using ECommerce.Modules.Customers.RestockSubscriptions.Dtos;
 using ECommerce.Modules.Customers.Shared.Data;
+using FluentValidation;
 using MongoDB.Driver;
 using MongoDB.Driver.Linq;
 

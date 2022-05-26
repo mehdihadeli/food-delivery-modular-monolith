@@ -6,6 +6,7 @@ using BuildingBlocks.Persistence.Mongo;
 using ECommerce.Modules.Customers.RestockSubscriptions.Dtos;
 using ECommerce.Modules.Customers.RestockSubscriptions.Models.Read;
 using ECommerce.Modules.Customers.Shared.Data;
+using FluentValidation;
 using MongoDB.Driver;
 using MongoDB.Driver.Linq;
 

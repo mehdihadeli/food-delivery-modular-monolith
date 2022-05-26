@@ -1,5 +1,3 @@
-using Microsoft.AspNetCore.Builder;
-
 namespace ECommerce.Modules.Identity.Shared.Extensions.ServiceCollectionExtensions;
 
 public static partial class ServiceCollectionExtensions

@@ -1,6 +1,5 @@
 using BuildingBlocks.Abstractions.Web.Module;
-using BuildingBlocks.Core.Types;
-using BuildingBlocks.Monitoring;
+using BuildingBlocks.Core.Messaging.Extensions;
 using ECommerce.Modules.Orders.Shared.Extensions.ApplicationBuilderExtensions;
 using ECommerce.Modules.Orders.Shared.Extensions.ServiceCollectionExtensions;
 
@@ -9,8 +8,7 @@ namespace ECommerce.Modules.Orders;
 public class OrdersModuleConfiguration : IModuleDefinition
 {
     public const string OrderModulePrefixUri = "api/v1/orders";
-
-    public string ModuleRootName => TypeMapper.GetTypeName(GetType());
+    public const string ModuleName = "Orders";
 
     public void AddModuleServices(IServiceCollection services, IConfiguration configuration)
     {
@@ -25,7 +23,7 @@ public class OrdersModuleConfiguration : IModuleDefinition
         ILogger logger,
         IWebHostEnvironment environment)
     {
-        app.UseMonitoring();
+        app.SubscribeAllMessageFromAssemblyOfType<OrdersRoot>();
 
         await app.ApplyDatabaseMigrations(logger);
         await app.SeedData(logger, environment);
