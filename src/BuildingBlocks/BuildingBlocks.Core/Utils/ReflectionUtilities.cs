@@ -84,4 +84,10 @@ public static class ReflectionUtilities
             .SelectMany(a => a.GetTypes().Where(x => x.FullName == typeName || x.Name == typeName))
             .FirstOrDefault();
     }
+
+    public static Type? GetFirstMatchingTypeFromAssembly(string typeName, Assembly assembly)
+    {
+        return assembly.GetTypes()
+            .FirstOrDefault(x => x.FullName == typeName || x.Name == typeName);
+    }
 }

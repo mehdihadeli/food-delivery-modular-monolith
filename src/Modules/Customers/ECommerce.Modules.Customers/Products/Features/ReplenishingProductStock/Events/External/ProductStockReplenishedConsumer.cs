@@ -1,10 +1,15 @@
 using BuildingBlocks.Abstractions.CQRS.Command;
 using BuildingBlocks.Abstractions.Messaging;
 using BuildingBlocks.Abstractions.Messaging.Context;
+using BuildingBlocks.Abstractions.Persistence;
+using BuildingBlocks.Core.Messaging;
 using ECommerce.Modules.Customers.RestockSubscriptions.Features.ProcessingRestockNotification;
-using ECommerce.Modules.Shared.Catalogs.Products.Events.Integration;
 
 namespace ECommerce.Modules.Customers.Products.Features.ReplenishingProductStock.Events.External;
+
+public record ProductStockReplenished(long ProductId, int NewStock, int ReplenishedQuantity) :
+    IntegrationEvent,
+    ITxRequest;
 
 public class ProductStockReplenishedConsumer : IMessageHandler<ProductStockReplenished>
 {

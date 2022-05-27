@@ -138,7 +138,8 @@ public static class ModuleExtensions
                 app.Logger,
                 app.Environment);
 
-            await RunCompositionsBackgroundServices(compositionRoot);
+            // It should not await because it will block the main thread.
+            RunCompositionsBackgroundServices(compositionRoot.ServiceProvider);
         }
         else
         {
@@ -147,10 +148,9 @@ public static class ModuleExtensions
         }
     }
 
-    private static async Task RunCompositionsBackgroundServices(ICompositionRoot compositionRoot)
+    private static async Task RunCompositionsBackgroundServices(IServiceProvider serviceProvider)
     {
-        var sp = compositionRoot.ServiceProvider;
-        IEnumerable<IHostedService> hostedServices = sp.GetServices<IHostedService>();
+        IEnumerable<IHostedService> hostedServices = serviceProvider.GetServices<IHostedService>();
 
         await Task.WhenAll(hostedServices.Select(s => s.StartAsync(CancellationToken.None)));
     }

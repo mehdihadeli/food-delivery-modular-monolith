@@ -3,7 +3,7 @@ using BuildingBlocks.Abstractions.CQRS.Command;
 using BuildingBlocks.Abstractions.Messaging;
 using ECommerce.Modules.Identity.Shared.Models;
 using ECommerce.Modules.Identity.Users.Dtos;
-using ECommerce.Modules.Shared.Identity.Users.Events.Integration;
+using ECommerce.Modules.Identity.Users.Features.RegisteringUser.Events.Integration;
 using FluentValidation;
 using Microsoft.AspNetCore.Identity;
 using UserState = ECommerce.Modules.Identity.Shared.Models.UserState;

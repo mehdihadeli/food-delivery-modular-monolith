@@ -11,7 +11,6 @@
   </ItemGroup>
 
   <ItemGroup>
-    <Folder Include="Customers\Features\CreatingCustomer\Events\Integration" />
     <Folder Include="Identity\Features" />
   </ItemGroup>
 
@@ -37,7 +36,6 @@
     <ProjectReference Include="..\..\..\BuildingBlocks\BuildingBlocks.Swagger\BuildingBlocks.Swagger.csproj" />
     <ProjectReference Include="..\..\..\BuildingBlocks\BuildingBlocks.Validation\BuildingBlocks.Validation.csproj" />
     <ProjectReference Include="..\..\..\BuildingBlocks\BuildingBlocks.Web\BuildingBlocks.Web.csproj" />
-    <ProjectReference Include="..\..\Shared\ECommerce.Module.Shared\ECommerce.Modules.Shared.csproj" />
   </ItemGroup>
 
   <ItemGroup>

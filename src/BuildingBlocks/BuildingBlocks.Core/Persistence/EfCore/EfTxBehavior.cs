@@ -63,7 +63,7 @@ public class EfTxBehavior<TRequest, TResponse> : IPipelineBehavior<TRequest, TRe
                               await _dbFacadeResolver.Database.BeginTransactionAsync(cancellationToken);
             try
             {
-                var response = await next();
+                var response = await next().ConfigureAwait(false);
 
                 _logger.LogInformation(
                     "{Prefix} Executed the {MediatrRequest} request",

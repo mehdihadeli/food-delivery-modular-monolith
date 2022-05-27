@@ -10,27 +10,22 @@ namespace ECommerce.Modules.Catalogs.Products;
 
 public class ProductEventMapper : IEventMapper
 {
-    public ProductEventMapper()
-    {
-
-    }
-
     public IIntegrationEvent? MapToIntegrationEvent(IDomainEvent domainEvent)
     {
         return domainEvent switch
         {
             ProductCreated e =>
-                new Modules.Shared.Catalogs.Products.Events.Integration.ProductCreated(
+                new Features.CreatingProduct.Events.Integration.ProductCreated(
                     e.Product.Id,
                     e.Product.Name,
                     e.Product.Category.Id,
                     e.Product.Category.Name,
                     e.Product.Stock.Available),
             ProductStockDebited e => new
-                Modules.Shared.Catalogs.Products.Events.Integration.ProductStockDebited(
+                Features.DebitingProductStock.Events.Integration.ProductStockDebited(
                     e.ProductId, e.NewStock.Available, e.DebitedQuantity),
             ProductStockReplenished e => new
-                Modules.Shared.Catalogs.Products.Events.Integration.ProductStockReplenished(
+                Features.ReplenishingProductStock.Events.Integration.ProductStockReplenished(
                     e.ProductId, e.NewStock.Available, e.ReplenishedQuantity),
             _ => null
         };

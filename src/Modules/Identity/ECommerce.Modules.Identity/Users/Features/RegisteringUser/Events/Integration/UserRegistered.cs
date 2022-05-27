@@ -1,6 +1,6 @@
 using BuildingBlocks.Core.Messaging;
 
-namespace ECommerce.Modules.Shared.Identity.Users.Events.Integration;
+namespace ECommerce.Modules.Identity.Users.Features.RegisteringUser.Events.Integration;
 
 public record UserRegistered(
     Guid IdentityId,

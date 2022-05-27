@@ -108,20 +108,37 @@ public static class ReflectionExtensions
     }
 
     /// <summary>
-    /// Invoke a instance method member.
+    /// Invoke a instance method member with return type <see cref="Task{dynammic}"/> .
     /// </summary>
     /// <param name="instanceObject"></param>
     /// <param name="methodName"></param>
     /// <param name="parameters"></param>
     /// <returns></returns>
-    public static Task<dynamic> InvokeMethodAsync(
+    public static async Task<dynamic> InvokeMethodAsync(
         this object instanceObject,
         string methodName,
         params object[] parameters)
     {
         dynamic awaitable = InvokeMethod(instanceObject, methodName, parameters);
 
-        return awaitable;
+        return await awaitable;
+    }
+
+    /// <summary>
+    /// Invoke a instance method member with return type <see cref="Task"/> or without return type.
+    /// </summary>
+    /// <param name="instanceObject"></param>
+    /// <param name="methodName"></param>
+    /// <param name="parameters"></param>
+    /// <returns></returns>
+    public static async Task InvokeMethodWithoutResultAsync(
+        this object instanceObject,
+        string methodName,
+        params object[] parameters)
+    {
+        dynamic awaitable = InvokeMethod(instanceObject, methodName, parameters);
+
+        await awaitable;
     }
 
     // https://riptutorial.com/csharp/example/15938/creating-an-instance-of-a-type

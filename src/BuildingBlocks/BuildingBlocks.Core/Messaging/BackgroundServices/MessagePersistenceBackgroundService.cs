@@ -8,7 +8,7 @@ using Microsoft.Extensions.Options;
 
 namespace BuildingBlocks.Core.Messaging.BackgroundServices;
 
-public class MessagePersistenceBackgroundService : BackgroundService
+public class MessagePersistenceBackgroundService : IHostedService
 {
     private readonly ILogger<MessagePersistenceBackgroundService> _logger;
     private readonly MessagePersistenceOptions _options;
@@ -27,12 +27,12 @@ public class MessagePersistenceBackgroundService : BackgroundService
         _machineInstanceInfo = machineInstanceInfo;
     }
 
-    protected override async Task ExecuteAsync(CancellationToken stoppingToken)
+    public async Task StartAsync(CancellationToken cancellationToken)
     {
         _logger.LogInformation(
             $"MessagePersistence Background Service is starting on client '{_machineInstanceInfo.ClientId}' and group '{_machineInstanceInfo.ClientGroup}'.");
 
-        await ProcessAsync(stoppingToken);
+        await ProcessAsync(cancellationToken);
     }
 
     private async Task ProcessAsync(CancellationToken stoppingToken)
@@ -53,11 +53,8 @@ public class MessagePersistenceBackgroundService : BackgroundService
         }
     }
 
-    public override async Task StopAsync(CancellationToken cancellationToken)
+    public Task StopAsync(CancellationToken cancellationToken)
     {
-        _logger.LogInformation(
-            $"MessagePersistence Background Service is stopping on client '{_machineInstanceInfo.ClientId}' and group '{_machineInstanceInfo.ClientGroup}'.");
-
-        await base.StopAsync(cancellationToken);
+        return Task.CompletedTask;
     }
 }

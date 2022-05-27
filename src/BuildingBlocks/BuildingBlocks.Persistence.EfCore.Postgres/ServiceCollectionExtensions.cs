@@ -38,16 +38,18 @@ public static class ServiceCollectionExtensions
 
         Guard.Against.NullOrEmpty(config?.ConnectionString, nameof(config.ConnectionString));
 
-        services.AddDbContext<TDbContext>(options =>
-        {
-            options.UseNpgsql(config.ConnectionString, sqlOptions =>
+        services.AddDbContext<TDbContext>(
+            options =>
             {
-                sqlOptions.MigrationsAssembly((migrationAssembly ?? typeof(TDbContext).Assembly).GetName().Name);
-                sqlOptions.EnableRetryOnFailure(5, TimeSpan.FromSeconds(10), null);
-            }).UseSnakeCaseNamingConvention();
+                options.UseNpgsql(config.ConnectionString, sqlOptions =>
+                {
+                    sqlOptions.MigrationsAssembly((migrationAssembly ?? typeof(TDbContext).Assembly).GetName().Name);
+                    sqlOptions.EnableRetryOnFailure(5, TimeSpan.FromSeconds(10), null);
+                }).UseSnakeCaseNamingConvention();
 
-            builder?.Invoke(options);
-        });
+                builder?.Invoke(options);
+            },
+            ServiceLifetime.Scoped);
 
         services.AddScoped<IConnectionFactory, NpgsqlConnectionFactory>();
 

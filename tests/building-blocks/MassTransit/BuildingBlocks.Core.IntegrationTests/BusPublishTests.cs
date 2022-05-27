@@ -1,6 +1,7 @@
 using BuildingBlocks.Abstractions.Messaging;
 using BuildingBlocks.Abstractions.Messaging.Context;
-using ECommerce.Modules.Shared.Identity.Users.Events.Integration;
+using ECommerce.Modules.Customers.Identity.Features.RegisteringUser.Events.External;
+using ECommerce.Modules.Orders.Customers.Features.CreatingCustomer.Events.External;
 using Humanizer;
 using Hypothesist;
 using Tests.Shared.Fixtures;

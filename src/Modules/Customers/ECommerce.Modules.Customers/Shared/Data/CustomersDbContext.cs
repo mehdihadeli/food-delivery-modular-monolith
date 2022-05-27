@@ -24,4 +24,9 @@ public class CustomersDbContext : EfDbContextBase, ICustomersDbContext
 
     public DbSet<Customer> Customers => Set<Customer>();
     public DbSet<RestockSubscription> RestockSubscriptions => Set<RestockSubscription>();
+
+    public override void Dispose()
+    {
+        base.Dispose();
+    }
 }

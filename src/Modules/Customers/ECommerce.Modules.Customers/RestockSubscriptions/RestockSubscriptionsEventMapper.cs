@@ -17,7 +17,7 @@ public class RestockSubscriptionsEventMapper : IIntegrationEventMapper
         return domainEvent switch
         {
             RestockSubscriptionCreated e =>
-                new Modules.Shared.Customers.RestockSubscriptions.Events.Integration.RestockSubscriptionCreated(
+                new Features.CreatingRestockSubscription.Events.Integration.RestockSubscriptionCreated(
                     e.RestockSubscription.Id.Value, e.RestockSubscription.Email),
             _ => null
         };

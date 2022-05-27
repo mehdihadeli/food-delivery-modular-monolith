@@ -16,7 +16,7 @@ public class CustomersEventMapper : IIntegrationEventMapper
     {
         return domainEvent switch
         {
-            CustomerCreated e => new Modules.Shared.Customers.Customers.Events.Integration.CustomerCreated(e.Customer.Id),
+            CustomerCreated e => new Features.CreatingCustomer.Events.Integration.CustomerCreated(e.Customer.Id),
             _ => null
         };
     }
