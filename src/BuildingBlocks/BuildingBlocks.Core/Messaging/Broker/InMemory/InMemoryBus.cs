@@ -69,17 +69,17 @@ public class InMemoryBus : IBus
             if (messageEnvelope is null)
                 continue;
 
-            var messageTypeName = messageEnvelope?.GetMessageType();
+            var messageTypeName = messageEnvelope.GetMessageType();
 
-            foreach (var (messageType, handlerType) in _handlers.Where(
-                         x => x.Key.Name == messageTypeName))
+            foreach (var (messageType, handlerType) in
+                     _handlers.Where(x => x.Key.Name == messageTypeName))
             {
                 var data = _messageSerializer.Deserialize(
                     messageEnvelope.Message.ToString()!,
                     messageType);
 
                 var ctx = new ConsumeContext(
-                    data,
+                    data!,
                     messageEnvelope.Headers,
                     messageEnvelope.GetMessageId(),
                     TypeMapper.GetTypeName(messageType),
@@ -95,7 +95,7 @@ public class InMemoryBus : IBus
 
                 using (var scope = _serviceProvider.CreateScope())
                 {
-                    object handler = scope.ServiceProvider.GetService(handlerType);
+                    object? handler = scope.ServiceProvider.GetService(handlerType);
 
                     if (handler is null)
                         return;
@@ -108,18 +108,30 @@ public class InMemoryBus : IBus
                 }
             }
 
-            // bool handlerExists =
-            //     _handlers.TryGetValue(messageEnvelope.Message.GetType().Name, out Type? handlerType);
-            //
-            // bool delegateHandlerExists = _delegateHandlers.TryGetValue(
-            //     TypeMapper.GetTypeName(messageEnvelope.Message.GetType()),
-            //     out Func<object, CancellationToken, Task>? delegateHandler);
+            foreach (var (messageType, delegateHandler) in
+                     _delegateHandlers.Where(x => x.Key.Name == messageTypeName))
+            {
+                var data = _messageSerializer.Deserialize(
+                    messageEnvelope.Message.ToString()!,
+                    messageType);
 
+                var ctx = new ConsumeContext(
+                    data!,
+                    messageEnvelope.Headers,
+                    messageEnvelope.GetMessageId(),
+                    TypeMapper.GetTypeName(messageType),
+                    0,
+                    0,
+                    DateTime.Now);
 
-            // if (delegateHandlerExists && delegateHandler is { })
-            // {
-            //     await delegateHandler.Invoke(typedConsumedContext, cancellationToken);
-            // }
+                var typedConsumedContext = typeof(ConsumeContextExtensions).InvokeGenericExtensionMethod(
+                    nameof(ConsumeContextExtensions.ToTypedConsumeContext),
+                    new[] {messageType},
+                    null,
+                    ctx);
+
+                await delegateHandler.Invoke(typedConsumedContext, cancellationToken);
+            }
         }
     }
 
