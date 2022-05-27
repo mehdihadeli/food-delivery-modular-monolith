@@ -7,6 +7,7 @@ using BuildingBlocks.Core.Messaging.Context;
 using BuildingBlocks.Core.Messaging.Extensions;
 using BuildingBlocks.Core.Types;
 using Humanizer;
+using Microsoft.Extensions.Logging;
 
 namespace BuildingBlocks.Core.Messaging.Broker.InMemory;
 
@@ -18,8 +19,9 @@ public class InMemoryBus : IBus
 {
     private readonly IServiceProvider _serviceProvider;
     private readonly IMessageSerializer _messageSerializer;
+    private readonly ILogger<InMemoryBus> _logger;
     private static readonly Channel<string> _channel;
-    private static readonly Dictionary<Type, Type> _handlers = new();
+    private static readonly Dictionary<Type, List<Type>> _handlers = new();
     private static readonly Dictionary<Type, Func<object, CancellationToken, Task>> _delegateHandlers = new();
 
     static InMemoryBus()
@@ -27,17 +29,21 @@ public class InMemoryBus : IBus
         // We can use unbounded channel if we want to store unlimited message to channel.
         _channel = Channel.CreateBounded<string>(new BoundedChannelOptions(500)
         {
-            AllowSynchronousContinuations = false,
+            AllowSynchronousContinuations = true,
             SingleReader = true,
             SingleWriter = true,
             FullMode = BoundedChannelFullMode.Wait
         });
     }
 
-    public InMemoryBus(IServiceProvider serviceProvider, IMessageSerializer messageSerializer)
+    public InMemoryBus(
+        IServiceProvider serviceProvider,
+        IMessageSerializer messageSerializer,
+        ILogger<InMemoryBus> logger)
     {
         _serviceProvider = serviceProvider;
         _messageSerializer = messageSerializer;
+        _logger = logger;
     }
 
     public async Task StartAsync(CancellationToken cancellationToken = default)
@@ -71,66 +77,76 @@ public class InMemoryBus : IBus
 
             var messageTypeName = messageEnvelope.GetMessageType();
 
-            foreach (var (messageType, handlerType) in
-                     _handlers.Where(x => x.Key.Name == messageTypeName))
+            try
             {
-                var data = _messageSerializer.Deserialize(
-                    messageEnvelope.Message.ToString()!,
-                    messageType);
-
-                var ctx = new ConsumeContext(
-                    data!,
-                    messageEnvelope.Headers,
-                    messageEnvelope.GetMessageId(),
-                    TypeMapper.GetTypeName(messageType),
-                    0,
-                    0,
-                    DateTime.Now);
-
-                var typedConsumedContext = typeof(ConsumeContextExtensions).InvokeGenericExtensionMethod(
-                    nameof(ConsumeContextExtensions.ToTypedConsumeContext),
-                    new[] {messageType},
-                    null,
-                    ctx);
-
-                using (var scope = _serviceProvider.CreateScope())
+                foreach (var (messageType, handlersType) in
+                         _handlers.Where(x => x.Key.Name == messageTypeName))
                 {
-                    object? handler = scope.ServiceProvider.GetService(handlerType);
+                    var data = _messageSerializer.Deserialize(
+                        messageEnvelope.Message.ToString()!,
+                        messageType);
 
-                    if (handler is null)
-                        return;
+                    var ctx = new ConsumeContext(
+                        data!,
+                        messageEnvelope.Headers,
+                        messageEnvelope.GetMessageId(),
+                        TypeMapper.GetTypeName(messageType),
+                        0,
+                        0,
+                        DateTime.Now);
 
-                    await ReflectionExtensions.InvokeMethodWithoutResultAsync(
-                        handler,
-                        nameof(IMessageHandler<IMessage>.HandleAsync),
-                        typedConsumedContext,
-                        cancellationToken);
+                    var typedConsumedContext = typeof(ConsumeContextExtensions).InvokeGenericExtensionMethod(
+                        nameof(ConsumeContextExtensions.ToTypedConsumeContext),
+                        new[] {messageType},
+                        null,
+                        ctx);
+
+                    foreach (var handlerType in handlersType)
+                    {
+                        using (var scope = _serviceProvider.CreateScope())
+                        {
+                            object? handler = scope.ServiceProvider.GetService(handlerType);
+
+                            if (handler is null)
+                                return;
+
+                            await ReflectionExtensions.InvokeMethodWithoutResultAsync(
+                                handler,
+                                nameof(IMessageHandler<IMessage>.HandleAsync),
+                                typedConsumedContext,
+                                cancellationToken);
+                        }
+                    }
+                }
+
+                foreach (var (messageType, delegateHandler) in
+                         _delegateHandlers.Where(x => x.Key.Name == messageTypeName))
+                {
+                    var data = _messageSerializer.Deserialize(
+                        messageEnvelope.Message.ToString()!,
+                        messageType);
+
+                    var ctx = new ConsumeContext(
+                        data!,
+                        messageEnvelope.Headers,
+                        messageEnvelope.GetMessageId(),
+                        TypeMapper.GetTypeName(messageType),
+                        0,
+                        0,
+                        DateTime.Now);
+
+                    var typedConsumedContext = typeof(ConsumeContextExtensions).InvokeGenericExtensionMethod(
+                        nameof(ConsumeContextExtensions.ToTypedConsumeContext),
+                        new[] {messageType},
+                        null,
+                        ctx);
+
+                    await delegateHandler.Invoke(typedConsumedContext, cancellationToken);
                 }
             }
-
-            foreach (var (messageType, delegateHandler) in
-                     _delegateHandlers.Where(x => x.Key.Name == messageTypeName))
+            catch (System.Exception e)
             {
-                var data = _messageSerializer.Deserialize(
-                    messageEnvelope.Message.ToString()!,
-                    messageType);
-
-                var ctx = new ConsumeContext(
-                    data!,
-                    messageEnvelope.Headers,
-                    messageEnvelope.GetMessageId(),
-                    TypeMapper.GetTypeName(messageType),
-                    0,
-                    0,
-                    DateTime.Now);
-
-                var typedConsumedContext = typeof(ConsumeContextExtensions).InvokeGenericExtensionMethod(
-                    nameof(ConsumeContextExtensions.ToTypedConsumeContext),
-                    new[] {messageType},
-                    null,
-                    ctx);
-
-                await delegateHandler.Invoke(typedConsumedContext, cancellationToken);
+                _logger.LogError(e.Message);
             }
         }
     }
@@ -188,7 +204,7 @@ public class InMemoryBus : IBus
         Action<IConsumeConfigurationBuilder>? consumeBuilder = null)
         where TMessage : class, IMessage
     {
-        _handlers.Add(typeof(TMessage), handler.GetType());
+        AddConsumerHandler(typeof(TMessage), handler.GetType());
     }
 
     public void Consume<TMessage>(
@@ -212,7 +228,7 @@ public class InMemoryBus : IBus
     {
         var handlerType = typeof(IMessageHandler<>).MakeGenericType(messageType);
 
-        _handlers.AddOrReplace(messageType, handlerType);
+        AddConsumerHandler(messageType, handlerType);
     }
 
     public void Consume<THandler, TMessage>()
@@ -260,6 +276,18 @@ public class InMemoryBus : IBus
                 Consume(messageType);
             }
         }
+    }
+
+    private static void AddConsumerHandler(Type messageType, Type handlerType)
+    {
+        if (!_handlers.TryGetValue(messageType, out var list))
+        {
+            list = new List<Type>();
+            _handlers.Add(messageType, list);
+
+        }
+
+        list.Add(handlerType);
     }
 
     private static IDictionary<string, object?> GetMetadata<TMessage>(

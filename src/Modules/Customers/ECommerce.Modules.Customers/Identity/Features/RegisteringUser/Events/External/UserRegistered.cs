@@ -4,8 +4,6 @@ using BuildingBlocks.Abstractions.Messaging.Context;
 using BuildingBlocks.Abstractions.Persistence;
 using BuildingBlocks.Core.Messaging;
 using ECommerce.Modules.Customers.Customers.Features.CreatingCustomer;
-using ECommerce.Modules.Customers.Shared.Contracts;
-using ECommerce.Modules.Customers.Shared.Data;
 
 namespace ECommerce.Modules.Customers.Identity.Features.RegisteringUser.Events.External;
 
@@ -21,7 +19,7 @@ public class UserRegisteredConsumer : IMessageHandler<UserRegistered>
 {
     private readonly ICommandProcessor _commandProcessor;
 
-    public UserRegisteredConsumer(ICommandProcessor commandProcessor,CustomersDbContext dbContext)
+    public UserRegisteredConsumer(ICommandProcessor commandProcessor)
     {
         _commandProcessor = commandProcessor;
     }
