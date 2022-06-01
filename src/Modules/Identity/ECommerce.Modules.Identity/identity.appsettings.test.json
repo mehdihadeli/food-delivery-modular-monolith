@@ -1,7 +1,7 @@
 {
   "Identity": {
     "PostgresOptions": {
-      "ConnectionString": "Server=localhost;Port=5432;Database=ecommerce.services.identity;User Id=postgres;Password=postgres;",
+      "ConnectionString": "Server=localhost;Port=5432;Database=ecommerce.services.identity-test;User Id=postgres;Password=postgres;",
       "UseInMemory": false
     },
     "MongoOptions": {

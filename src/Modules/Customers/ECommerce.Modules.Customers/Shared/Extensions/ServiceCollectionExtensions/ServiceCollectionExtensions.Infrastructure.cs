@@ -7,6 +7,7 @@ using BuildingBlocks.Email;
 using BuildingBlocks.Email.Options;
 using BuildingBlocks.Logging;
 using BuildingBlocks.Validation;
+using BuildingBlocks.Web.Extensions.ServiceCollectionExtensions;
 
 namespace ECommerce.Modules.Customers.Shared.Extensions.ServiceCollectionExtensions;
 
@@ -14,6 +15,8 @@ public static partial class ServiceCollectionExtensions
 {
     public static IServiceCollection AddInfrastructure(this IServiceCollection services, IConfiguration configuration)
     {
+        services.AddControllersAsServices();
+
         SnowFlakIdGenerator.Configure(2);
 
         services.AddCqrs(
@@ -28,6 +31,7 @@ public static partial class ServiceCollectionExtensions
                     .AddScoped(typeof(IPipelineBehavior<,>), typeof(InvalidateCachingBehavior<,>))
                     .AddScoped(typeof(IPipelineBehavior<,>), typeof(EfTxBehavior<,>));
             });
+
 
         services.AddCore(configuration, Assembly.GetExecutingAssembly());
 
@@ -58,6 +62,8 @@ public static partial class ServiceCollectionExtensions
             .AddCachingRequestPolicies(Assembly.GetExecutingAssembly());
 
         services.AddCustomHttpClients(configuration);
+
+        services.AddSingleton<ILoggerFactory>(new Serilog.Extensions.Logging.SerilogLoggerFactory());
 
         return services;
     }

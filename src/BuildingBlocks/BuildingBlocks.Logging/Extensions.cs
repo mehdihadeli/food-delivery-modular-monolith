@@ -25,7 +25,6 @@ public static class Extensions
 
             loggerConfiguration
                 .ReadFrom.Configuration(context.Configuration)
-                .ReadFrom.Services(serviceProvider)
                 .Enrich.WithSpan()
                 .Enrich.WithBaggage()
                 .Enrich.WithExceptionDetails()

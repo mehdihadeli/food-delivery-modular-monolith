@@ -86,10 +86,12 @@ public static class ModuleExtensions
         bool useCompositionRootForModules)
     {
         IServiceCollection newServiceCollection =
-            useCompositionRootForModules ? services.CreatNewCollection() : services;
+            useCompositionRootForModules ? services.CreatNewServiceCollection() : services;
 
         var instantiatedType = (IModuleDefinition)Activator.CreateInstance(module)!;
         instantiatedType.AddModuleServices(newServiceCollection, configuration);
+
+        ModuleHook.ModuleServicesConfigured?.Invoke(newServiceCollection, instantiatedType);
 
         ModuleRegistry.Add(instantiatedType);
 
@@ -214,7 +216,7 @@ public static class ModuleExtensions
                      $"*.appsettings.{environment}.json",
                      SearchOption.AllDirectories))
         {
-            configurationManager.AddJsonFile(file);
+            configurationManager.AddJsonFile(file, true, true);
         }
     }
 }

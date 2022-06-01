@@ -10,6 +10,10 @@ public static partial class ServiceCollectionExtensions
         this IServiceCollection services,
         IConfiguration configuration)
     {
+        var s = configuration.AsEnumerable().ToList();
+        var f = configuration.GetSection(CustomersModuleConfiguration.ModuleName).Value;
+        var f1 = configuration.GetSection($"{CustomersModuleConfiguration.ModuleName}:{nameof(IdentityApiClientOptions)}");
+
         services.AddOptions<IdentityApiClientOptions>().Bind(configuration.GetSection(
                 $"{CustomersModuleConfiguration.ModuleName}:{nameof(IdentityApiClientOptions)}"))
             .ValidateDataAnnotations();

@@ -4,7 +4,6 @@ using BuildingBlocks.Abstractions.CQRS.Command;
 using BuildingBlocks.Security.Jwt;
 using ECommerce.Modules.Identity.Shared.Models;
 using Microsoft.AspNetCore.Identity;
-using Microsoft.Extensions.Logging;
 
 namespace ECommerce.Modules.Identity.Identity.Features.GenerateJwtToken;
 

@@ -67,6 +67,9 @@ public static partial class ServiceCollectionExtensions
                     // User settings.
                     options.User.RequireUniqueEmail = true;
 
+                    options.SignIn.RequireConfirmedEmail = false;
+                    options.SignIn.RequireConfirmedPhoneNumber = false;
+
                     if (configure is { })
                         configure.Invoke(options);
                 })

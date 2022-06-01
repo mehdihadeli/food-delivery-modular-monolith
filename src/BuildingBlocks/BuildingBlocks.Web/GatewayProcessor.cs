@@ -1,6 +1,7 @@
 using AutoMapper;
 using BuildingBlocks.Abstractions.CQRS.Command;
 using BuildingBlocks.Abstractions.CQRS.Query;
+using BuildingBlocks.Abstractions.Messaging;
 using BuildingBlocks.Abstractions.Web;
 using BuildingBlocks.Abstractions.Web.Module;
 using BuildingBlocks.Web.Module;
@@ -10,18 +11,18 @@ namespace BuildingBlocks.Web;
 public class GatewayProcessor<TModule> : IGatewayProcessor<TModule>
     where TModule : class, IModuleDefinition
 {
-    private readonly IServiceScopeFactory _scopeFactory;
+    private readonly IServiceProvider _serviceProvider;
 
-    public GatewayProcessor(IServiceScopeFactory scopeFactory)
+    public GatewayProcessor(IServiceProvider serviceProvider)
     {
-        _scopeFactory = scopeFactory;
+        // https://blog.stephencleary.com/2016/12/eliding-async-await.html
+        var compositionRoot = CompositionRootRegistry.GetByModule<TModule>();
+        _serviceProvider = compositionRoot?.ServiceProvider ?? serviceProvider;
     }
 
     public async Task ExecuteCommand(Func<ICommandProcessor, IMapper, Task> action)
     {
-        // https://blog.stephencleary.com/2016/12/eliding-async-await.html
-        var compositionRoot = CompositionRootRegistry.GetByModule<TModule>();
-        using var scope = compositionRoot?.CreateScope() ?? _scopeFactory.CreateScope();
+        using var scope = _serviceProvider.CreateScope();
         var commandProcessor = scope.ServiceProvider.GetRequiredService<ICommandProcessor>();
         var mapper = scope.ServiceProvider.GetRequiredService<IMapper>();
 
@@ -40,12 +41,17 @@ public class GatewayProcessor<TModule> : IGatewayProcessor<TModule>
 
     public async Task<T> ExecuteCommand<T>(Func<ICommandProcessor, IMapper, Task<T>> action)
     {
-        var compositionRoot = CompositionRootRegistry.GetByModule<TModule>();
-        using var scope = compositionRoot?.CreateScope() ?? _scopeFactory.CreateScope();
+        using var scope = _serviceProvider.CreateScope();
         var commandProcessor = scope.ServiceProvider.GetRequiredService<ICommandProcessor>();
         var mapper = scope.ServiceProvider.GetRequiredService<IMapper>();
 
         return await action.Invoke(commandProcessor, mapper);
+    }
+
+    public async Task Publish(Func<IBus, Task> action)
+    {
+        var bus = _serviceProvider.GetRequiredService<IBus>();
+        await action(bus);
     }
 
     public async Task<T> ExecuteQuery<T>(Func<IQueryProcessor, Task<T>> action)
@@ -55,8 +61,7 @@ public class GatewayProcessor<TModule> : IGatewayProcessor<TModule>
 
     public async Task<T> ExecuteQuery<T>(Func<IQueryProcessor, IMapper, Task<T>> action)
     {
-        var compositionRoot = CompositionRootRegistry.GetByModule<TModule>();
-        using var scope = compositionRoot?.CreateScope() ?? _scopeFactory.CreateScope();
+        using var scope = _serviceProvider.CreateScope();
         var queryProcessor = scope.ServiceProvider.GetRequiredService<IQueryProcessor>();
         var mapper = scope.ServiceProvider.GetRequiredService<IMapper>();
 

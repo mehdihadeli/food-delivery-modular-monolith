@@ -11,6 +11,7 @@ using BuildingBlocks.Logging;
 using BuildingBlocks.Monitoring;
 using BuildingBlocks.Persistence.EfCore.Postgres;
 using BuildingBlocks.Validation;
+using BuildingBlocks.Web.Extensions.ServiceCollectionExtensions;
 
 namespace ECommerce.Modules.Orders.Shared.Extensions.ServiceCollectionExtensions;
 
@@ -18,6 +19,8 @@ public static partial class ServiceCollectionExtensions
 {
     public static IServiceCollection AddInfrastructure(this IServiceCollection services, IConfiguration configuration)
     {
+        services.AddControllersAsServices();
+
         SnowFlakIdGenerator.Configure(3);
 
         services.AddCore(configuration, Assembly.GetExecutingAssembly());
@@ -61,6 +64,8 @@ public static partial class ServiceCollectionExtensions
 
         services.AddCustomInMemoryCache(configuration)
             .AddCachingRequestPolicies(Assembly.GetExecutingAssembly());
+
+        services.AddSingleton<ILoggerFactory>(new Serilog.Extensions.Logging.SerilogLoggerFactory());
 
         return services;
     }

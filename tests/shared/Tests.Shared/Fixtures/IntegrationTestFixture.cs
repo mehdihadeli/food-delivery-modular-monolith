@@ -217,13 +217,7 @@ public class IntegrationTestFixture<TEntryPoint> : IAsyncLifetime
     public IHttpContextAccessor HttpContextAccessor =>
         ServiceProvider.GetRequiredService<IHttpContextAccessor>();
 
-    public HttpClient CreateNewClient(Action<IServiceCollection>? services = null) =>
-        _factory.WithWebHostBuilder(b =>
-                b.ConfigureTestServices(sv =>
-                {
-                    services?.Invoke(sv);
-                }))
-            .CreateClient();
+    public HttpClient CreateClient(Action<IServiceCollection>? services = null) => _factory.CreateClient();
 
     public void RegisterTestServices(Action<IServiceCollection> services) =>
         _factory.TestRegistrationServices = services;

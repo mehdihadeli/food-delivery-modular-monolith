@@ -17,8 +17,8 @@ public class IdentityApiClient : IIdentityApiClient
         _httpClient = Guard.Against.Null(httpClient, nameof(httpClient));
         _options = Guard.Against.Null(options.Value, nameof(options));
 
-        _httpClient.BaseAddress = new Uri(_options.BaseApiAddress);
-        _httpClient.Timeout = new TimeSpan(0, 0, 30);
+        if (string.IsNullOrEmpty(_options.BaseApiAddress) == false)
+            _httpClient.BaseAddress = new Uri(_options.BaseApiAddress);
         _httpClient.DefaultRequestHeaders.Clear();
     }
 

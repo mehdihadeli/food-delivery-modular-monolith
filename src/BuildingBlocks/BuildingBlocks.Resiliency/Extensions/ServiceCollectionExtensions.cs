@@ -45,7 +45,7 @@ public static class Extensions
         where TClient : class, TInterface
     {
         services
-            .AddHttpClient<TInterface, TClient>()
+            .AddHttpClient<TInterface, TClient>(name: nameof(TClient))
             .AddCustomPolicyHandlers();
 
         return services;

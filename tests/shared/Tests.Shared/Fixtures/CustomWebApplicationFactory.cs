@@ -3,6 +3,7 @@ using Microsoft.AspNetCore.Mvc.Testing;
 using Microsoft.AspNetCore.TestHost;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.DependencyInjection.Extensions;
 using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Logging;
 using Serilog;
@@ -32,6 +33,7 @@ public class CustomWebApplicationFactory<TEntryPoint> : WebApplicationFactory<TE
     // https://andrewlock.net/exploring-dotnet-6-part-6-supporting-integration-tests-with-webapplicationfactory-in-dotnet-6/
     // https://github.com/dotnet/aspnetcore/pull/33462
     // https://github.com/dotnet/aspnetcore/issues/33846
+    // https://milestone.topics.it/2021/04/28/you-wanna-test-http.html
     protected override IHost CreateHost(IHostBuilder builder)
     {
         builder.UseContentRoot(Directory.GetCurrentDirectory());
@@ -66,22 +68,26 @@ public class CustomWebApplicationFactory<TEntryPoint> : WebApplicationFactory<TE
         //https://docs.microsoft.com/en-us/aspnet/core/test/integration-tests#set-the-environment
         //https://stackoverflow.com/questions/43927955/should-getenvironmentvariable-work-in-xunit-test/43951218
 
-        // //we could read env from our test launch setting or we can set it directly here
+        //we could read env from our test launch setting or we can set it directly here
         builder.UseEnvironment("test");
+
+        //The test app's builder.ConfigureServices callback is executed before the SUT's Startup.ConfigureServices code.
+        builder.ConfigureServices(services =>
+        {
+            services.AddScoped<TextWriter>(_ => new StringWriter());
+            services.AddScoped<TextReader>(sp =>
+                new StringReader(sp.GetRequiredService<TextWriter>().ToString() ?? ""));
+        });
 
         //The test app's builder.ConfigureTestServices callback is executed after the app's Startup.ConfigureServices code is executed.
         builder.ConfigureTestServices(services =>
         {
             // services.RemoveAll(typeof(IHostedService));
             services.AddHttpContextAccessor();
+            // https://milestone.topics.it/2021/11/10/http-client-factory-in-integration-testing.html
+            services.Replace(new ServiceDescriptor(typeof(IHttpClientFactory),
+                new DelegateHttpClientFactory(ClientProvider)));
             TestRegistrationServices?.Invoke(services);
-        });
-
-        //The test app's builder.ConfigureServices callback is executed before the SUT's Startup.ConfigureServices code.
-        builder.ConfigureServices(services =>
-        {
-            services.AddScoped<TextWriter>(_ => new StringWriter());
-            services.AddScoped<TextReader>(sp => new StringReader(sp.GetRequiredService<TextWriter>().ToString() ?? ""));
         });
 
         builder.UseDefaultServiceProvider((env, c) =>
@@ -92,5 +98,10 @@ public class CustomWebApplicationFactory<TEntryPoint> : WebApplicationFactory<TE
             if (env.HostingEnvironment.IsEnvironment("test") || env.HostingEnvironment.IsDevelopment())
                 c.ValidateScopes = true;
         });
+    }
+
+    public HttpClient ClientProvider(string name)
+    {
+        return CreateClient();
     }
 }

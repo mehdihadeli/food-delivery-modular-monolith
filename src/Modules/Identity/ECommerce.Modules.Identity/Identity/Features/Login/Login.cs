@@ -65,10 +65,10 @@ internal class LoginHandler : ICommandHandler<Login, LoginResponse>
 
         Guard.Against.Null(identityUser, new UserNotFoundException(request.UserNameOrEmail));
 
-        var signinResult = await _signInManager.PasswordSignInAsync(
-            request.UserNameOrEmail,
+        // instead of PasswordSignInAsync, we use CheckPasswordSignInAsync because we don't want set cookie, instead we use JWT
+        var signinResult = await _signInManager.CheckPasswordSignInAsync(
+            identityUser,
             request.Password,
-            request.Remember,
             false);
 
         if (signinResult.IsNotAllowed)

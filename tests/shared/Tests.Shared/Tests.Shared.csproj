@@ -4,6 +4,11 @@
     <ProjectReference Include="..\..\..\src\BuildingBlocks\BuildingBlocks.Core\BuildingBlocks.Core.csproj" />
     <ProjectReference Include="..\..\..\src\BuildingBlocks\BuildingBlocks.Logging\BuildingBlocks.Logging.csproj" />
     <ProjectReference Include="..\..\..\src\BuildingBlocks\BuildingBlocks.Persistence.EfCore.Postgres\BuildingBlocks.Persistence.EfCore.Postgres.csproj" />
+    <ProjectReference Include="..\..\..\src\BuildingBlocks\BuildingBlocks.Web\BuildingBlocks.Web.csproj" />
+    <ProjectReference Include="..\..\..\src\Modules\Catalogs\ECommerce.Modules.Catalogs\ECommerce.Modules.Catalogs.csproj" />
+    <ProjectReference Include="..\..\..\src\Modules\Customers\ECommerce.Modules.Customers\ECommerce.Modules.Customers.csproj" />
+    <ProjectReference Include="..\..\..\src\Modules\Identity\ECommerce.Modules.Identity\ECommerce.Modules.Identity.csproj" />
+    <ProjectReference Include="..\..\..\src\Modules\Orders\ECommerce.Modules.Orders\ECommerce.Modules.Orders.csproj" />
   </ItemGroup>
   <ItemGroup>
     <PackageReference Include="Hypothesist" Version="2.0.30" />

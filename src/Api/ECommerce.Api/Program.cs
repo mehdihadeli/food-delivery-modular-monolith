@@ -1,8 +1,5 @@
 using BuildingBlocks.Core.Extensions.ServiceCollection;
-using BuildingBlocks.Core.Messaging.BackgroundServices;
-using BuildingBlocks.Core.Registrations;
 using BuildingBlocks.Logging;
-using BuildingBlocks.Monitoring;
 using BuildingBlocks.Security;
 using BuildingBlocks.Security.Jwt;
 using BuildingBlocks.Swagger;
@@ -22,129 +19,140 @@ using Microsoft.AspNetCore.Mvc.Controllers;
 using Serilog;
 using Serilog.Events;
 
-// https://freecontent.manning.com/dependency-injection-in-net-2nd-edition-understanding-the-composition-root/
-
 // https://docs.microsoft.com/en-us/aspnet/core/fundamentals/minimal-apis
 // https://benfoster.io/blog/mvc-to-minimal-apis-aspnet-6/
 var builder = WebApplication.CreateBuilder(args);
 
-builder.Host.UseDefaultServiceProvider((env, c) =>
-{
-    // Handling Captive Dependency Problem
-    // https://ankitvijay.net/2020/03/17/net-core-and-di-beware-of-captive-dependency/
-    // https://levelup.gitconnected.com/top-misconceptions-about-dependency-injection-in-asp-net-core-c6a7afd14eb4
-    // https://blog.ploeh.dk/2014/06/02/captive-dependency/
-    if (env.HostingEnvironment.IsDevelopment() || env.HostingEnvironment.IsEnvironment("tests") ||
-        env.HostingEnvironment.IsStaging())
-    {
-        c.ValidateScopes = true;
-    }
-});
-
-builder.Configuration.AddModulesSettingsFile(builder.Environment.ContentRootPath, builder.Environment.EnvironmentName);
-builder.Configuration.AddEnvironmentVariables("ecommerce_env_");
-
-// https://github.com/tonerdo/dotnet-env
-DotNetEnv.Env.TraversePath().Load();
-
-builder.Services.AddHttpContextAccessor();
-
-builder.Services.AddApplicationOptions(builder.Configuration);
-var loggingOptions = builder.Configuration.GetSection(nameof(LoggerOptions)).Get<LoggerOptions>();
-
-builder.Host.AddCustomSerilog(
-    optionsBuilder =>
-    {
-        optionsBuilder.SetLevel(LogEventLevel.Information);
-    },
-    config =>
-    {
-        config.WriteTo.File(
-            ECommerce.Api.Program.GetLogPath(builder.Environment, loggingOptions) ?? "../logs/customers-service.log",
-            outputTemplate: loggingOptions?.LogTemplate ??
-                            "{Timestamp:yyyy-MM-dd HH:mm:ss.fff} {Level} - {Message:lj}{NewLine}{Exception}",
-            rollingInterval: RollingInterval.Day,
-            rollOnFileSizeLimit: true);
-    });
-
-/*----------------- Module Services Setup ------------------*/
-builder.AddModulesServices(useCompositionRootForModules: true);
-
-// https://andrewlock.net/controller-activation-and-dependency-injection-in-asp-net-core-mvc/
-builder.Services.AddControllers(options =>
-        options.Conventions.Add(new RouteTokenTransformerConvention(new SlugifyParameterTransformer())))
-    .AddControllersAsServices()
-    .AddNewtonsoftJson(options =>
-        options.SerializerSettings.ReferenceLoopHandling = Newtonsoft.Json.ReferenceLoopHandling.Ignore);
-
-builder.Services.ReplaceSingleton<IControllerActivator, CustomServiceBasedControllerActivator>();
-
-builder.Services.AddCustomProblemDetails();
-builder.Services.AddCompression();
-
-builder.AddCustomSwagger(
-    builder.Configuration,
-    false,
-    typeof(CustomersRoot).Assembly,
-    typeof(IdentityRoot).Assembly,
-    typeof(CatalogRoot).Assembly,
-    typeof(OrdersRoot).Assembly);
-
-builder.Services.AddCustomJwtAuthentication(builder.Configuration);
-builder.Services.AddCustomAuthorization(
-    rolePolicies: new List<RolePolicy>
-    {
-        new(ApiConstants.Role.Admin, new List<string> {ApiConstants.Role.Admin}),
-        new(ApiConstants.Role.User, new List<string> {ApiConstants.Role.User})
-    });
+RegisterServices(builder);
 
 var app = builder.Build();
 
-var environment = app.Environment;
+await ConfigureApplication(app);
 
-if (environment.IsDevelopment() || environment.IsEnvironment("docker"))
+await app.RunAsync();
+
+static void RegisterServices(WebApplicationBuilder builder)
 {
-    app.UseDeveloperExceptionPage();
-
-    // Minimal Api not supported versioning in .net 6
-    app.UseCustomSwagger();
-
-    // ref: https://christian-schou.dk/how-to-make-api-documentation-using-swagger/
-    app.UseReDoc(options =>
+    builder.Host.UseDefaultServiceProvider((env, c) =>
     {
-        options.DocumentTitle = "Customers Service ReDoc";
-        options.SpecUrl = "/swagger/v1/swagger.json";
+        // Handling Captive Dependency Problem
+        // https://ankitvijay.net/2020/03/17/net-core-and-di-beware-of-captive-dependency/
+        // https://levelup.gitconnected.com/top-misconceptions-about-dependency-injection-in-asp-net-core-c6a7afd14eb4
+        // https://blog.ploeh.dk/2014/06/02/captive-dependency/
+        if (env.HostingEnvironment.IsDevelopment() || env.HostingEnvironment.IsEnvironment("test") ||
+            env.HostingEnvironment.IsStaging())
+        {
+            c.ValidateScopes = true;
+        }
     });
+
+    builder.Configuration.AddModulesSettingsFile(
+        builder.Environment.ContentRootPath,
+        builder.Environment.EnvironmentName);
+
+    builder.Configuration.AddEnvironmentVariables("ecommerce_env_");
+
+    // https://github.com/tonerdo/dotnet-env
+    DotNetEnv.Env.TraversePath().Load();
+
+    builder.Services.AddHttpContextAccessor();
+
+    builder.Services.AddApplicationOptions(builder.Configuration);
+    var loggingOptions = builder.Configuration.GetSection(nameof(LoggerOptions)).Get<LoggerOptions>();
+
+    builder.Host.AddCustomSerilog(
+        optionsBuilder =>
+        {
+            optionsBuilder.SetLevel(LogEventLevel.Information);
+        },
+        config =>
+        {
+            config.WriteTo.File(
+                ECommerce.Api.Program.GetLogPath(builder.Environment, loggingOptions) ??
+                "../logs/customers-service.log",
+                outputTemplate: loggingOptions?.LogTemplate ??
+                                "{Timestamp:yyyy-MM-dd HH:mm:ss.fff} {Level} - {Message:lj}{NewLine}{Exception}",
+                rollingInterval: RollingInterval.Day,
+                rollOnFileSizeLimit: true);
+        });
+
+/*----------------- Module Services Setup ------------------*/
+    builder.AddModulesServices(useCompositionRootForModules: true);
+
+// https://andrewlock.net/controller-activation-and-dependency-injection-in-asp-net-core-mvc/
+    builder.Services.AddControllers(options =>
+            options.Conventions.Add(new RouteTokenTransformerConvention(new SlugifyParameterTransformer())))
+        .AddNewtonsoftJson(options =>
+            options.SerializerSettings.ReferenceLoopHandling = Newtonsoft.Json.ReferenceLoopHandling.Ignore);
+
+    builder.Services.ReplaceTransient<IControllerActivator, CustomServiceBasedControllerActivator>();
+
+    builder.Services.AddCustomProblemDetails();
+    builder.Services.AddCompression();
+
+    builder.AddCustomSwagger(
+        builder.Configuration,
+        false,
+        typeof(CustomersRoot).Assembly,
+        typeof(IdentityRoot).Assembly,
+        typeof(CatalogRoot).Assembly,
+        typeof(OrdersRoot).Assembly);
+
+    builder.Services.AddCustomJwtAuthentication(builder.Configuration);
+    builder.Services.AddCustomAuthorization(
+        rolePolicies: new List<RolePolicy>
+        {
+            new(ApiConstants.Role.Admin, new List<string> {ApiConstants.Role.Admin}),
+            new(ApiConstants.Role.User, new List<string> {ApiConstants.Role.User})
+        });
 }
 
-app.UseProblemDetails();
+static async Task ConfigureApplication(WebApplication app)
+{
+    var environment = app.Environment;
 
-app.UseSerilogRequestLogging();
+    if (environment.IsDevelopment() || environment.IsEnvironment("docker"))
+    {
+        app.UseDeveloperExceptionPage();
+
+        // Minimal Api not supported versioning in .net 6
+        app.UseCustomSwagger();
+
+        // ref: https://christian-schou.dk/how-to-make-api-documentation-using-swagger/
+        app.UseReDoc(options =>
+        {
+            options.DocumentTitle = "Customers Service ReDoc";
+            options.SpecUrl = "/swagger/v1/swagger.json";
+        });
+    }
+
+    app.UseProblemDetails();
+
+    app.UseSerilogRequestLogging();
 
 //app.UseMonitoring();
 
-app.UseAuthentication();
-app.UseAuthorization();
+    app.UseAuthentication();
+    app.UseAuthorization();
 
-app.UseRouting();
-app.UseAppCors();
+    app.UseRouting();
+    app.UseAppCors();
 
-app.MapControllers();
+    app.MapControllers();
 
 /*----------------- Module Middleware Setup ------------------*/
-await app.ConfigureModules();
+    await app.ConfigureModules();
 
 /*----------------- Module Routes Setup ------------------*/
-app.MapModulesEndpoints();
+    app.MapModulesEndpoints();
 
 // automatic discover minimal endpoints
-app.MapEndpoints();
+    app.MapEndpoints();
 
-Log.Logger = new LoggerConfiguration()
-    .WriteTo.Console()
-    .CreateBootstrapLogger();
-
-await app.RunAsync();
+    Log.Logger = new LoggerConfiguration()
+        .WriteTo.Console()
+        .CreateBootstrapLogger();
+}
 
 
 namespace ECommerce.Api

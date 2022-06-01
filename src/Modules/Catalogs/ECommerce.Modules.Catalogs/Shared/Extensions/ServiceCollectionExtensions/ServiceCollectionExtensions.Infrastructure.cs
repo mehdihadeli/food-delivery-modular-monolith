@@ -1,15 +1,11 @@
-using Ardalis.GuardClauses;
 using BuildingBlocks.Caching.InMemory;
 using BuildingBlocks.Core.Caching;
-using BuildingBlocks.Core.Extensions;
 using BuildingBlocks.Core.IdsGenerator;
 using BuildingBlocks.Core.Persistence.EfCore;
 using BuildingBlocks.Core.Registrations;
 using BuildingBlocks.Email;
 using BuildingBlocks.Email.Options;
 using BuildingBlocks.Logging;
-using BuildingBlocks.Monitoring;
-using BuildingBlocks.Persistence.EfCore.Postgres;
 using BuildingBlocks.Validation;
 using BuildingBlocks.Web.Extensions.ServiceCollectionExtensions;
 
@@ -30,6 +26,8 @@ public static partial class ServiceCollectionExtensions
                 .AddScoped(typeof(IPipelineBehavior<,>), typeof(InvalidateCachingBehavior<,>))
                 .AddScoped(typeof(IPipelineBehavior<,>), typeof(EfTxBehavior<,>));
         });
+
+        services.AddControllersAsServices();
 
         SnowFlakIdGenerator.Configure(1);
 
@@ -59,6 +57,8 @@ public static partial class ServiceCollectionExtensions
         //         name: "Catalogs-Module-Postgres-Check",
         //         tags: new[] {"catalogs-postgres"});
         // });
+
+        services.AddSingleton<ILoggerFactory>(new Serilog.Extensions.Logging.SerilogLoggerFactory());
 
         return services;
     }
