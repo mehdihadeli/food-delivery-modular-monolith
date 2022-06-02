@@ -103,9 +103,23 @@ Now we could all of these things beside each other and it decrease jumping and d
 
 Keeping such a split works great with CQRS. It segregates our operations and slices the application code vertically instead of horizontally. In Our CQRS pattern each command/query handler is a separate slice. This is where you can reduce coupling between layers. Each handler can be a separated code unit, even copy/pasted. Thanks to that, we can tune down the specific method to not follow general conventions (e.g. use custom SQL query or even different storage). In a traditional layered architecture, when we change the core generic mechanism in one layer, it can impact all methods.
 
+### High Level Structure
 ![](./assets/level-structure.png)
 
+### Catalogs Module Structure
 ![](./assets/catalog-module.png)
 
 ## Vertical Slice Flow
 TODO
+
+## Prerequisites
+
+1. This application uses `Https` for hosting apis, to setup a valid certificate on your machine, you can create a [Self-Signed Certificate](https://docs.microsoft.com/en-us/dotnet/core/additional-tools/self-signed-certificates-guide#create-a-self-signed-certificate).
+2. Install git - [https://git-scm.com/downloads](https://git-scm.com/downloads).
+3. Install .NET Core 6.0 - [https://dotnet.microsoft.com/download/dotnet/6.0](https://dotnet.microsoft.com/download/dotnet/6.0).
+4. Install Visual Studio 2022, Rider or VSCode.
+5. Install docker - [https://docs.docker.com/docker-for-windows/install/](https://docs.docker.com/docker-for-windows/install/).
+6. Make sure that you have ~10GB disk space.
+7. Run the [docker-compose.infrastructure.yaml](deployments/docker-compose/docker-compose.infrastructure.yaml) file, for running prerequisites infrastructures with `docker-compose -f ./deployments/docker-compose.infrastructure.yaml` command.
+8. Clone Project [https://github.com/mehdihadeli/ecommerce-modular-monolith-sample](https://github.com/mehdihadeli/ecommerce-modular-monolith-sample), make sure that's compiling
+9. Open [ecommerce.sln](./ECommerce.sln) solution.
