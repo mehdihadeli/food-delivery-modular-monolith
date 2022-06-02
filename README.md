@@ -3,8 +3,12 @@
 
 This application ported to `microservices architecture` in another repository which is available in [ecommerce-microservices-sample](https://github.com/mehdihadeli/ecommerce-microservices-sample) repository.
 
-
 🌀 Keep in mind this repository is work in progress and will be complete over time 🚀
+
+# ⭐ Support
+If you like feel free to ⭐ this repository, It helps out :)
+
+Thanks a bunch for supporting me!
 
 ## Plan
 
@@ -123,3 +127,27 @@ TODO
 7. Clone Project [https://github.com/mehdihadeli/ecommerce-modular-monolith-sample](https://github.com/mehdihadeli/ecommerce-modular-monolith-sample), make sure that's compiling
 8. Run the [docker-compose.infrastructure.yaml](deployments/docker-compose/docker-compose.infrastructure.yaml) file, for running prerequisites infrastructures with `docker-compose -f ./deployments/docker-compose.infrastructure.yaml -d` command.
 9. Open [ecommerce.sln](./ECommerce.sln) solution.
+
+## How to Run
+
+For Running this application we could run our application and their modules with running [src/Api/ECommerce.Api/ECommerce.Api.csproj](src/Api/ECommerce.Api/ECommerce.Api.csproj) project in our Dev Environment, for me it's Rider.
+
+For testing apis I used [REST Client](https://marketplace.visualstudio.com/items?itemName=humao.rest-client) plugin of VSCode its related file scenarios are available in [_httpclients](\_httpclients) folder. also after running api you have access to `swagger open api` for all modules in `/swagger` route path.
+
+In this application I use a `fake email sender` with name of [ethereal](https://ethereal.email/) as a SMTP provider for sending email. after sending email by the application you can see the list of sent emails in [ethereal messages panel](https://ethereal.email/messages). My temp username and password is available inner the all of [appsettings file](./src/Modules/Customers/ECommerce.Modules.Customers/customers.appsettings.json).
+
+## Contribution
+The application is in development status. You are feel free to submit pull request or create the issue.
+
+##  Project References
+- [https://github.com/kgrzybek/modular-monolith-with-ddd](https://github.com/kgrzybek/modular-monolith-with-ddd)
+- [https://github.com/oskardudycz/EventSourcing.NetCore](https://github.com/oskardudycz/EventSourcing.NetCore)
+- [https://github.com/dotnet-architecture/eShopOnContainers](https://github.com/dotnet-architecture/eShopOnContainers)
+- [https://github.com/jbogard/ContosoUniversityDotNetCore-Pages](https://github.com/jbogard/ContosoUniversityDotNetCore-Pages)
+- [https://github.com/thangchung/clean-architecture-dotnet](https://github.com/thangchung/clean-architecture-dotnet)
+- [https://github.com/jasontaylordev/CleanArchitecture](https://github.com/jasontaylordev/CleanArchitecture)
+- [https://github.com/DijanaPenic/DDD-VShop](https://github.com/DijanaPenic/DDD-VShop)
+- [https://github.com/devmentors/Inflow](https://github.com/devmentors/Inflow)
+
+## License
+The project is under [MIT license](https://github.com/mehdihadeli/ecommerce-modular-monolith-sample/blob/main/LICENSE).
