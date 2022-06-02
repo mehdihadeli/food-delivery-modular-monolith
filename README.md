@@ -85,6 +85,8 @@ Some of shipping module capabilities are `Register Shipping methods`, `Edit Ship
 ## Application Architecture
 TODO
 
+![](assets/modular.png)
+
 ## Application Structure
 
 In this project I used [vertical slice architecture](https://jimmybogard.com/vertical-slice-architecture/) or [Restructuring to a Vertical Slice Architecture](https://codeopinion.com/restructuring-to-a-vertical-slice-architecture/) also I used [feature folder structure](http://www.kamilgrzybek.com/design/feature-folders/) in this project.
