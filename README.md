@@ -1,8 +1,10 @@
 # 🛒 Ecommerce Modular Monolith Sample
-> Implementing an fictional ecommerce modular monolith application built with **Domain-Driven Design**, **CQRS**, **Event-Driven Architecture** and **Vertical Sclice Architecture** in .Net Core. In the plans, this application ported to microservices architecture in another repository which is available in [ecommerce-microservices-sample](https://github.com/mehdihadeli/ecommerce-microservices-sample) repository.
+> `Ecommerce Modular Monolith` is a fictional ecommerce sample, built with different software architecture and technologies like **Modular Monolith Architecture**, **Vertical Slice Architecture** , **CQRS Pattern**, **Domain Driven Design (DDD)**, **Event Driven Architecture**. For `communication` between independent modules, we use asynchronous messaging with using our [In-Memory Broker](src/BuildingBlocks/BuildingBlocks.Core/Messaging/Broker/InMemory/InMemoryBus.cs), and sometimes we use synchronous communication for real-time communications with using REST and gRPC calls.
+
+This application ported to `microservices architecture` in another repository which is available in [ecommerce-microservices-sample](https://github.com/mehdihadeli/ecommerce-microservices-sample) repository.
+
 
 🌀 Keep in mind this repository is work in progress and will be complete over time 🚀
-
 
 ## Plan
 
