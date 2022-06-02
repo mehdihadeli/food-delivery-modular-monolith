@@ -10,6 +10,21 @@ If you like feel free to ⭐ this repository, It helps out :)
 
 Thanks a bunch for supporting me!
 
+# Table of Contents
+
+- [Plan](#plan)
+- [Technologies - Libraries](#technologies---libraries)
+- [The Domain and Bounded Context - Modules Boundary](#the-domain-and-bounded-context---modules-boundary)
+- [Application Architecture](#application-architecture)
+- [Application Structure](#application-structure)
+- [Vertical Slice Flow](#vertical-slice-flow)
+- [Prerequisites](#prerequisites)
+- [How to Run](#how-to-run)
+- [Contribution](#contribution)
+- [Project References](#project-references)
+- [License](#license)
+
+
 ## Plan
 
 > This project is in progress, New features will be added over time.
@@ -67,6 +82,8 @@ Some of this module responsibilities are `Saving orders`, `Saving order drafts`,
 - `Shipping Module`: The Shipping module provides the ability to extend shipping provider list with custom providers and also provides an interface and API for managing these shipping providers.
 Some of shipping module capabilities are `Register Shipping methods`, `Edit Shipping method`, `Shipment details`, `Shipping settings`
 
+## Application Architecture
+TODO
 
 ## Application Structure
 
