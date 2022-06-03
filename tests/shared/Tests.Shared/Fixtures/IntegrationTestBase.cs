@@ -83,17 +83,11 @@ public abstract class IntegrationTestBase<TEntryPoint> : IClassFixture<Integrati
         integrationTestFixture.SetOutputHelper(outputHelper);
         Logger = Scope.ServiceProvider.GetRequiredService<ILogger<IntegrationTestFixture<TEntryPoint>>>();
 
-        AdminClient = integrationTestFixture.CreateClient(services =>
-        {
-        });
+        AdminClient = integrationTestFixture.CreateClient();
 
-        GuestClient = integrationTestFixture.CreateClient(services =>
-        {
-        });
+        GuestClient = integrationTestFixture.CreateClient();
 
-        UserClient = integrationTestFixture.CreateClient(services =>
-        {
-        });
+        UserClient = integrationTestFixture.CreateClient();
 
         var admin = new LoginRequestBuilder().Build();
         var user = new LoginRequestBuilder()
