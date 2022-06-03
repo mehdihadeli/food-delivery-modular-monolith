@@ -17,7 +17,7 @@ Thanks a bunch for supporting me!
 - [The Domain and Bounded Context - Modules Boundary](#the-domain-and-bounded-context---modules-boundary)
 - [Application Architecture](#application-architecture)
 - [Application Structure](#application-structure)
-- [Vertical Slice Flow](#vertical-slice-flow)
+- [Vertical Slice Flow in Modules](#vertical-slice-flow-in-modules)
 - [Prerequisites](#prerequisites)
 - [How to Run](#how-to-run)
 - [Contribution](#contribution)
@@ -168,8 +168,268 @@ Keeping such a split works great with CQRS. It segregates our operations and sli
 ### Catalogs Module Structure
 ![](./assets/catalog-module.png)
 
-## Vertical Slice Flow
-TODO
+## Vertical Slice Flow in Modules
+
+For implementing vertical slice architecture in each module, I have one project containing all codes related to specific module functionality, for example for implementing `Catalog Module` related functionally, I have [ECommerce.Modules.Catalogs](src/Modules/Catalogs/ECommerce.Modules.Catalogs/) project and for hosting all internal modules we use [ECommerce.Api](src/Api/ECommerce.Api) project, actually this api project act like a gateway in micorservices world but instead of `Network Calling` internal module it will uses `In-memory Calling` with using [GatewayProcessor](src/BuildingBlocks/BuildingBlocks.Web/GatewayProcessor.cs) and using separated [Composition Root](https://freecontent.manning.com/dependency-injection-in-net-2nd-edition-understanding-the-composition-root/) or `service provider` for each module. 
+
+- [ECommerce.Api](src/Api/ECommerce.Api) is responsible for Hosting modules and configuring our `web api`, running the application on top of .net core and actually serving our modules slices to outside of world.
+- [ECommerce.Modules.Catalogs](src/Modules/Catalogs/ECommerce.Modules.Catalogs/) is responsible for putting all slices (features) based on our functionality in some slices, for example we put all [Features or Slices](src/Services/Catalogs/ECommerce.Services.Catalogs/Products/Features) related to 
+
+Each modules should implement [IModuleDefinition](src/BuildingBlocks/BuildingBlocks.Abstractions/Web/Module/IModuleDefinition.cs) for example For `Catalog Module` we have:
+
+``` csharp
+public class CatalogModuleConfiguration : IModuleDefinition
+{
+    public const string CatalogModulePrefixUri = "api/v1/catalogs";
+    public const string ModuleName = "Catalogs";
+
+    public void AddModuleServices(IServiceCollection services, IConfiguration configuration)
+    {
+        services.AddInfrastructure(configuration);
+        services.AddStorage(configuration);
+
+        services.AddBrandsServices();
+        services.AddCategoriesServices();
+        services.AddSuppliersServices();
+        services.AddProductsServices();
+    }
+
+    public async Task ConfigureModule(
+        IApplicationBuilder app,
+        IConfiguration configuration,
+        ILogger logger,
+        IWebHostEnvironment environment)
+    {
+        ServiceActivator.Configure(app.ApplicationServices);
+
+        app.SubscribeAllMessageFromAssemblyOfType<CatalogRoot>();
+
+        await app.ApplyDatabaseMigrations(logger);
+        await app.SeedData(logger, environment);
+    }
+
+    public void MapEndpoints(IEndpointRouteBuilder endpoints)
+    {
+        endpoints.MapProductsEndpoints();
+
+        endpoints.MapGet("/", (HttpContext context) =>
+        {
+            var requestId = context.Request.Headers.TryGetValue("X-Request-Id", out var requestIdHeader)
+                ? requestIdHeader.FirstOrDefault()
+                : string.Empty;
+
+            return $"Catalogs Service Apis, RequestId: {requestId}";
+        }).ExcludeFromDescription();
+    }
+}
+```
+
+In API project [Program.cs](src/Api/ECommerce.Api/Program.cs) file as entry point of our application, for loading and configuring modules I created a [ModuleExtensions](src/BuildingBlocks/BuildingBlocks.Web/Extensions/ModuleExtensions.cs) and for adding modules services we should add [AddModulesServices(useCompositionRootForModules: true)](src/BuildingBlocks/BuildingBlocks.Web/Extensions/ModuleExtensions.cs#L27) in program file, and because in modular monolith we want to use separated composition root for each module and it creates separate `dependency container` for each module with autonomous dependency management. This [method](src/BuildingBlocks/BuildingBlocks.Web/Extensions/ModuleExtensions.cs#L100) will create separated composition root (service provider) for each module and will add it to `CompositionRootRegistry`. All modules composition root preserve in the `CompositionRootRegistry` static class and we can retrieve corresponding module [CompositionRoot](src/BuildingBlocks/BuildingBlocks.Web/Module/CompositionRoot.cs) class by calling [GetByModule<TModule>()](src/BuildingBlocks/BuildingBlocks.Web/Module/CompositionRootRegistry.cs#L42) on `CompositionRootRegistry` class. 
+
+With calling `AddModulesServices()` in program file, it calls all modules `AddModuleServices` method, for example for `Module Catalog` it is:
+
+``` csharp
+public class CatalogModuleConfiguration : IModuleDefinition
+{
+    public void AddModuleServices(IServiceCollection services, IConfiguration configuration)
+    {
+        services.AddInfrastructure(configuration);
+        services.AddStorage(configuration);
+
+        services.AddBrandsServices();
+        services.AddCategoriesServices();
+        services.AddSuppliersServices();
+        services.AddProductsServices();
+    }
+}
+```
+
+Then for configuring modules middleware we should call [ConfigureModules()](src/BuildingBlocks/BuildingBlocks.Web/Extensions/ModuleExtensions.cs#L106) in program file and it calls all modules `ConfigureModule` method, for example for catalog module it is:
+
+``` csharp
+public class CatalogModuleConfiguration : IModuleDefinition
+{
+    public async Task ConfigureModule(
+        IApplicationBuilder app,
+        IConfiguration configuration,
+        ILogger logger,
+        IWebHostEnvironment environment)
+    {
+        ServiceActivator.Configure(app.ApplicationServices);
+
+        app.SubscribeAllMessageFromAssemblyOfType<CatalogRoot>();
+
+        await app.ApplyDatabaseMigrations(logger);
+        await app.SeedData(logger, environment);
+    }
+}
+
+```
+
+And finally for configuring modules endpoint we should call [MapModulesEndpoints()](src/BuildingBlocks/BuildingBlocks.Web/Extensions/ModuleExtensions.cs#L160) in program file and it calls all modules `MapEndpoints` method, for example for catalog module it is:
+
+``` csharp
+public class CatalogModuleConfiguration : IModuleDefinition
+{
+    public void MapEndpoints(IEndpointRouteBuilder endpoints)
+    {
+        endpoints.MapProductsEndpoints();
+
+        endpoints.MapGet("/", (HttpContext context) =>
+        {
+            var requestId = context.Request.Headers.TryGetValue("X-Request-Id", out var requestIdHeader)
+                ? requestIdHeader.FirstOrDefault()
+                : string.Empty;
+
+            return $"Catalogs Service Apis, RequestId: {requestId}";
+        }).ExcludeFromDescription();
+    }
+}
+
+```
+
+> **Note**: We don't have separated API project for each module in vertical slice architecture because they are not microervice and shouldn't host separately, so for hosting all modules with vertical slice architecture we just use one [API](src/Api/ECommerce.Api/) project.
+
+In Catalog module for `Product` functionalities in [Products](src/Modules/Catalogs/ECommerce.Modules.Catalogs/Products/) folder or other functionalities in other folders, we have a [Shared Folder](src/Modules/Catalogs/ECommerce.Modules.Catalogs/Shared/) that contains some infrastructure things will share between all slices (for example [Data-Context](src/Modules/Catalogs/ECommerce.Modules.Catalogs/Shared/Data/CatalogDbContext.cs), [ServiceCollectionExtensions.Persistence](src/Modules/Catalogs/ECommerce.Modules.Catalogs/Shared/Extensions/ServiceCollectionExtensions/ServiceCollectionExtensions.Persistence.cs)).
+
+In vertical slice flow, we treat each request as a `slice`. For example for [CreatingProduct](src/Modules/Catalogs/ECommerce.Modules.Catalogs/Products/Features/CreatingProduct/) feature or slice, Our flow will start with a `Endpoint` with name [CreateProductEndpoint](src/Services/Catalogs/ECommerce.Services.Catalogs/Products/Features/CreatingProduct/CreateProductEndpoint.cs), actually our [API](src/Api/ECommerce.Api/) project, will route user api request to this specific endpoint in catalog module. Now for running minimal api route handler in module specific composition root, we should use [GatewayProcessor<CatalogModuleConfiguration>](src/BuildingBlocks/BuildingBlocks.Web/GatewayProcessor.cs) inner our [Route Handler](src/Modules/Catalogs/ECommerce.Modules.Catalogs/Products/Features/CreatingProduct/CreateProductEndpoint.cs#L31), because as default routes will run in application root service provider instead of specific module service provider. Now this `GatewayProcessor` will get corresponding service provider for specific module (here, Catalogs module) from the [CompositionRootRegistry](src/BuildingBlocks/BuildingBlocks.Web/Module/CompositionRootRegistry.cs) and then execute command or query of top of its new service provider.
+
+``` csharp
+// POST api/v1/catalog/products
+public static class CreateProductEndpoint
+{
+    internal static IEndpointRouteBuilder MapCreateProductsEndpoint(this IEndpointRouteBuilder endpoints)
+    {
+        endpoints.MapPost($"{ProductsConfigs.ProductsPrefixUri}", CreateProducts)
+            .WithTags(ProductsConfigs.Tag)
+            .RequireAuthorization()
+            .Produces<CreateProductResult>(StatusCodes.Status201Created)
+            .Produces(StatusCodes.Status401Unauthorized)
+            .Produces(StatusCodes.Status400BadRequest)
+            .WithName("CreateProduct")
+            .WithDisplayName("Create a new product.");
+
+        return endpoints;
+    }
+
+    private static Task<IResult> CreateProducts(
+        CreateProductRequest request,
+        IGatewayProcessor<CatalogModuleConfiguration> gatewayProcessor,
+        CancellationToken cancellationToken)
+    {
+        Guard.Against.Null(request, nameof(request));
+
+        return gatewayProcessor.ExecuteCommand(async (commandProcessor, mapper) =>
+        {
+            var command = mapper.Map<CreateProduct>(request);
+            var result = await commandProcessor.SendAsync(command, cancellationToken);
+
+            return Results.CreatedAtRoute("GetProductById", new {id = result.Product.Id}, result);
+        });
+    }
+}
+```
+
+In this endpoint we use CQRS and pass [CreateProduct](src/Modules/Catalogs/ECommerce.Modules.Catalogs/Products/Features/CreatingProduct/CreateProduct.cs) command to our command processor for executing and route to corresponding [CreateProductHandler](src/Modules/Catalogs/ECommerce.Modules.Catalogs/Products/Features/CreatingProduct/CreateProduct.cs#L90) command handler.
+
+``` csharp
+public record CreateProduct(
+    string Name,
+    decimal Price,
+    int Stock,
+    int RestockThreshold,
+    int MaxStockThreshold,
+    ProductStatus Status,
+    int Width,
+    int Height,
+    int Depth,
+    string Size,
+    ProductColor Color,
+    long CategoryId,
+    long SupplierId,
+    long BrandId,
+    string? Description = null,
+    IEnumerable<CreateProductImageRequest>? Images = null) : ITxCreateCommand<CreateProductResult>
+{
+    public long Id { get; init; } = SnowFlakIdGenerator.NewId();
+}
+
+public class CreateProductHandler : ICommandHandler<CreateProduct, CreateProductResult>
+{
+    private readonly ILogger<CreateProductHandler> _logger;
+    private readonly IMapper _mapper;
+    private readonly ICatalogDbContext _catalogDbContext;
+
+    public CreateProductHandler(
+        ICatalogDbContext catalogDbContext,
+        IMapper mapper,
+        ILogger<CreateProductHandler> logger)
+    {
+        _logger = Guard.Against.Null(logger, nameof(logger));
+        _mapper = Guard.Against.Null(mapper, nameof(mapper));
+        _catalogDbContext = Guard.Against.Null(catalogDbContext, nameof(catalogDbContext));
+    }
+
+    public async Task<CreateProductResult> Handle(
+        CreateProduct command,
+        CancellationToken cancellationToken)
+    {
+        Guard.Against.Null(command, nameof(command));
+
+        var images = command.Images?.Select(x =>
+            new ProductImage(SnowFlakIdGenerator.NewId(), x.ImageUrl, x.IsMain, command.Id)).ToList();
+
+        var category = await _catalogDbContext.FindCategoryAsync(command.CategoryId);
+        Guard.Against.NotFound(category, new CategoryDomainException(command.CategoryId));
+
+        var brand = await _catalogDbContext.FindBrandAsync(command.BrandId);
+        Guard.Against.NotFound(brand, new BrandNotFoundException(command.BrandId));
+
+        var supplier = await _catalogDbContext.FindSupplierByIdAsync(command.SupplierId);
+        Guard.Against.NotFound(supplier, new SupplierNotFoundException(command.SupplierId));
+
+        // await _domainEventDispatcher.DispatchAsync(cancellationToken, new Events.Domain.CreatingProduct());
+        var product = Product.Create(
+            command.Id,
+            command.Name,
+            Stock.Create(command.Stock, command.RestockThreshold, command.MaxStockThreshold),
+            command.Status,
+            Dimensions.Create(command.Width, command.Height, command.Depth),
+            command.Size,
+            command.Color,
+            command.Description,
+            command.Price,
+            category!.Id,
+            supplier!.Id,
+            brand!.Id,
+            images);
+
+        await _catalogDbContext.Products.AddAsync(product, cancellationToken: cancellationToken);
+
+        await _catalogDbContext.SaveChangesAsync(cancellationToken);
+
+        var created = await _catalogDbContext.Products
+            .Include(x => x.Brand)
+            .Include(x => x.Category)
+            .Include(x => x.Supplier)
+            .SingleOrDefaultAsync(x => x.Id == product.Id, cancellationToken: cancellationToken);
+
+        var productDto = _mapper.Map<ProductDto>(created);
+
+        _logger.LogInformation("Product a with ID: '{ProductId} created.'", command.Id);
+
+        return new CreateProductResult(productDto);
+    }
+}
+```
+
+This command handler will execute in a transaction with using [EfTxBehavior](src/BuildingBlocks/BuildingBlocks.Core/Persistence/EfCore/EfTxBehavior.cs) pipeline, because `CreateProduct` inherits from [ITxCreateCommand](src/BuildingBlocks/BuildingBlocks.Abstractions/CQRS/Commands/ITxCommand.cs).
+
+And in the end of this handler before [Committing Transaction](src/BuildingBlocks/BuildingBlocks.Core/Persistence/EfCore/EfTxBehavior.cs#L74) we publish our domain events to their handlers with help of [DomainEventPublisher](src/BuildingBlocks/BuildingBlocks.Core/CQRS/Events/DomainEventPublisher.cs#L38). Also after [publishing our domain event handlers](src/BuildingBlocks/BuildingBlocks.Core/CQRS/Events/DomainEventPublisher.cs#L60), if We have a valid [EventMapper](src/BuildingBlocks/BuildingBlocks.Core/CQRS/Events/DomainEventPublisher.cs#L77) for mapping our domain events to `integration events` we can get their corresponding `Integration Events` for example [ProductEventMapper](src/Services/Catalogs/ECommerce.Services.Catalogs/Products/ProductEventMapper.cs) is a event mapping file for products functionality.
+
+These integration events will [Save](src/BuildingBlocks/BuildingBlocks.Core/CQRS/Event/DomainEventPublisher.cs#L83) in the persistence message store, with help of [MessagePersistenceService](src/BuildingBlocks/BuildingBlocks.Core/Messaging/MessagePersistence/InMemory/InMemoryMessagePersistenceService.cs#L39) as [StoreMessage](src/BuildingBlocks/BuildingBlocks.Abstractions/Messaging/PersistMessage/StoreMessage.cs) with [MessageDeliveryType](src/BuildingBlocks/BuildingBlocks.Abstractions/Messaging/PersistMessage/MessageDeliveryType.cs) `Outbox` for guaranty delivery before committing.
+After [Committing Transaction](src/BuildingBlocks/BuildingBlocks.Core/Persistence/EfCore/EfTxBehavior.cs#L77) Our [MessagePersistenceBackgroundService](src/BuildingBlocks/BuildingBlocks.Core/Messaging/BackgroundServices/MessagePersistenceBackgroundService.cs#L45) will send, saved StoreMessage with delivery type outbox to message broker.
+
 
 ## Prerequisites
 
