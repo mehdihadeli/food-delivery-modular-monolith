@@ -36,7 +36,7 @@ public class IdentityModuleConfiguration : IModuleDefinition
 
     public void MapEndpoints(IEndpointRouteBuilder endpoints)
     {
-        endpoints.MapGet("/", (HttpContext context) =>
+        endpoints.MapGet("identity", (HttpContext context) =>
         {
             var requestId = context.Request.Headers.TryGetValue("X-Request-Id", out var requestIdHeader)
                 ? requestIdHeader.FirstOrDefault()

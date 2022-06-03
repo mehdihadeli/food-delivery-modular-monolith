@@ -76,10 +76,10 @@ static void RegisterServices(WebApplicationBuilder builder)
                 rollOnFileSizeLimit: true);
         });
 
-/*----------------- Module Services Setup ------------------*/
+    /*----------------- Module Services Setup ------------------*/
     builder.AddModulesServices(useCompositionRootForModules: true);
 
-// https://andrewlock.net/controller-activation-and-dependency-injection-in-asp-net-core-mvc/
+    // https://andrewlock.net/controller-activation-and-dependency-injection-in-asp-net-core-mvc/
     builder.Services.AddControllers(options =>
             options.Conventions.Add(new RouteTokenTransformerConvention(new SlugifyParameterTransformer())))
         .AddNewtonsoftJson(options =>
@@ -130,30 +130,29 @@ static async Task ConfigureApplication(WebApplication app)
 
     app.UseSerilogRequestLogging();
 
-//app.UseMonitoring();
+    app.UseRouting();
+    app.UseAppCors();
 
     app.UseAuthentication();
     app.UseAuthorization();
 
-    app.UseRouting();
-    app.UseAppCors();
+    /*----------------- Module Middleware Setup ------------------*/
+    await app.ConfigureModules();
 
     app.MapControllers();
 
-/*----------------- Module Middleware Setup ------------------*/
-    await app.ConfigureModules();
-
-/*----------------- Module Routes Setup ------------------*/
+    /*----------------- Module Routes Setup ------------------*/
     app.MapModulesEndpoints();
 
-// automatic discover minimal endpoints
+    // automatic discover minimal endpoints
     app.MapEndpoints();
+
+    app.MapGet("/", (HttpContext _) => "ECommerce Modular Monolith Api.").ExcludeFromDescription();
 
     Log.Logger = new LoggerConfiguration()
         .WriteTo.Console()
         .CreateBootstrapLogger();
 }
-
 
 namespace ECommerce.Api
 {

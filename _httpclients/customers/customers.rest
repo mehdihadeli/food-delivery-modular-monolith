@@ -5,7 +5,7 @@
 @product_id=1
 
 # @name ApiRoot
-GET {{api-address}}
+GET {{api-address}}/customers
 
 ###
 # @name Authenticate

@@ -44,7 +44,7 @@ public class CatalogModuleConfiguration : IModuleDefinition
     {
         endpoints.MapProductsEndpoints();
 
-        endpoints.MapGet("/", (HttpContext context) =>
+        endpoints.MapGet("catalogs", (HttpContext context) =>
         {
             var requestId = context.Request.Headers.TryGetValue("X-Request-Id", out var requestIdHeader)
                 ? requestIdHeader.FirstOrDefault()

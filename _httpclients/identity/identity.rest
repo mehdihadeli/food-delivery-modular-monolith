@@ -4,7 +4,7 @@
 
 ###
 # @name ApiRoot
-GET {{api-address}}
+GET {{api-address}}/identity
 ###
 
 ###
@@ -27,10 +27,10 @@ accept: application/json
 Content-Type: application/json
 
 {
-  "firstName": "mehdi4",
+  "firstName": "mehdi114",
   "lastName": "test",
-  "userName": "mehdi4",
-  "email": "mehdi4@test.com",
+  "userName": "mehdi114",
+  "email": "mehdi114@test.com",
   "password": "123456",
   "confirmPassword": "123456",
   "roles": [
@@ -54,37 +54,3 @@ Content-Type: application/x-www-form-urlencoded
 GET {{api-address}}/api/v1/identity/users/by-email/{{email}}
 accept: application/json
 ###
-
-
-################################
-# Identity-Server
-################################
-###
-# @name OpenId_Configuration
-GET {{api-address}}/.well-known/openid-configuration
-###
-
-###
-# @name Get_oauthClient_Token
-POST {{api-address}}/connect/token
-Content-Type: application/x-www-form-urlencoded
-
-grant_type=client_credentials&scope=shop-api&client_id=oauthClient&client_secret=SuperSecretPassword
-###
-
-
-###
-# @name Get_frontend-client_Token
-POST {{api-address}}/connect/token
-Content-Type: application/x-www-form-urlencoded
-
-grant_type=password&scope=shop-api&client_id=frontend-client&username=mehdi&password=123456
-###
-
-
-###
-# @name Authorize
-POST {{api-address}}/connect/authorize
-Content-Type: application/x-www-form-urlencoded
-
-scope=shop-api&client_id=frontend-client

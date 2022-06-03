@@ -41,7 +41,7 @@ public class CustomersModuleConfiguration : IModuleDefinition
         endpoints.MapCustomersEndpoints();
         endpoints.MapRestockSubscriptionsEndpoints();
 
-        endpoints.MapGet("/", (HttpContext context) =>
+        endpoints.MapGet("customers", (HttpContext context) =>
         {
             var requestId = context.Request.Headers.TryGetValue("X-Request-Id", out var requestIdHeader)
                 ? requestIdHeader.FirstOrDefault()
