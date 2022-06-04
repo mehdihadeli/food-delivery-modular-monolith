@@ -63,6 +63,7 @@ public class RegisterUserTests : IntegrationTestBase<Program>
         var newUser = _registerUser;
 
         var shouldPublish = await IdentityModule.ShouldPublish<UserRegistered>();
+        var shouldConsumeWithNewConsumer = await IdentityModule.ShouldConsumeWithNewConsumer<UserRegistered>();
 
         // Act
         await IdentityModule.GatewayProcessor.ExecuteCommand(
@@ -70,5 +71,6 @@ public class RegisterUserTests : IntegrationTestBase<Program>
 
         // Assert
         await shouldPublish.Validate(60.Seconds());
+        await shouldConsumeWithNewConsumer.Validate(60.Seconds());
     }
 }

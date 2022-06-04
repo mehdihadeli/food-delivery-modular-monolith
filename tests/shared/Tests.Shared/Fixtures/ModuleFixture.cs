@@ -263,6 +263,23 @@ public class ModuleFixture<TModule, TWContext> : IDisposable
         }
     }
 
+    public async Task<IHypothesis<object>> ShouldPublish(Predicate<object>? match = null)
+    {
+        var hypothesis = Hypothesis
+            .For<object>()
+            .Any(match ?? (_ => true));
+
+        Bus.RemoveAllConsume();
+
+        Bus.MessagePublished += message =>
+        {
+            if (message.GetType() == typeof(object))
+                hypothesis.Test(message);
+        };
+
+        return hypothesis;
+    }
+
     public async Task<IHypothesis<TMessage>> ShouldPublish<TMessage>(Predicate<TMessage>? match = null)
         where TMessage : class, IMessage
     {
@@ -272,18 +289,32 @@ public class ModuleFixture<TModule, TWContext> : IDisposable
 
         Bus.RemoveAllConsume();
 
-        // Bus.Consume(hypothesis.AsMessageHandler());
-
-        Bus.Consume<TMessage>(async
-            (consumeContext, ct) =>
+        Bus.MessagePublished += message =>
         {
-            await hypothesis.Test(consumeContext.Message);
-        });
+            if (message.GetType() == typeof(TMessage) && message is TMessage messageData)
+                hypothesis.Test(messageData);
+        };
 
         return hypothesis;
     }
 
-    public async Task<IHypothesis<TMessage>> ShouldConsumed<TMessage>(Predicate<TMessage>? match = null)
+    public async Task<IHypothesis<TMessage>> ShouldConsume<TMessage>(Predicate<TMessage>? match = null)
+        where TMessage : class, IMessage
+    {
+        var hypothesis = Hypothesis
+            .For<TMessage>()
+            .Any(match ?? (_ => true));
+
+        Bus.MessageConsumed += (message, _) =>
+        {
+            if (message.GetType() == typeof(TMessage) && message is TMessage messageData)
+                hypothesis.Test(messageData);
+        };
+
+        return hypothesis;
+    }
+
+    public async Task<IHypothesis<TMessage>> ShouldConsumeWithNewConsumer<TMessage>(Predicate<TMessage>? match = null)
         where TMessage : class, IMessage
     {
         var hypothesis = Hypothesis
@@ -303,7 +334,7 @@ public class ModuleFixture<TModule, TWContext> : IDisposable
         return hypothesis;
     }
 
-    public async Task<IHypothesis<TMessage>> ShouldConsumed<TMessage, TMessageHandler>(
+    public async Task<IHypothesis<TMessage>> ShouldConsume<TMessage, TMessageHandler>(
         Predicate<TMessage>? match = null)
         where TMessage : class, IMessage
         where TMessageHandler : class, IMessageHandler<TMessage>
@@ -312,9 +343,12 @@ public class ModuleFixture<TModule, TWContext> : IDisposable
             .For<TMessage>()
             .Any(match ?? (_ => true));
 
-        Bus.RemoveAllConsume();
-
-        Bus.Consume(hypothesis.AsMessageHandler<TMessage, TMessageHandler>(ServiceProvider));
+        Bus.MessageConsumed += (message, handlerType) =>
+        {
+            if (message.GetType() == typeof(TMessage) && message is TMessage messageData &&
+                typeof(TMessageHandler).IsAssignableTo(handlerType))
+                hypothesis.Test(messageData);
+        };
 
         return hypothesis;
     }

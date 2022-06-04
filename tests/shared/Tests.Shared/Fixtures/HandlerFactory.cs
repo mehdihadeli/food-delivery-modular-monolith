@@ -21,8 +21,6 @@ public static class HandlerFactory
         return async (context, cancellationToken) =>
         {
             using var scope = serviceProvider.CreateScope();
-            var bus = scope.ServiceProvider.GetRequiredService<IBus>();
-            bus.Consume<TMessageHandler, TMessage>();
 
             var handler = scope.ServiceProvider.GetService(typeof(TMessageHandler));
             if (handler is null)

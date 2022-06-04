@@ -71,4 +71,6 @@ public interface IBusConsumer
     void RemoveAllConsumeFromAssemblyOf<TType>();
 
     void RemoveAllConsumeFromAssemblyOf(params Type[] assemblyMarkerTypes);
+
+    event Action<object, Type> MessageConsumed;
 }

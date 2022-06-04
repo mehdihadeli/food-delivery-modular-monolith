@@ -42,6 +42,8 @@ public class NullBus : IBus
         return Task.CompletedTask;
     }
 
+    public event Action<object>? MessagePublished;
+
     public Task StartAsync(CancellationToken cancellationToken = default)
     {
         return Task.CompletedTask;
@@ -108,4 +110,6 @@ public class NullBus : IBus
     public void RemoveAllConsumeFromAssemblyOf(params Type[] assemblyMarkerTypes)
     {
     }
+
+    public event Action<object, Type>? MessageConsumed;
 }

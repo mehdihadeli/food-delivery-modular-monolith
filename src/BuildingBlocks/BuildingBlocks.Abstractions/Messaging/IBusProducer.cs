@@ -27,4 +27,6 @@ public interface IBusProducer
         string? exchangeOrTopic = null,
         string? queue = null,
         CancellationToken cancellationToken = default);
+
+    event Action<object> MessagePublished;
 }

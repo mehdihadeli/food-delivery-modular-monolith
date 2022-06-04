@@ -115,6 +115,8 @@ public class InMemoryBus : IBus
                                 nameof(IMessageHandler<IMessage>.HandleAsync),
                                 typedConsumedContext,
                                 cancellationToken);
+
+                            MessageConsumed?.Invoke(typedConsumedContext?.Message, handlerType);
                         }
                     }
                 }
@@ -163,6 +165,8 @@ public class InMemoryBus : IBus
         var json = _messageSerializer.Serialize(messageEnvelope);
 
         await _channel.Writer.WriteAsync(json, cancellationToken);
+
+        MessagePublished?.Invoke(message);
     }
 
     public async Task PublishAsync<TMessage>(
@@ -187,6 +191,8 @@ public class InMemoryBus : IBus
         var json = _messageSerializer.Serialize(messageEnvelope);
 
         await _channel.Writer.WriteAsync(json, cancellationToken);
+
+        MessagePublished?.Invoke(message);
     }
 
     public async Task PublishAsync(
@@ -327,6 +333,9 @@ public class InMemoryBus : IBus
             }
         }
     }
+
+    public event Action<object, Type>? MessageConsumed;
+    public event Action<object>? MessagePublished;
 
     private static void AddConsumerHandler(Type messageType, Type handlerType)
     {

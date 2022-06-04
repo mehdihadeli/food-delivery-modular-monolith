@@ -59,7 +59,7 @@ public class UserRegisteredTests : IntegrationTestBase<Program>
         // Arrange
         var message = _userRegistered;
 
-        var shouldConsume = await CustomersModule.ShouldConsumed<UserRegistered>();
+        var shouldConsume = await CustomersModule.ShouldConsume<UserRegistered>();
 
         // Act
         await CustomersModule.PublishMessageAsync(message);
@@ -74,7 +74,7 @@ public class UserRegisteredTests : IntegrationTestBase<Program>
         // Arrange
         var message = _userRegistered;
 
-        var shouldConsume = await CustomersModule.ShouldConsumed<UserRegistered, UserRegisteredConsumer>();
+        var shouldConsume = await CustomersModule.ShouldConsume<UserRegistered, UserRegisteredConsumer>();
 
         // Act
         await CustomersModule.PublishMessageAsync(message);
