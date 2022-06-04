@@ -62,13 +62,13 @@ public class RegisterUserTests : IntegrationTestBase<Program>
         // Arrange
         var newUser = _registerUser;
 
-        var shouldConsume = await IdentityModule.ShouldConsumed<UserRegistered>();
+        var shouldPublish = await IdentityModule.ShouldPublish<UserRegistered>();
 
         // Act
         await IdentityModule.GatewayProcessor.ExecuteCommand(
             async commandProcessor => await commandProcessor.SendAsync(newUser, CancellationToken));
 
         // Assert
-        await shouldConsume.Validate(60.Seconds());
+        await shouldPublish.Validate(60.Seconds());
     }
 }

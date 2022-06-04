@@ -31,15 +31,12 @@ public class ModuleFixture<TModule, TWContext> : IDisposable
         _checkpoint = new Checkpoint
         {
             // SchemasToInclude = new[] {"public"},
-            DbAdapter = DbAdapter.Postgres,
-            TablesToIgnore = new List<Table> {new("__EFMigrationsHistory"),}.ToArray()
+            DbAdapter = DbAdapter.Postgres, TablesToIgnore = new List<Table> {new("__EFMigrationsHistory"),}.ToArray()
         };
         _mongoRunner = MongoDbRunner.Start();
         var mongoOptions = serviceProvider.GetService<IOptions<MongoOptions>>();
         if (mongoOptions is { })
             mongoOptions.Value.ConnectionString = _mongoRunner.ConnectionString;
-
-        Bus.RemoveAllConsume();
 
         SeedData();
     }
@@ -266,6 +263,25 @@ public class ModuleFixture<TModule, TWContext> : IDisposable
         }
     }
 
+    public async Task<IHypothesis<TMessage>> ShouldPublish<TMessage>(Predicate<TMessage>? match = null)
+        where TMessage : class, IMessage
+    {
+        var hypothesis = Hypothesis
+            .For<TMessage>()
+            .Any(match ?? (_ => true));
+
+        Bus.RemoveAllConsume();
+
+        // Bus.Consume(hypothesis.AsMessageHandler());
+
+        Bus.Consume<TMessage>(async
+            (consumeContext, ct) =>
+        {
+            await hypothesis.Test(consumeContext.Message);
+        });
+
+        return hypothesis;
+    }
 
     public async Task<IHypothesis<TMessage>> ShouldConsumed<TMessage>(Predicate<TMessage>? match = null)
         where TMessage : class, IMessage
@@ -273,6 +289,8 @@ public class ModuleFixture<TModule, TWContext> : IDisposable
         var hypothesis = Hypothesis
             .For<TMessage>()
             .Any(match ?? (_ => true));
+
+        Bus.RemoveAllConsume();
 
         // Bus.Consume(hypothesis.AsMessageHandler());
 
@@ -293,6 +311,8 @@ public class ModuleFixture<TModule, TWContext> : IDisposable
         var hypothesis = Hypothesis
             .For<TMessage>()
             .Any(match ?? (_ => true));
+
+        Bus.RemoveAllConsume();
 
         Bus.Consume(hypothesis.AsMessageHandler<TMessage, TMessageHandler>(ServiceProvider));
 
