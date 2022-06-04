@@ -231,6 +231,16 @@ public class InMemoryBus : IBus
         AddConsumerHandler(messageType, handlerType);
     }
 
+    public void RemoveConsume(Type messageType)
+    {
+        var itemsToRemove = _handlers.Where(x => x.Key == messageType).ToDictionary(x => x.Key, v => v.Value);
+
+        foreach (var toRemove in itemsToRemove)
+        {
+            _handlers.Remove(toRemove.Key);
+        }
+    }
+
     public void Consume<THandler, TMessage>()
         where THandler : IMessageHandler<TMessage>
         where TMessage : class, IMessage
@@ -278,13 +288,52 @@ public class InMemoryBus : IBus
         }
     }
 
+    public void RemoveAllConsume()
+    {
+        var assemblies = AppDomain.CurrentDomain.GetAssemblies();
+
+        foreach (var assembly in assemblies)
+        {
+            var messageTypes = assembly.GetHandledMessageTypes();
+
+            foreach (var messageType in messageTypes)
+            {
+                RemoveConsume(messageType);
+            }
+        }
+    }
+
+    public void RemoveAllConsumeFromAssemblyOf<TType>()
+    {
+        var messageTypes = typeof(TType).Assembly.GetHandledMessageTypes();
+
+        foreach (var messageType in messageTypes)
+        {
+            RemoveConsume(messageType);
+        }
+    }
+
+    public void RemoveAllConsumeFromAssemblyOf(params Type[] assemblyMarkerTypes)
+    {
+        var assemblies = assemblyMarkerTypes.Select(x => x.Assembly).Distinct();
+
+        foreach (var assembly in assemblies)
+        {
+            var messageTypes = assembly.GetHandledMessageTypes();
+
+            foreach (var messageType in messageTypes)
+            {
+                RemoveConsume(messageType);
+            }
+        }
+    }
+
     private static void AddConsumerHandler(Type messageType, Type handlerType)
     {
         if (!_handlers.TryGetValue(messageType, out var list))
         {
             list = new List<Type>();
             _handlers.Add(messageType, list);
-
         }
 
         list.Add(handlerType);

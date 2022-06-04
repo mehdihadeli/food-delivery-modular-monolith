@@ -20,6 +20,7 @@ public record RegisterUser(
     List<string>? Roles = null) : ITxCreateCommand<RegisterUserResult>
 {
     public DateTime CreatedAt { get; init; } = DateTime.Now;
+    public Guid Id { get; init; } = Guid.NewGuid();
 }
 
 internal class RegisterUserValidator : AbstractValidator<RegisterUser>
@@ -84,6 +85,7 @@ internal class RegisterUserHandler : ICommandHandler<RegisterUser, RegisterUserR
     {
         var applicationUser = new ApplicationUser
         {
+            Id = request.Id,
             FirstName = request.FirstName,
             LastName = request.LastName,
             UserName = request.UserName,

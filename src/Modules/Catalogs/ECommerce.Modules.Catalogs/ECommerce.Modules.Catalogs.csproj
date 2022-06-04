@@ -4,6 +4,9 @@
         <Content Include="catalogs.appsettings.json">
             <CopyToOutputDirectory>Always</CopyToOutputDirectory>
         </Content>
+        <Content Include="catalogs.appsettings.test.json">
+          <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+        </Content>
     </ItemGroup>
 
     <PropertyGroup>

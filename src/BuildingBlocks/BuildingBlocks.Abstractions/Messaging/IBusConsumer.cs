@@ -63,4 +63,12 @@ public interface IBusConsumer
     /// </summary>
     /// <param name="assemblyMarkerTypes">Types for discovering associated assemblies.</param>
     void ConsumeAllFromAssemblyOf(params Type[] assemblyMarkerTypes);
+
+    void RemoveConsume(Type messageType);
+
+    void RemoveAllConsume();
+
+    void RemoveAllConsumeFromAssemblyOf<TType>();
+
+    void RemoveAllConsumeFromAssemblyOf(params Type[] assemblyMarkerTypes);
 }

@@ -5,7 +5,7 @@ using BuildingBlocks.Abstractions.Persistence;
 using BuildingBlocks.Core.Messaging;
 using ECommerce.Modules.Customers.Customers.Features.CreatingCustomer;
 
-namespace ECommerce.Modules.Customers.Identity.Features.RegisteringUser.Events.External;
+namespace ECommerce.Modules.Customers.Users.Features.RegisteringUser.Events.External;
 
 public record UserRegistered(
     Guid IdentityId,

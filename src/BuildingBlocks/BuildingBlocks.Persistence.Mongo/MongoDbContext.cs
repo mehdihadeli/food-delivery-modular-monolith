@@ -1,5 +1,6 @@
 using BuildingBlocks.Abstractions.Persistence;
 using BuildingBlocks.Abstractions.Persistence.Mongo;
+using Microsoft.Extensions.Options;
 using MongoDB.Bson;
 using MongoDB.Bson.Serialization.Conventions;
 using MongoDB.Driver;
@@ -14,15 +15,15 @@ public class MongoDbContext : IMongoDbContext, ITxDbContextExecution
     public IMongoClient MongoClient { get; }
     protected readonly IList<Func<Task>> _commands;
 
-    public MongoDbContext(MongoOptions options)
+    public MongoDbContext(IOptions<MongoOptions> options)
     {
         // Set Guid to CSharp style (with dash -)
         BsonDefaults.GuidRepresentation = GuidRepresentation.CSharpLegacy;
 
         RegisterConventions();
 
-        MongoClient = new MongoClient(options.ConnectionString);
-        var databaseName = options.DatabaseName;
+        MongoClient = new MongoClient(options.Value.ConnectionString);
+        var databaseName = options.Value.DatabaseName;
         Database = MongoClient.GetDatabase(databaseName);
 
         // Every command will be stored and it'll be processed at SaveChanges

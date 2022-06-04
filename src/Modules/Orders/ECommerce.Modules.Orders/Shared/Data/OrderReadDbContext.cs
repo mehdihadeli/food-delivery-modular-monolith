@@ -8,7 +8,7 @@ namespace ECommerce.Modules.Orders.Shared.Data;
 
 public class OrderReadDbContext : MongoDbContext
 {
-    public OrderReadDbContext(IOptions<MongoOptions> options) : base(options.Value)
+    public OrderReadDbContext(IOptions<MongoOptions> options) : base(options)
     {
         Orders = GetCollection<OrderReadModel>(nameof(Orders).Underscore());
     }

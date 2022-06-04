@@ -3,7 +3,7 @@ using BuildingBlocks.Abstractions.Messaging;
 using BuildingBlocks.Abstractions.Messaging.Context;
 using BuildingBlocks.Abstractions.Web.Module;
 using ECommerce.Modules.Customers;
-using ECommerce.Modules.Customers.Identity.Features.RegisteringUser.Events.External;
+using ECommerce.Modules.Customers.Users.Features.RegisteringUser.Events.External;
 using ECommerce.Modules.Identity.Users.Features.RegisteringUser;
 using Humanizer;
 using Hypothesist;
@@ -30,7 +30,7 @@ public class BusPublishTests : IntegrationTestBase<ECommerce.Api.Program>
     protected override void RegisterModulesTestsServices(IServiceCollection services, IModuleDefinition module)
     {
         base.RegisterModulesTestsServices(services, module);
-        if (module.GetType() == typeof(CustomersModuleConfiguration))
+        if (module.GetType().IsAssignableTo(typeof(IModuleDefinition)))
         {
             services.Replace(new ServiceDescriptor(typeof(IHttpClientFactory),
                 new DelegateHttpClientFactory(_ => GuestClient)));

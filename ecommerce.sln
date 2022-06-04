@@ -101,6 +101,14 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "BuildingBlocks.Integration.
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "BuildingBlocks.Core.IntegrationTests", "tests\building-blocks\Core\BuildingBlocks.Core.IntegrationTests\BuildingBlocks.Core.IntegrationTests.csproj", "{060A18B1-C769-472D-9C50-89044C01E5C5}"
 EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "customers", "customers", "{400D6521-102C-41E2-80D9-2CE7BABF313B}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "ECommerce.Modules.Customers.UnitTests", "tests\modules\Customers\ECommerce.Modules.Customers.UnitTests\ECommerce.Modules.Customers.UnitTests.csproj", "{66A2F10F-BC70-4C44-A03D-1EA0100243C1}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "ECommerce.Modules.Customers.IntegrationTests", "tests\modules\Customers\ECommerce.Modules.Customers.IntegrationTests\ECommerce.Modules.Customers.IntegrationTests.csproj", "{8A6C6861-D651-4E8F-B32D-EE5F566FE22E}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "ECommerce.Modules.Customers.EndToEndTests", "tests\modules\Customers\ECommerce.Modules.Customers.EndToEndTests\ECommerce.Modules.Customers.EndToEndTests.csproj", "{204F5ED9-7AAE-4948-A7B9-59C152C64606}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -150,6 +158,10 @@ Global
 		{593F2CFF-66BB-4924-B028-3CF5A9202312} = {81288788-A347-41B0-8FA3-74B0D17414B2}
 		{2349AC81-E37B-4055-AEE4-73578331489E} = {FB247B5A-5299-4FFE-BE54-B7E1472D4A2E}
 		{060A18B1-C769-472D-9C50-89044C01E5C5} = {23204097-F83E-4FC3-98C5-316C07D5CC57}
+		{400D6521-102C-41E2-80D9-2CE7BABF313B} = {A4BF5D18-D56C-4751-98A8-6F9B8315B9C0}
+		{66A2F10F-BC70-4C44-A03D-1EA0100243C1} = {400D6521-102C-41E2-80D9-2CE7BABF313B}
+		{8A6C6861-D651-4E8F-B32D-EE5F566FE22E} = {400D6521-102C-41E2-80D9-2CE7BABF313B}
+		{204F5ED9-7AAE-4948-A7B9-59C152C64606} = {400D6521-102C-41E2-80D9-2CE7BABF313B}
 	EndGlobalSection
 	GlobalSection(ProjectConfigurationPlatforms) = postSolution
 		{9063E326-1CDF-4CA7-8D72-CA15AB532EEC}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
@@ -248,5 +260,17 @@ Global
 		{060A18B1-C769-472D-9C50-89044C01E5C5}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{060A18B1-C769-472D-9C50-89044C01E5C5}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{060A18B1-C769-472D-9C50-89044C01E5C5}.Release|Any CPU.Build.0 = Release|Any CPU
+		{66A2F10F-BC70-4C44-A03D-1EA0100243C1}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{66A2F10F-BC70-4C44-A03D-1EA0100243C1}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{66A2F10F-BC70-4C44-A03D-1EA0100243C1}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{66A2F10F-BC70-4C44-A03D-1EA0100243C1}.Release|Any CPU.Build.0 = Release|Any CPU
+		{8A6C6861-D651-4E8F-B32D-EE5F566FE22E}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{8A6C6861-D651-4E8F-B32D-EE5F566FE22E}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{8A6C6861-D651-4E8F-B32D-EE5F566FE22E}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{8A6C6861-D651-4E8F-B32D-EE5F566FE22E}.Release|Any CPU.Build.0 = Release|Any CPU
+		{204F5ED9-7AAE-4948-A7B9-59C152C64606}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{204F5ED9-7AAE-4948-A7B9-59C152C64606}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{204F5ED9-7AAE-4948-A7B9-59C152C64606}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{204F5ED9-7AAE-4948-A7B9-59C152C64606}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 EndGlobal

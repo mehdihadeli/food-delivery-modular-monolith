@@ -1,0 +1,23 @@
+{
+  "Orders": {
+    "PostgresOptions": {
+      "ConnectionString": "Server=localhost;Port=5432;Database=ecommerce.services.orders-test;User Id=postgres;Password=postgres;",
+      "UseInMemory": false
+    },
+    "MongoOptions": {
+      "ConnectionString": "mongodb://localhost:27017",
+      "DatabaseName": "ecommerce-services-orders-test"
+    },
+    "EmailOptions": {
+      "From": "info@e-commerce.modular-monolith.com",
+      "Enable": true,
+      "DisplayName": "ECommerce Application Mail",
+      "MimeKitOptions": {
+        "Host": "smtp.ethereal.email",
+        "Port": 587,
+        "UserName": "justina.white@ethereal.email",
+        "Password": "Zdecj2Qq8SZHqgvcb9"
+      }
+    }
+  }
+}

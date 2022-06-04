@@ -7,48 +7,35 @@ using Xunit.Abstractions;
 using BuildingBlocks.Core.Extensions;
 using BuildingBlocks.Web.Module;
 using ECommerce.Modules.Catalogs;
+using ECommerce.Modules.Catalogs.Shared.Data;
 using ECommerce.Modules.Customers;
-using ECommerce.Modules.Customers.Shared.Clients.Identity;
+using ECommerce.Modules.Customers.Shared.Data;
 using ECommerce.Modules.Identity;
+using ECommerce.Modules.Identity.Shared.Data;
 using ECommerce.Modules.Orders;
-using ECommerce.Modules.Orders.Orders.Models;
+using ECommerce.Modules.Orders.Shared.Data;
+using Microsoft.Extensions.DependencyInjection.Extensions;
 using Microsoft.Extensions.Logging;
-using Tests.Shared.Builders;
 using Tests.Shared.Mocks;
+using Tests.Shared.Mocks.Builders;
 
 namespace Tests.Shared.Fixtures;
 
 public abstract class IntegrationTestBase<TEntryPoint, TDbContext> : IntegrationTestBase<TEntryPoint>
-    where TEntryPoint : class
     where TDbContext : DbContext
+    where TEntryPoint : class
 {
-    protected IntegrationTestBase(
-        IntegrationTestFixture<TEntryPoint, TDbContext> integrationTestFixture,
-        ITestOutputHelper outputHelper) : base(integrationTestFixture, outputHelper)
+    protected IntegrationTestBase(IntegrationTestFixture<TEntryPoint, TDbContext> integrationTestFixture,
+        ITestOutputHelper
+            outputHelper)
+        : base(integrationTestFixture, outputHelper)
     {
     }
 }
 
-public abstract class IntegrationTestBase<TEntryPoint> : IClassFixture<IntegrationTestFixture<TEntryPoint>>
+public abstract class IntegrationTestBase<TEntryPoint> : IClassFixture<IntegrationTestFixture<TEntryPoint>>,IDisposable
     where TEntryPoint : class
 {
-    protected CancellationTokenSource CancellationTokenSource { get; } = new(TimeSpan.FromSeconds(60));
-    protected IServiceScope Scope { get; }
-    protected IntegrationTestFixture<TEntryPoint> IntegrationTestFixture { get; }
-
-    protected ILogger Logger { get; }
-    public CancellationToken CancellationToken => CancellationTokenSource.Token;
-    protected TextWriter TextWriter => Scope.ServiceProvider.GetRequiredService<TextWriter>();
-
-    protected HttpClient AdminClient { get; }
-    protected HttpClient GuestClient { get; }
-    protected HttpClient UserClient { get; }
-
-    public ModuleFixture<CatalogModuleConfiguration> CatalogModule { get; }
-    public ModuleFixture<CustomersModuleConfiguration> CustomersModule { get; }
-    public ModuleFixture<IdentityModuleConfiguration> IdentityModule { get; }
-    public ModuleFixture<OrdersModuleConfiguration> OrderModule { get; }
-
     protected IntegrationTestBase(
         IntegrationTestFixture<TEntryPoint> integrationTestFixture,
         ITestOutputHelper outputHelper)
@@ -56,31 +43,31 @@ public abstract class IntegrationTestBase<TEntryPoint> : IClassFixture<Integrati
         IntegrationTestFixture = integrationTestFixture;
         integrationTestFixture.RegisterTestServices(RegisterTestsServices);
         ModuleHook.ModuleServicesConfigured += RegisterModulesTestsServices;
+        integrationTestFixture.SetOutputHelper(outputHelper);
 
         Scope = integrationTestFixture.ServiceProvider.CreateScope();
 
-        CatalogModule = new ModuleFixture<CatalogModuleConfiguration>(
+        CatalogsModule = new ModuleFixture<CatalogModuleConfiguration, CatalogDbContext, CatalogReadDbContext>(
             CompositionRootRegistry.GetByModule<CatalogModuleConfiguration>()!.ServiceProvider,
             Scope.ServiceProvider.GetRequiredService<IGatewayProcessor<CatalogModuleConfiguration>>(),
-            "CatalogModule");
+            CatalogModuleConfiguration.ModuleName);
 
-        IdentityModule = new ModuleFixture<IdentityModuleConfiguration>(
+        IdentityModule = new ModuleFixture<IdentityModuleConfiguration, IdentityContext>(
             CompositionRootRegistry.GetByModule<IdentityModuleConfiguration>()!.ServiceProvider,
             Scope.ServiceProvider.GetRequiredService<IGatewayProcessor<IdentityModuleConfiguration>>(),
-            "IdentityModule");
+            IdentityModuleConfiguration.ModuleName);
 
-        CustomersModule = new ModuleFixture<CustomersModuleConfiguration>(
+        CustomersModule = new ModuleFixture<CustomersModuleConfiguration, CustomersDbContext, CustomersReadDbContext>(
             CompositionRootRegistry.GetByModule<CustomersModuleConfiguration>()!.ServiceProvider,
             Scope.ServiceProvider.GetRequiredService<IGatewayProcessor<CustomersModuleConfiguration>>(),
-            "CustomersModule");
+            CustomersModuleConfiguration.ModuleName);
 
-        OrderModule = new ModuleFixture<OrdersModuleConfiguration>(
+        OrdersModule = new ModuleFixture<OrdersModuleConfiguration, OrdersDbContext, OrderReadDbContext>(
             CompositionRootRegistry.GetByModule<OrdersModuleConfiguration>()!.ServiceProvider,
             Scope.ServiceProvider.GetRequiredService<IGatewayProcessor<OrdersModuleConfiguration>>(),
-            "OrderModule");
+            OrdersModuleConfiguration.ModuleName);
 
 
-        integrationTestFixture.SetOutputHelper(outputHelper);
         Logger = Scope.ServiceProvider.GetRequiredService<ILogger<IntegrationTestFixture<TEntryPoint>>>();
 
         AdminClient = integrationTestFixture.CreateClient();
@@ -110,11 +97,49 @@ public abstract class IntegrationTestBase<TEntryPoint> : IClassFixture<Integrati
             new AuthenticationHeaderValue("Bearer", userLoginResult?.AccessToken);
     }
 
+    protected CancellationTokenSource CancellationTokenSource { get; } = new(TimeSpan.FromSeconds(60));
+    protected IServiceScope Scope { get; }
+    protected IntegrationTestFixture<TEntryPoint> IntegrationTestFixture { get; }
+    protected ILogger Logger { get; }
+    public CancellationToken CancellationToken => CancellationTokenSource.Token;
+    protected TextWriter TextWriter => Scope.ServiceProvider.GetRequiredService<TextWriter>();
+    protected HttpClient AdminClient { get; }
+    protected HttpClient GuestClient { get; }
+    protected HttpClient UserClient { get; }
+
+    public ModuleFixture<CatalogModuleConfiguration, CatalogDbContext, CatalogReadDbContext> CatalogsModule { get; }
+
+    public ModuleFixture<CustomersModuleConfiguration, CustomersDbContext, CustomersReadDbContext> CustomersModule
+    {
+        get;
+    }
+
+    public ModuleFixture<IdentityModuleConfiguration, IdentityContext> IdentityModule { get; }
+    public ModuleFixture<OrdersModuleConfiguration, OrdersDbContext, OrderReadDbContext> OrdersModule { get; }
+
     protected virtual void RegisterTestsServices(IServiceCollection services)
     {
     }
 
     protected virtual void RegisterModulesTestsServices(IServiceCollection services, IModuleDefinition module)
     {
+        if (module.GetType().IsAssignableTo(typeof(IModuleDefinition)))
+        {
+            services.Replace(new ServiceDescriptor(typeof(IHttpClientFactory),
+                new DelegateHttpClientFactory(_ => GuestClient)));
+        }
+    }
+
+    public void Dispose()
+    {
+        CancellationTokenSource.Dispose();
+        Scope.Dispose();
+        AdminClient.Dispose();
+        GuestClient.Dispose();
+        UserClient.Dispose();
+        CustomersModule?.Dispose();
+        IdentityModule?.Dispose();
+        CatalogsModule?.Dispose();
+        OrdersModule?.Dispose();
     }
 }

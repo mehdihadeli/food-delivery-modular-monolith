@@ -6,7 +6,7 @@
     },
     "MongoOptions": {
       "ConnectionString": "mongodb://localhost:27017",
-      "DatabaseName": "ecommerce-services-customers"
+      "DatabaseName": "ecommerce-services-customers-test"
     },
     "EmailOptions": {
       "From": "info@e-commerce.modular-monolith.com",

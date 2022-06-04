@@ -39,8 +39,7 @@ public class CreateCustomerHandler : ICommandHandler<CreateCustomer, CreateCusto
     public CreateCustomerHandler(
         IIdentityApiClient identityApiClient,
         CustomersDbContext customersDbContext,
-        ILogger<CreateCustomerHandler> logger
-        )
+        ILogger<CreateCustomerHandler> logger)
     {
         _identityApiClient = identityApiClient;
         _customersDbContext = customersDbContext;

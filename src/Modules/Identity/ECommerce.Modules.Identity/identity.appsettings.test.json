@@ -6,7 +6,7 @@
     },
     "MongoOptions": {
       "ConnectionString": "mongodb://localhost:27017",
-      "DatabaseName": "ecommerce-services-identity"
+      "DatabaseName": "ecommerce-services-identity-testcompositionRoot"
     },
     "EmailOptions": {
       "From": "info@e-commerce.modular-monolith.com",

@@ -1,6 +1,12 @@
+using BuildingBlocks.Abstractions.Persistence;
+using BuildingBlocks.Core.Extensions.ServiceCollection;
+using BuildingBlocks.Web.Module;
+using Microsoft.AspNetCore.Authentication;
 using Microsoft.AspNetCore.Hosting;
+using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc.Testing;
 using Microsoft.AspNetCore.TestHost;
+using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.DependencyInjection.Extensions;
@@ -8,6 +14,8 @@ using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Logging;
 using Serilog;
 using Serilog.Events;
+using Tests.Shared.Extensions;
+using Tests.Shared.Mocks;
 using Xunit.Abstractions;
 using ILogger = Microsoft.Extensions.Logging.ILogger;
 
@@ -60,7 +68,9 @@ public class CustomWebApplicationFactory<TEntryPoint> : WebApplicationFactory<TE
         //         logging.AddXUnit(OutputHelper); // Use the ITestOutputHelper instance
         // });
 
-        return base.CreateHost(builder);
+        var host = base.CreateHost(builder);
+
+        return host;
     }
 
     protected override void ConfigureWebHost(IWebHostBuilder builder)
@@ -83,10 +93,13 @@ public class CustomWebApplicationFactory<TEntryPoint> : WebApplicationFactory<TE
         builder.ConfigureTestServices(services =>
         {
             // services.RemoveAll(typeof(IHostedService));
-            services.AddHttpContextAccessor();
+            services.AddScoped(_ => CreateAnonymouslyUserMock());
             // https://milestone.topics.it/2021/11/10/http-client-factory-in-integration-testing.html
             services.Replace(new ServiceDescriptor(typeof(IHttpClientFactory),
                 new DelegateHttpClientFactory(ClientProvider)));
+            services.ReplaceSingleton(CreateHttpContextAccessorMock);
+            services.AddTestAuthentication();
+
             TestRegistrationServices?.Invoke(services);
         });
 
@@ -104,4 +117,24 @@ public class CustomWebApplicationFactory<TEntryPoint> : WebApplicationFactory<TE
     {
         return CreateClient();
     }
+
+    private static IHttpContextAccessor CreateHttpContextAccessorMock(IServiceProvider serviceProvider)
+    {
+        var httpContextAccessorMock = Substitute.For<IHttpContextAccessor>();
+        using var scope = serviceProvider.CreateScope();
+        httpContextAccessorMock.HttpContext = new DefaultHttpContext {RequestServices = scope.ServiceProvider,};
+
+        httpContextAccessorMock.HttpContext.Request.Host = new HostString("localhost", 5000);
+        httpContextAccessorMock.HttpContext.Request.Scheme = "http";
+        var res = httpContextAccessorMock.HttpContext.AuthenticateAsync(Constants.AuthConstants.Scheme).GetAwaiter()
+            .GetResult();
+        httpContextAccessorMock.HttpContext.User = res.Ticket?.Principal!;
+        return httpContextAccessorMock;
+    }
+
+    private MockAuthUser CreateAnonymouslyUserMock()
+    {
+        return new MockAuthUser();
+    }
+
 }

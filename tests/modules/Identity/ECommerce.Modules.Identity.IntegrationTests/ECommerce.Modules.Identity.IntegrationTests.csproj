@@ -5,5 +5,10 @@
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </None>
   </ItemGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\..\..\..\src\Api\ECommerce.Api\ECommerce.Api.csproj" />
+    <ProjectReference Include="..\..\..\shared\Tests.Shared\Tests.Shared.csproj" />
+  </ItemGroup>
   
 </Project>

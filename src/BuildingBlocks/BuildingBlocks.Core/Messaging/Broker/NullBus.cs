@@ -52,13 +52,15 @@ public class NullBus : IBus
         return Task.CompletedTask;
     }
 
-    public void Consume<TMessage>(IMessageHandler<TMessage> handler,
+    public void Consume<TMessage>(
+        IMessageHandler<TMessage> handler,
         Action<IConsumeConfigurationBuilder>? consumeBuilder = null)
         where TMessage : class, IMessage
     {
     }
 
-    public void Consume<TMessage>(MessageHandler<TMessage> subscribeMethod,
+    public void Consume<TMessage>(
+        MessageHandler<TMessage> subscribeMethod,
         Action<IConsumeConfigurationBuilder>? consumeBuilder = null)
         where TMessage : class, IMessage
     {
@@ -88,6 +90,22 @@ public class NullBus : IBus
     }
 
     public void ConsumeAllFromAssemblyOf(params Type[] assemblyMarkerTypes)
+    {
+    }
+
+    public void RemoveConsume(Type messageType)
+    {
+    }
+
+    public void RemoveAllConsume()
+    {
+    }
+
+    public void RemoveAllConsumeFromAssemblyOf<TType>()
+    {
+    }
+
+    public void RemoveAllConsumeFromAssemblyOf(params Type[] assemblyMarkerTypes)
     {
     }
 }

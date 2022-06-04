@@ -8,7 +8,7 @@ namespace ECommerce.Modules.Catalogs.Shared.Data;
 
 public class CatalogReadDbContext : MongoDbContext
 {
-    public CatalogReadDbContext(IOptions<MongoOptions> options) : base(options.Value)
+    public CatalogReadDbContext(IOptions<MongoOptions> options) : base(options)
     {
         Products = GetCollection<ProductReadModel>(nameof(Products).Underscore());
     }
