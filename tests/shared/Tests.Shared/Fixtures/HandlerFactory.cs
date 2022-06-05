@@ -8,34 +8,27 @@ namespace Tests.Shared.Fixtures;
 
 public static class HandlerFactory
 {
-    public static MessageHandler<T> AsMessageHandler<T>(this IHypothesis<T> hypothesis) where T : class, IMessage
+    public static IMessageHandler<T> AsMessageHandler<T>(this IHypothesis<T> hypothesis) where T : class, IMessage
+    {
+        return new SimpleMessageConsumer<T>(hypothesis);
+    }
+
+    public static MessageHandler<T> AsMessageHandlerDelegate<T>(this IHypothesis<T> hypothesis)
+        where T : class, IMessage
     {
         return (context, cancellationToken) => hypothesis.Test(context.Message, cancellationToken);
     }
 
-    public static MessageHandler<TMessage> AsMessageHandler<TMessage, TMessageHandler>(
+    public static IMessageHandler<TMessage> AsMessageHandler<TMessage, TMessageHandler>(
         this IHypothesis<TMessage> hypothesis, IServiceProvider serviceProvider)
         where TMessage : class, IMessage
         where TMessageHandler : IMessageHandler<TMessage>
     {
-        return async (context, cancellationToken) =>
-        {
-            using var scope = serviceProvider.CreateScope();
-
-            var handler = scope.ServiceProvider.GetService(typeof(TMessageHandler));
-            if (handler is null)
-            {
-                await hypothesis.Test(null!, cancellationToken);
-                return;
-            }
-
-            await handler.InvokeMethodWithoutResultAsync("HandleAsync", context, cancellationToken);
-            await hypothesis.Test(context.Message, cancellationToken);
-        };
+        return new MessageConsumer<TMessage>(hypothesis, serviceProvider, typeof(TMessageHandler));
     }
 }
 
-public class MessageConsumer<T> : IMessageHandler<T>
+internal class MessageConsumer<T> : IMessageHandler<T>
     where T : class, IMessage
 {
     private readonly IHypothesis<T> _hypothesis;
@@ -59,7 +52,23 @@ public class MessageConsumer<T> : IMessageHandler<T>
             return;
         }
 
-        await handler.InvokeMethodAsync("HandleAsync", messageContext, cancellationToken);
+        await handler.InvokeMethodWithoutResultAsync("HandleAsync", messageContext, cancellationToken);
         await _hypothesis.Test(messageContext.Message);
+    }
+}
+
+internal class SimpleMessageConsumer<T> : IMessageHandler<T>
+    where T : class, IMessage
+{
+    private readonly IHypothesis<T> _hypothesis;
+
+    public SimpleMessageConsumer(IHypothesis<T> hypothesis)
+    {
+        _hypothesis = hypothesis;
+    }
+
+    public Task HandleAsync(IConsumeContext<T> messageContext, CancellationToken cancellationToken = default)
+    {
+        return _hypothesis.Test(messageContext.Message);
     }
 }

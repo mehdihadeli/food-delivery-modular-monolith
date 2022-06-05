@@ -1,8 +1,10 @@
 using BuildingBlocks.Abstractions.CQRS.Command;
 using BuildingBlocks.Abstractions.Messaging;
+using BuildingBlocks.Abstractions.Messaging.PersistMessage;
 using BuildingBlocks.Abstractions.Persistence;
 using BuildingBlocks.Abstractions.Web;
 using BuildingBlocks.Abstractions.Web.Module;
+using BuildingBlocks.Core.Types;
 using BuildingBlocks.Persistence.EfCore.Postgres;
 using BuildingBlocks.Persistence.Mongo;
 using Hypothesist;
@@ -26,6 +28,7 @@ public class ModuleFixture<TModule, TWContext> : IDisposable
     public ModuleFixture(IServiceProvider serviceProvider, IGatewayProcessor<TModule> gatewayProcessor, string name)
     {
         ServiceProvider = serviceProvider;
+        Scope = serviceProvider.CreateScope();
         Name = name;
         GatewayProcessor = gatewayProcessor;
         _checkpoint = new Checkpoint
@@ -37,6 +40,8 @@ public class ModuleFixture<TModule, TWContext> : IDisposable
         var mongoOptions = serviceProvider.GetService<IOptions<MongoOptions>>();
         if (mongoOptions is { })
             mongoOptions.Value.ConnectionString = _mongoRunner.ConnectionString;
+
+        MessagePersistenceService = Scope.ServiceProvider.GetRequiredService<IMessagePersistenceService>();
 
         SeedData();
     }
@@ -57,8 +62,11 @@ public class ModuleFixture<TModule, TWContext> : IDisposable
     }
 
     public IServiceProvider ServiceProvider { get; }
+    public IServiceScope Scope { get; }
 
     public string Name { get; }
+
+    public IMessagePersistenceService MessagePersistenceService { get; }
 
     public IBus Bus => ServiceProvider.GetRequiredService<IBus>();
 
@@ -83,13 +91,13 @@ public class ModuleFixture<TModule, TWContext> : IDisposable
         }
     }
 
-    public async Task ExecuteScopeAsync(Func<IServiceProvider, Task> action)
+    public async ValueTask ExecuteScopeAsync(Func<IServiceProvider, ValueTask> action)
     {
         using var scope = ServiceProvider.CreateScope();
         await action(scope.ServiceProvider);
     }
 
-    public async Task<T> ExecuteScopeAsync<T>(Func<IServiceProvider, Task<T>> action)
+    public async ValueTask<T> ExecuteScopeAsync<T>(Func<IServiceProvider, ValueTask<T>> action)
     {
         using var scope = ServiceProvider.CreateScope();
 
@@ -98,7 +106,7 @@ public class ModuleFixture<TModule, TWContext> : IDisposable
         return result;
     }
 
-    public async Task ExecuteTxWriteContextAsync(Func<IServiceProvider, TWContext, Task> action)
+    public async Task ExecuteTxWriteContextAsync(Func<IServiceProvider, TWContext, ValueTask> action)
     {
         using var scope = ServiceProvider.CreateScope();
         var dbContext = scope.ServiceProvider.GetRequiredService<TWContext>();
@@ -121,7 +129,7 @@ public class ModuleFixture<TModule, TWContext> : IDisposable
         });
     }
 
-    public async Task<T> ExecuteTxWriteContextAsync<T>(Func<IServiceProvider, TWContext, Task<T>> action)
+    public async Task<T> ExecuteTxWriteContextAsync<T>(Func<IServiceProvider, TWContext, ValueTask<T>> action)
     {
         using var scope = ServiceProvider.CreateScope();
         //https://weblogs.asp.net/dixin/entity-framework-core-and-linq-to-entities-7-data-changes-and-transactions
@@ -147,181 +155,177 @@ public class ModuleFixture<TModule, TWContext> : IDisposable
         });
     }
 
-    public Task ExecuteWriteContextAsync(Func<TWContext, Task> action)
+    public ValueTask ExecuteWriteContextAsync(Func<TWContext, ValueTask> action)
         => ExecuteScopeAsync(sp => action(sp.GetRequiredService<TWContext>()));
 
-    public Task ExecuteWriteContextAsync(Func<TWContext, ValueTask> action)
-        => ExecuteScopeAsync(sp => action(sp.GetRequiredService<TWContext>()).AsTask());
-
-    public Task ExecuteWriteContextAsync(Func<TWContext, ICommandProcessor, Task> action)
+    public ValueTask ExecuteWriteContextAsync(Func<TWContext, ICommandProcessor, ValueTask> action)
         => ExecuteScopeAsync(sp =>
             action(sp.GetRequiredService<TWContext>(), sp.GetRequiredService<ICommandProcessor>()));
 
-    public Task<T> ExecuteWriteContextAsync<T>(Func<TWContext, Task<T>> action)
+    public ValueTask<T> ExecuteWriteContextAsync<T>(Func<TWContext, ValueTask<T>> action)
         => ExecuteScopeAsync(sp => action(sp.GetRequiredService<TWContext>()));
 
-    public Task<T> ExecuteWriteContextAsync<T>(Func<TWContext, ValueTask<T>> action)
-        => ExecuteScopeAsync(sp => action(sp.GetRequiredService<TWContext>()).AsTask());
-
-    public Task<T> ExecuteWriteContextAsync<T>(Func<TWContext, ICommandProcessor, Task<T>> action)
+    public ValueTask<T> ExecuteWriteContextAsync<T>(Func<TWContext, ICommandProcessor, ValueTask<T>> action)
         => ExecuteScopeAsync(sp =>
             action(sp.GetRequiredService<TWContext>(), sp.GetRequiredService<ICommandProcessor>()));
 
-    public Task InsertAsync<T>(params T[] entities) where T : class
+    public async ValueTask<int> InsertAsync<T>(params T[] entities) where T : class
     {
-        return ExecuteWriteContextAsync(db =>
+        return await ExecuteWriteContextAsync(async db =>
         {
             foreach (var entity in entities)
             {
                 db.Set<T>().Add(entity);
             }
 
-            return db.SaveChangesAsync();
+            return await db.SaveChangesAsync();
         });
     }
 
-    public Task InsertAsync<TEntity>(TEntity entity) where TEntity : class
+    public async ValueTask<int> InsertAsync<TEntity>(TEntity entity) where TEntity : class
     {
-        return ExecuteWriteContextAsync(db =>
+        return await ExecuteWriteContextAsync(async db =>
         {
             db.Set<TEntity>().Add(entity);
 
-            return db.SaveChangesAsync();
+            return await db.SaveChangesAsync();
         });
     }
 
-    public Task InsertAsync<TEntity, TEntity2>(TEntity entity, TEntity2 entity2)
+    public async ValueTask<int> InsertAsync<TEntity, TEntity2>(TEntity entity, TEntity2 entity2)
         where TEntity : class
         where TEntity2 : class
     {
-        return ExecuteWriteContextAsync(db =>
+        return await ExecuteWriteContextAsync(async db =>
         {
             db.Set<TEntity>().Add(entity);
             db.Set<TEntity2>().Add(entity2);
 
-            return db.SaveChangesAsync();
+            return await db.SaveChangesAsync();
         });
     }
 
-    public Task InsertAsync<TEntity, TEntity2, TEntity3>(TEntity entity, TEntity2 entity2, TEntity3 entity3)
+    public async ValueTask<int> InsertAsync<TEntity, TEntity2, TEntity3>(TEntity entity, TEntity2 entity2, TEntity3
+        entity3)
         where TEntity : class
         where TEntity2 : class
         where TEntity3 : class
     {
-        return ExecuteWriteContextAsync(db =>
+        return await ExecuteWriteContextAsync(async db =>
         {
             db.Set<TEntity>().Add(entity);
             db.Set<TEntity2>().Add(entity2);
             db.Set<TEntity3>().Add(entity3);
 
-            return db.SaveChangesAsync();
+            return await db.SaveChangesAsync();
         });
     }
 
-    public Task InsertAsync<TEntity, TEntity2, TEntity3, TEntity4>(TEntity entity, TEntity2 entity2,
+    public async ValueTask<int> InsertAsync<TEntity, TEntity2, TEntity3, TEntity4>(TEntity entity, TEntity2 entity2,
         TEntity3 entity3, TEntity4 entity4)
         where TEntity : class
         where TEntity2 : class
         where TEntity3 : class
         where TEntity4 : class
     {
-        return ExecuteWriteContextAsync(db =>
+        return await ExecuteWriteContextAsync(async db =>
         {
             db.Set<TEntity>().Add(entity);
             db.Set<TEntity2>().Add(entity2);
             db.Set<TEntity3>().Add(entity3);
             db.Set<TEntity4>().Add(entity4);
 
-            return db.SaveChangesAsync();
+            return await db.SaveChangesAsync();
         });
     }
 
-    public Task<T?> FindWriteAsync<T>(object id) where T : class
+    public ValueTask<T?> FindWriteAsync<T>(object id) where T : class
     {
-        return ExecuteWriteContextAsync(db => db.Set<T>().FindAsync(id).AsTask());
+        return ExecuteWriteContextAsync(db => db.Set<T>().FindAsync(id));
     }
 
-    public Task PublishMessageAsync<TMessage>(TMessage message, IDictionary<string, object?>? headers = null) where
+    public async ValueTask PublishMessageAsync<TMessage>(TMessage message, IDictionary<string, object?>? headers = null)
+        where
         TMessage : class, IMessage
     {
-        return ExecuteScopeAsync(sp =>
+        await ExecuteScopeAsync(async sp =>
         {
             var bus = sp.GetRequiredService<IBus>();
 
-            return bus.PublishAsync(message, headers, CancellationToken.None);
+            await bus.PublishAsync(message, headers, CancellationToken.None);
         });
     }
 
     // Ref: https://tech.energyhelpline.com/in-memory-testing-with-masstransit/
-    public async Task WaitUntilConditionMetOrTimedOut(Func<bool> conditionToMet)
+    public async ValueTask WaitUntilConditionMetOrTimedOut(Func<Task<bool>> conditionToMet, int timeoutSecond = 60)
     {
-        var meet = conditionToMet.Invoke();
-        while (!meet)
+        var startTime = DateTime.Now;
+        var timeoutExpired = false;
+        var meet = await conditionToMet.Invoke();
+        while (!meet && !timeoutExpired)
         {
             await Task.Delay(100);
-            meet = conditionToMet.Invoke();
+            meet = await conditionToMet.Invoke();
+            timeoutExpired = DateTime.Now - startTime > TimeSpan.FromSeconds(timeoutSecond);
         }
     }
 
-    public async Task<IHypothesis<object>> ShouldPublish(Predicate<object>? match = null)
+    public async ValueTask<IHypothesis<object>> ShouldPublish(Predicate<object>? match = null)
     {
         var hypothesis = Hypothesis
             .For<object>()
             .Any(match ?? (_ => true));
 
-        Bus.RemoveAllConsume();
-
-        Bus.MessagePublished += message =>
+        Bus.MessagePublished += async message =>
         {
             if (message.GetType() == typeof(object))
-                hypothesis.Test(message);
+                await hypothesis.Test(message);
         };
 
         return hypothesis;
     }
 
-    public async Task<IHypothesis<TMessage>> ShouldPublish<TMessage>(Predicate<TMessage>? match = null)
+    public async ValueTask<IHypothesis<TMessage>> ShouldPublish<TMessage>(Predicate<TMessage>? match = null)
         where TMessage : class, IMessage
     {
         var hypothesis = Hypothesis
             .For<TMessage>()
             .Any(match ?? (_ => true));
 
-        Bus.RemoveAllConsume();
-
-        Bus.MessagePublished += message =>
+        Bus.MessagePublished += async message =>
         {
             if (message.GetType() == typeof(TMessage) && message is TMessage messageData)
-                hypothesis.Test(messageData);
+                await hypothesis.Test(messageData);
         };
 
         return hypothesis;
     }
 
-    public async Task<IHypothesis<TMessage>> ShouldConsume<TMessage>(Predicate<TMessage>? match = null)
+    public async ValueTask<IHypothesis<TMessage>> ShouldConsume<TMessage>(Predicate<TMessage>? match = null)
         where TMessage : class, IMessage
     {
         var hypothesis = Hypothesis
             .For<TMessage>()
             .Any(match ?? (_ => true));
 
-        Bus.MessageConsumed += (message, _) =>
+        Bus.MessageConsumed += async (message, _) =>
         {
             if (message.GetType() == typeof(TMessage) && message is TMessage messageData)
-                hypothesis.Test(messageData);
+            {
+                await hypothesis.Test(messageData);
+            }
         };
 
         return hypothesis;
     }
 
-    public async Task<IHypothesis<TMessage>> ShouldConsumeWithNewConsumer<TMessage>(Predicate<TMessage>? match = null)
+    public async ValueTask<IHypothesis<TMessage>> ShouldConsumeWithNewConsumer<TMessage>(
+        Predicate<TMessage>? match = null)
         where TMessage : class, IMessage
     {
         var hypothesis = Hypothesis
             .For<TMessage>()
             .Any(match ?? (_ => true));
-
-        Bus.RemoveAllConsume();
 
         // Bus.Consume(hypothesis.AsMessageHandler());
 
@@ -334,7 +338,21 @@ public class ModuleFixture<TModule, TWContext> : IDisposable
         return hypothesis;
     }
 
-    public async Task<IHypothesis<TMessage>> ShouldConsume<TMessage, TMessageHandler>(
+    public async ValueTask<IHypothesis<TMessage>> ShouldConsumeWithNewConsumer<TMessage, TMessageHandler>(
+        Predicate<TMessage>? match = null)
+        where TMessage : class, IMessage
+        where TMessageHandler : IMessageHandler<TMessage>
+    {
+        var hypothesis = Hypothesis
+            .For<TMessage>()
+            .Any(match ?? (_ => true));
+
+        Bus.Consume(hypothesis.AsMessageHandler<TMessage, TMessageHandler>(ServiceProvider));
+
+        return hypothesis;
+    }
+
+    public async ValueTask<IHypothesis<TMessage>> ShouldConsume<TMessage, TMessageHandler>(
         Predicate<TMessage>? match = null)
         where TMessage : class, IMessage
         where TMessageHandler : class, IMessageHandler<TMessage>
@@ -343,19 +361,48 @@ public class ModuleFixture<TModule, TWContext> : IDisposable
             .For<TMessage>()
             .Any(match ?? (_ => true));
 
-        Bus.MessageConsumed += (message, handlerType) =>
+        Bus.MessageConsumed += async (message, handlerType) =>
         {
             if (message.GetType() == typeof(TMessage) && message is TMessage messageData &&
                 typeof(TMessageHandler).IsAssignableTo(handlerType))
-                hypothesis.Test(messageData);
+            {
+                await hypothesis.Test(messageData);
+            }
         };
 
         return hypothesis;
     }
 
+    public async ValueTask ShouldProcessedOutboxPersistMessage<TMessage>()
+        where TMessage : class, IMessage
+    {
+        await WaitUntilConditionMetOrTimedOut(async () =>
+        {
+            var filter = await MessagePersistenceService.GetByFilterAsync(x =>
+                x.DeliveryType == MessageDeliveryType.Outbox &&
+                TypeMapper.GetTypeName(typeof(TMessage)) == x.DataType);
+
+            return filter.Any(x => x.MessageStatus == MessageStatus.Processed);
+        });
+    }
+
+    public async ValueTask ShouldProcessedPersistCommand<TInternalCommand>()
+        where TInternalCommand : class, IInternalCommand
+    {
+        await WaitUntilConditionMetOrTimedOut(async () =>
+        {
+            var filter = await MessagePersistenceService.GetByFilterAsync(x =>
+                x.DeliveryType == MessageDeliveryType.Internal &&
+                TypeMapper.GetTypeName(typeof(TInternalCommand)) == x.DataType);
+
+            return filter.Any(x => x.MessageStatus == MessageStatus.Processed);
+        });
+    }
+
     public void Dispose()
     {
         _mongoRunner.Dispose();
+        Scope.Dispose();
         ResetState().GetAwaiter().GetResult();
     }
 }
@@ -370,23 +417,17 @@ public class ModuleFixture<TModule, TWContext, TRContext> : ModuleFixture<TModul
     {
     }
 
-    public Task ExecuteReadContextAsync(Func<TRContext, Task> action)
+    public ValueTask ExecuteReadContextAsync(Func<TRContext, ValueTask> action)
         => ExecuteScopeAsync(sp => action(sp.GetRequiredService<TRContext>()));
 
-    public Task ExecuteReadContextAsync(Func<TRContext, ValueTask> action)
-        => ExecuteScopeAsync(sp => action(sp.GetRequiredService<TRContext>()).AsTask());
-
-    public Task ExecuteReadContextAsync(Func<TRContext, ICommandProcessor, Task> action)
+    public ValueTask ExecuteReadContextAsync(Func<TRContext, ICommandProcessor, ValueTask> action)
         => ExecuteScopeAsync(sp =>
             action(sp.GetRequiredService<TRContext>(), sp.GetRequiredService<ICommandProcessor>()));
 
-    public Task<T> ExecuteReadContextAsync<T>(Func<TRContext, Task<T>> action)
+    public ValueTask<T> ExecuteReadContextAsync<T>(Func<TRContext, ValueTask<T>> action)
         => ExecuteScopeAsync(sp => action(sp.GetRequiredService<TRContext>()));
 
-    public Task<T> ExecuteReadContextAsync<T>(Func<TRContext, ValueTask<T>> action)
-        => ExecuteScopeAsync(sp => action(sp.GetRequiredService<TRContext>()).AsTask());
-
-    public Task<T> ExecuteReadContextAsync<T>(Func<TRContext, ICommandProcessor, Task<T>> action)
+    public ValueTask<T> ExecuteReadContextAsync<T>(Func<TRContext, ICommandProcessor, ValueTask<T>> action)
         => ExecuteScopeAsync(sp =>
             action(sp.GetRequiredService<TRContext>(), sp.GetRequiredService<ICommandProcessor>()));
 }

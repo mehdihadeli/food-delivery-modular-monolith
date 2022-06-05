@@ -18,6 +18,9 @@
         "UserName": "justina.white@ethereal.email",
         "Password": "Zdecj2Qq8SZHqgvcb9"
       }
+    },
+    "MessagePersistenceOptions": {
+      "Interval": 30
     }
   }
 }

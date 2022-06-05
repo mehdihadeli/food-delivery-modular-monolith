@@ -1,4 +1,5 @@
 using System.Net.Http.Headers;
+using BuildingBlocks.Abstractions.Messaging.PersistMessage;
 using BuildingBlocks.Abstractions.Web;
 using BuildingBlocks.Abstractions.Web.Module;
 using Microsoft.EntityFrameworkCore;
@@ -26,8 +27,7 @@ public abstract class IntegrationTestBase<TEntryPoint, TDbContext> : Integration
     where TEntryPoint : class
 {
     protected IntegrationTestBase(IntegrationTestFixture<TEntryPoint, TDbContext> integrationTestFixture,
-        ITestOutputHelper
-            outputHelper)
+        ITestOutputHelper outputHelper)
         : base(integrationTestFixture, outputHelper)
     {
     }
@@ -67,7 +67,6 @@ public abstract class IntegrationTestBase<TEntryPoint> : IClassFixture<Integrati
             Scope.ServiceProvider.GetRequiredService<IGatewayProcessor<OrdersModuleConfiguration>>(),
             OrdersModuleConfiguration.ModuleName);
 
-
         Logger = Scope.ServiceProvider.GetRequiredService<ILogger<IntegrationTestFixture<TEntryPoint>>>();
 
         AdminClient = integrationTestFixture.CreateClient();
@@ -102,6 +101,7 @@ public abstract class IntegrationTestBase<TEntryPoint> : IClassFixture<Integrati
     protected IntegrationTestFixture<TEntryPoint> IntegrationTestFixture { get; }
     protected ILogger Logger { get; }
     public CancellationToken CancellationToken => CancellationTokenSource.Token;
+
     protected TextWriter TextWriter => Scope.ServiceProvider.GetRequiredService<TextWriter>();
     protected HttpClient AdminClient { get; }
     protected HttpClient GuestClient { get; }

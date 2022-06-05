@@ -1,3 +1,5 @@
+using System.Collections.Immutable;
+using System.Linq.Expressions;
 using BuildingBlocks.Abstractions.CQRS.Command;
 using BuildingBlocks.Abstractions.CQRS.Event.Internal;
 using BuildingBlocks.Abstractions.Messaging;
@@ -7,6 +9,15 @@ namespace BuildingBlocks.Core.Messaging.MessagePersistence;
 
 public class NullMessagePersistenceService : IMessagePersistenceService
 {
+    public event Action<StoreMessage, MessageDeliveryType>? MessageProcessed;
+
+    public Task<IReadOnlyList<StoreMessage>> GetByFilterAsync(
+        Expression<Func<StoreMessage, bool>>? predicate = null,
+        CancellationToken cancellationToken = default)
+    {
+        return Task.FromResult<IReadOnlyList<StoreMessage>>(new List<StoreMessage>());
+    }
+
     public Task AddPublishMessageAsync<TMessageEnvelope>(
         TMessageEnvelope messageEnvelope,
         CancellationToken cancellationToken = default)

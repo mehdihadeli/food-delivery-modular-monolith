@@ -26,6 +26,9 @@
     "CatalogsApiClientOptions": {
       "BaseApiAddress": "http://localhost:5000",
       "ProductsEndpoint": "api/v1/catalogs/products"
+    },
+    "MessagePersistenceOptions": {
+      "Interval": 30
     }
   }
 }

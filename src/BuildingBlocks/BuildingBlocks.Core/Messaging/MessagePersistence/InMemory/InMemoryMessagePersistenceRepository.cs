@@ -32,8 +32,9 @@ public class InMemoryMessagePersistenceRepository : IMessagePersistenceRepositor
     {
         Guard.Against.Null(predicate, nameof(predicate));
 
-        IReadOnlyList<StoreMessage>
-            result = _messages.Select(x => x.Value).Where(predicate.Compile()).ToImmutableList();
+        IReadOnlyList<StoreMessage> result = _messages.Select(x => x.Value)
+            .Where(predicate.Compile())
+            .ToImmutableList();
 
         return Task.FromResult(result);
     }

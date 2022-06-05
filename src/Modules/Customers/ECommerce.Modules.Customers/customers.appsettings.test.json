@@ -26,6 +26,9 @@
     "CatalogsApiClientOptions": {
       "ProductsEndpoint": "api/v1/catalogs/products",
       "BaseApiAddress": null
+    },
+    "MessagePersistenceOptions": {
+      "Interval": 5
     }
   }
 }

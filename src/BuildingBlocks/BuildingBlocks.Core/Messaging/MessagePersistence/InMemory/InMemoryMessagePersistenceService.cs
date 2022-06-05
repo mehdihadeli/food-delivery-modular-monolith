@@ -1,10 +1,10 @@
+using System.Linq.Expressions;
 using Ardalis.GuardClauses;
 using BuildingBlocks.Abstractions.CQRS.Command;
 using BuildingBlocks.Abstractions.CQRS.Event.Internal;
 using BuildingBlocks.Abstractions.Messaging;
 using BuildingBlocks.Abstractions.Messaging.PersistMessage;
 using BuildingBlocks.Abstractions.Serialization;
-using BuildingBlocks.Core.Extensions;
 using BuildingBlocks.Core.Types;
 using MediatR;
 using Microsoft.Extensions.Logging;
@@ -34,6 +34,13 @@ public class InMemoryMessagePersistenceService : IMessagePersistenceService
         _mediator = mediator;
         _bus = bus;
         _serializer = serializer;
+    }
+
+    public Task<IReadOnlyList<StoreMessage>> GetByFilterAsync(
+        Expression<Func<StoreMessage, bool>>? predicate = null,
+        CancellationToken cancellationToken = default)
+    {
+        return _inMemoryMessagePersistenceRepository.GetByFilterAsync(predicate ?? (_ => true), cancellationToken);
     }
 
     public async Task AddPublishMessageAsync<TMessageEnvelope>(
@@ -113,14 +120,12 @@ public class InMemoryMessagePersistenceService : IMessagePersistenceService
         MessageDeliveryType deliveryType,
         CancellationToken cancellationToken = default)
     {
-        var message = (await _inMemoryMessagePersistenceRepository
-                .GetByFilterAsync(x => x.Id == messageId && x.DeliveryType == deliveryType, cancellationToken))
+        var message = (await _inMemoryMessagePersistenceRepository.GetByFilterAsync(
+                x => x.Id == messageId && x.DeliveryType == deliveryType, cancellationToken))
             .FirstOrDefault();
 
         if (message is null)
             return;
-
-        message.ChangeState(MessageStatus.Processed);
 
         switch (deliveryType)
         {
@@ -134,12 +139,14 @@ public class InMemoryMessagePersistenceService : IMessagePersistenceService
                 await ProcessOutbox(message, cancellationToken);
                 break;
         }
+
+        message.ChangeState(MessageStatus.Processed);
     }
 
     public async Task ProcessAllAsync(CancellationToken cancellationToken = default)
     {
         var messages = await _inMemoryMessagePersistenceRepository
-            .GetByFilterAsync(x => x.MessageStatus != MessageStatus.Processed, cancellationToken);
+            .GetByFilterAsync(x => x.MessageStatus != MessageStatus.Processed, cancellationToken: cancellationToken);
 
         foreach (var message in messages)
         {

@@ -24,6 +24,9 @@
       "Audience": "shop-api",
       "Issuer": "shop-identity",
       "TokenLifeTimeSecond": 3600
+    },
+    "MessagePersistenceOptions": {
+      "Interval": 30
     }
   }
 }
