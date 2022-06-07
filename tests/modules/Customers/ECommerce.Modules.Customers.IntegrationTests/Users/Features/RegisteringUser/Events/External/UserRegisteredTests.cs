@@ -19,7 +19,7 @@ using Program = ECommerce.Api.Program;
 namespace ECommerce.Modules.Customers.IntegrationTests.Users.Features.RegisteringUser.Events.External;
 
 public class
-    UserRegisteredTests : ModuleBase<Program, CustomersModuleConfiguration, CustomersDbContext, CustomersReadDbContext>
+    UserRegisteredTests : ModuleTestBase<Program, CustomersModuleConfiguration, CustomersDbContext, CustomersReadDbContext>
 {
     private static UserRegistered _userRegistered;
 

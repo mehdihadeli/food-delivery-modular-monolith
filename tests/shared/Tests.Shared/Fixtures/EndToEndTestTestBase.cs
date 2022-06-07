@@ -8,14 +8,14 @@ using Xunit.Abstractions;
 
 namespace Tests.Shared.Fixtures;
 
-public class EndToEndTestBase<TEntryPoint, TModule, TWContext, TRContext> :
-    ModuleBase<TEntryPoint, TModule, TWContext, TRContext>
+public class EndToEndTestTestBase<TEntryPoint, TModule, TWContext, TRContext> :
+    ModuleTestBase<TEntryPoint, TModule, TWContext, TRContext>
     where TModule : class, IModuleDefinition
     where TWContext : DbContext
     where TRContext : MongoDbContext
     where TEntryPoint : class
 {
-    public EndToEndTestBase(IntegrationTestFixture<TEntryPoint> integrationTestFixture, ITestOutputHelper outputHelper)
+    public EndToEndTestTestBase(IntegrationTestFixture<TEntryPoint> integrationTestFixture, ITestOutputHelper outputHelper)
         : base(integrationTestFixture, outputHelper)
     {
     }

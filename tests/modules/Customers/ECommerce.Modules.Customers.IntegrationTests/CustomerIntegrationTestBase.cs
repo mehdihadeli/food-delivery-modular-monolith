@@ -5,9 +5,9 @@ using Xunit.Abstractions;
 
 namespace ECommerce.Modules.Customers.IntegrationTests;
 
-public class CustomerModuleIntegrationTestBase : ModuleBase<Program, CustomersModuleConfiguration, CustomersDbContext, CustomersReadDbContext>
+public class CustomerModuleTestIntegrationTestBase : ModuleTestBase<Program, CustomersModuleConfiguration, CustomersDbContext, CustomersReadDbContext>
 {
-    public CustomerModuleIntegrationTestBase(IntegrationTestFixture<Program> integrationTestFixture,
+    public CustomerModuleTestIntegrationTestBase(IntegrationTestFixture<Program> integrationTestFixture,
         ITestOutputHelper outputHelper) : base(integrationTestFixture, outputHelper)
     {
     }

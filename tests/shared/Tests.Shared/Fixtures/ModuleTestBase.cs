@@ -21,7 +21,7 @@ using Xunit.Abstractions;
 
 namespace Tests.Shared.Fixtures;
 
-public class ModuleBase<TEntryPoint, TModule> :
+public class ModuleTestBase<TEntryPoint, TModule> :
     IClassFixture<IntegrationTestFixture<TEntryPoint>>,
     IAsyncLifetime
     where TModule : class, IModuleDefinition
@@ -30,7 +30,7 @@ public class ModuleBase<TEntryPoint, TModule> :
     private readonly Checkpoint _checkpoint;
     private readonly MongoDbRunner _mongoRunner;
 
-    public ModuleBase(IntegrationTestFixture<TEntryPoint> integrationTestFixture, ITestOutputHelper outputHelper)
+    public ModuleTestBase(IntegrationTestFixture<TEntryPoint> integrationTestFixture, ITestOutputHelper outputHelper)
     {
         CancellationToken.ThrowIfCancellationRequested();
 
@@ -167,14 +167,14 @@ public class ModuleBase<TEntryPoint, TModule> :
     }
 }
 
-public class ModuleBase<TEntryPoint, TModule, TWContext> : ModuleBase<TEntryPoint, TModule>
+public class ModuleTestBase<TEntryPoint, TModule, TWContext> : ModuleTestBase<TEntryPoint, TModule>
     where TModule : class, IModuleDefinition
     where TWContext : DbContext
     where TEntryPoint : class
 {
     public new ModuleFixture<TModule, TWContext> ModuleFixture { get; }
 
-    public ModuleBase(IntegrationTestFixture<TEntryPoint> integrationTestFixture, ITestOutputHelper outputHelper)
+    public ModuleTestBase(IntegrationTestFixture<TEntryPoint> integrationTestFixture, ITestOutputHelper outputHelper)
         : base(integrationTestFixture, outputHelper)
     {
         ModuleFixture = new ModuleFixture<TModule, TWContext>(
@@ -183,13 +183,13 @@ public class ModuleBase<TEntryPoint, TModule, TWContext> : ModuleBase<TEntryPoin
     }
 }
 
-public class ModuleBase<TEntryPoint, TModule, TWContext, TRContext> : ModuleBase<TEntryPoint, TModule, TWContext>
+public class ModuleTestBase<TEntryPoint, TModule, TWContext, TRContext> : ModuleTestBase<TEntryPoint, TModule, TWContext>
     where TModule : class, IModuleDefinition
     where TWContext : DbContext
     where TRContext : MongoDbContext
     where TEntryPoint : class
 {
-    public ModuleBase(IntegrationTestFixture<TEntryPoint> integrationTestFixture, ITestOutputHelper outputHelper)
+    public ModuleTestBase(IntegrationTestFixture<TEntryPoint> integrationTestFixture, ITestOutputHelper outputHelper)
         : base(integrationTestFixture, outputHelper)
     {
         ModuleFixture = new ModuleFixture<TModule, TWContext, TRContext>(
