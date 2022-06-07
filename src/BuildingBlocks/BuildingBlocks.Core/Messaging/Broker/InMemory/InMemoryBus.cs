@@ -24,6 +24,9 @@ public class InMemoryBus : IBus
     private static readonly Dictionary<Type, List<Type>> _handlers = new();
     private static readonly Dictionary<Type, Func<object, CancellationToken, Task>> _delegateHandlers = new();
 
+    private static event Action<object, Type> _consumedMessage;
+    private static event Action<object> _publishedMessage;
+
     static InMemoryBus()
     {
         // We can use unbounded channel if we want to store unlimited message to channel.
@@ -46,15 +49,16 @@ public class InMemoryBus : IBus
         _logger = logger;
     }
 
-    public async Task StartAsync(CancellationToken cancellationToken = default)
+    public Task StartAsync(CancellationToken cancellationToken = default)
     {
         var threads = 5;
-        for (int i = 0; i < threads; i++)
-        {
-            await Task.Factory.StartNew(
-                () => ReceivingMessages(cancellationToken),
-                TaskCreationOptions.LongRunning).Unwrap();
-        }
+
+        Task.WhenAll(Enumerable.Range(0, threads)
+            .Select(_ => Task.Factory.StartNew(() => ReceivingMessages(cancellationToken), cancellationToken,
+                TaskCreationOptions.LongRunning, TaskScheduler.Default))
+            .ToArray());
+
+        return Task.CompletedTask;
     }
 
     public Task StopAsync(CancellationToken cancellationToken = default)
@@ -116,7 +120,7 @@ public class InMemoryBus : IBus
                                 typedConsumedContext,
                                 cancellationToken);
 
-                            MessageConsumed?.Invoke(typedConsumedContext?.Message, handlerType);
+                            _consumedMessage?.Invoke(typedConsumedContext?.Message, handlerType);
                         }
                     }
                 }
@@ -144,6 +148,8 @@ public class InMemoryBus : IBus
                         ctx);
 
                     await delegateHandler.Invoke(typedConsumedContext, cancellationToken);
+
+                    _consumedMessage?.Invoke(typedConsumedContext?.Message, delegateHandler.GetType());
                 }
             }
             catch (System.Exception e)
@@ -155,7 +161,7 @@ public class InMemoryBus : IBus
 
     public async Task PublishAsync<TMessage>(
         TMessage message,
-        IDictionary<string, object?>? headers = null,
+        IDictionary<string, object?>? headers,
         CancellationToken cancellationToken = default)
         where TMessage : class, IMessage
     {
@@ -166,12 +172,12 @@ public class InMemoryBus : IBus
 
         await _channel.Writer.WriteAsync(json, cancellationToken);
 
-        MessagePublished?.Invoke(message);
+        _publishedMessage?.Invoke(message);
     }
 
     public async Task PublishAsync<TMessage>(
         TMessage message,
-        IDictionary<string, object?>? headers = null,
+        IDictionary<string, object?>? headers,
         string? exchangeOrTopic = null,
         string? queue = null,
         CancellationToken cancellationToken = default)
@@ -182,7 +188,7 @@ public class InMemoryBus : IBus
 
     public async Task PublishAsync(
         object message,
-        IDictionary<string, object?>? headers = null,
+        IDictionary<string, object?>? headers,
         CancellationToken cancellationToken = default)
     {
         var metadata = GetMetadata(message, headers);
@@ -192,12 +198,12 @@ public class InMemoryBus : IBus
 
         await _channel.Writer.WriteAsync(json, cancellationToken);
 
-        MessagePublished?.Invoke(message);
+        _publishedMessage?.Invoke(message);
     }
 
     public async Task PublishAsync(
         object message,
-        IDictionary<string, object?>? headers = null,
+        IDictionary<string, object?>? headers,
         string? exchangeOrTopic = null,
         string? queue = null,
         CancellationToken cancellationToken = default)
@@ -210,10 +216,7 @@ public class InMemoryBus : IBus
         Action<IConsumeConfigurationBuilder>? consumeBuilder = null)
         where TMessage : class, IMessage
     {
-        Func<object, CancellationToken, Task> genericHandler =
-            (context, ct) => handler.HandleAsync((IConsumeContext<TMessage>)context, ct);
-
-        _delegateHandlers.Add(typeof(TMessage), genericHandler);
+        AddConsumerHandler(typeof(TMessage), handler.GetType());
     }
 
     public void Consume<TMessage>(
@@ -337,8 +340,29 @@ public class InMemoryBus : IBus
         }
     }
 
-    public event Action<object, Type>? MessageConsumed;
-    public event Action<object>? MessagePublished;
+    public event Action<object, Type>? MessageConsumed
+    {
+        add
+        {
+            _consumedMessage += value;
+        }
+        remove
+        {
+            _consumedMessage -= value;
+        }
+    }
+
+    public event Action<object>? MessagePublished
+    {
+        add
+        {
+            _publishedMessage += value;
+        }
+        remove
+        {
+            _publishedMessage -= value;
+        }
+    }
 
     private static void AddConsumerHandler(Type messageType, Type handlerType)
     {

@@ -1,3 +1,4 @@
+using BuildingBlocks.Core.Extensions;
 using BuildingBlocks.Core.Extensions.ServiceCollection;
 using BuildingBlocks.Logging;
 using BuildingBlocks.Security;
@@ -6,6 +7,7 @@ using BuildingBlocks.Swagger;
 using BuildingBlocks.Web;
 using BuildingBlocks.Web.Extensions;
 using BuildingBlocks.Web.Extensions.ServiceCollectionExtensions;
+using BuildingBlocks.Web.Module;
 using ECommerce.Api;
 using ECommerce.Api.Extensions.ApplicationBuilderExtensions;
 using ECommerce.Api.Extensions.ServiceCollectionExtensions;
@@ -148,6 +150,15 @@ static async Task ConfigureApplication(WebApplication app)
     app.MapEndpoints();
 
     app.MapGet("/", (HttpContext _) => "ECommerce Modular Monolith Api.").ExcludeFromDescription();
+
+    app.Lifetime.ApplicationStopping.Register(() =>
+    {
+        foreach (var compositionRoot in CompositionRootRegistry.CompositionRoots)
+        {
+            compositionRoot.ServiceProvider.StopHostedServices().GetAwaiter().GetResult();
+        }
+    });
+
 
     Log.Logger = new LoggerConfiguration()
         .WriteTo.Console()

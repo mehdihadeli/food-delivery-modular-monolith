@@ -1,6 +1,8 @@
 using BuildingBlocks.Abstractions.Web.Module;
 using BuildingBlocks.Core;
+using BuildingBlocks.Core.Extensions;
 using BuildingBlocks.Core.Messaging.Extensions;
+using BuildingBlocks.Web.Extensions;
 using ECommerce.Modules.Catalogs.Brands;
 using ECommerce.Modules.Catalogs.Categories;
 using ECommerce.Modules.Catalogs.Products;
@@ -32,6 +34,12 @@ public class CatalogModuleConfiguration : IModuleDefinition
         ILogger logger,
         IWebHostEnvironment environment)
     {
+        if (environment.IsEnvironment("test") == false)
+        {
+            // HostedServices just run on main service provider - It should not await because it will block the main thread.
+            app.ApplicationServices.StartHostedServices();
+        }
+
         ServiceActivator.Configure(app.ApplicationServices);
 
         app.SubscribeAllMessageFromAssemblyOfType<CatalogRoot>();

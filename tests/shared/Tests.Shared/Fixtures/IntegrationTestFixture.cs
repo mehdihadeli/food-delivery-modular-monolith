@@ -1,5 +1,4 @@
 using Microsoft.AspNetCore.Http;
-using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Xunit.Abstractions;
@@ -7,13 +6,6 @@ using Xunit.Abstractions;
 namespace Tests.Shared.Fixtures;
 
 // Ref: https://github.com/jbogard/ContosoUniversityDotNetCore-Pages/blob/master/ContosoUniversity.IntegrationTests/SliceFixture.cs
-public class IntegrationTestFixture<TEntryPoint, TDbContext> : IntegrationTestFixture<TEntryPoint>
-    where TDbContext : DbContext
-    where TEntryPoint : class
-{
-
-}
-
 public class IntegrationTestFixture<TEntryPoint> : IAsyncLifetime
     where TEntryPoint : class
 {

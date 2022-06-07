@@ -15,10 +15,6 @@ public static partial class ServiceCollectionExtensions
 {
     public static IServiceCollection AddInfrastructure(this IServiceCollection services, IConfiguration configuration)
     {
-        services.AddControllersAsServices();
-
-        SnowFlakIdGenerator.Configure(2);
-
         services.AddCqrs(
             doMoreActions: s =>
             {
@@ -32,6 +28,9 @@ public static partial class ServiceCollectionExtensions
                     .AddScoped(typeof(IPipelineBehavior<,>), typeof(EfTxBehavior<,>));
             });
 
+        services.AddControllersAsServices();
+
+        SnowFlakIdGenerator.Configure(2);
 
         services.AddCore(configuration, Assembly.GetExecutingAssembly());
 

@@ -1,5 +1,7 @@
 using BuildingBlocks.Abstractions.Web.Module;
+using BuildingBlocks.Core.Extensions;
 using BuildingBlocks.Core.Messaging.Extensions;
+using BuildingBlocks.Web.Extensions;
 using ECommerce.Modules.Orders.Shared.Extensions.ApplicationBuilderExtensions;
 using ECommerce.Modules.Orders.Shared.Extensions.ServiceCollectionExtensions;
 
@@ -23,6 +25,12 @@ public class OrdersModuleConfiguration : IModuleDefinition
         ILogger logger,
         IWebHostEnvironment environment)
     {
+        if (environment.IsEnvironment("test") == false)
+        {
+            // HostedServices just run on main service provider - It should not await because it will block the main thread.
+            app.ApplicationServices.StartHostedServices();
+        }
+
         app.SubscribeAllMessageFromAssemblyOfType<OrdersRoot>();
 
         await app.ApplyDatabaseMigrations(logger);

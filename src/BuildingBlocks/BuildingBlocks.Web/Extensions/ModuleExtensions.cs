@@ -139,22 +139,12 @@ public static class ModuleExtensions
                 app.Configuration,
                 app.Logger,
                 app.Environment);
-
-            // It should not await because it will block the main thread.
-            RunCompositionsBackgroundServices(compositionRoot.ServiceProvider);
         }
         else
         {
             CompositionRootRegistry.Add(new CompositionRoot(app.Services, module));
             await module.ConfigureModule(app, app.Configuration, app.Logger, app.Environment);
         }
-    }
-
-    private static async Task RunCompositionsBackgroundServices(IServiceProvider serviceProvider)
-    {
-        IEnumerable<IHostedService> hostedServices = serviceProvider.GetServices<IHostedService>();
-
-        await Task.WhenAll(hostedServices.Select(s => s.StartAsync(CancellationToken.None)));
     }
 
     public static void MapModulesEndpoints(this IEndpointRouteBuilder builder)

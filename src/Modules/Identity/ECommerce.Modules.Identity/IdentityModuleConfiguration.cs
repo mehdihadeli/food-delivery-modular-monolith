@@ -1,5 +1,7 @@
 using BuildingBlocks.Abstractions.Web.Module;
+using BuildingBlocks.Core.Extensions;
 using BuildingBlocks.Core.Messaging.Extensions;
+using BuildingBlocks.Web.Extensions;
 using ECommerce.Modules.Identity.Identity;
 using ECommerce.Modules.Identity.Shared.Extensions.ApplicationBuilderExtensions;
 using ECommerce.Modules.Identity.Shared.Extensions.ServiceCollectionExtensions;
@@ -26,6 +28,12 @@ public class IdentityModuleConfiguration : IModuleDefinition
         ILogger logger,
         IWebHostEnvironment environment)
     {
+        if (environment.IsEnvironment("test") == false)
+        {
+            // HostedServices just run on main service provider - It should not await because it will block the main thread.
+            app.ApplicationServices.StartHostedServices();
+        }
+
         app.UseIdentityServer();
 
         app.SubscribeAllMessageFromAssemblyOfType<IdentityRoot>();

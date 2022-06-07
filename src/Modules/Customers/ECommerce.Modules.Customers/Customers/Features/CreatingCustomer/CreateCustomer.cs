@@ -79,11 +79,6 @@ public class CreateCustomerHandler : ICommandHandler<CreateCustomer, CreateCusto
             customer.Name.LastName,
             customer.IdentityId);
     }
-
-    public void Dispose()
-    {
-        _customersDbContext.Dispose();
-    }
 }
 
 public record CreateCustomerResult(
