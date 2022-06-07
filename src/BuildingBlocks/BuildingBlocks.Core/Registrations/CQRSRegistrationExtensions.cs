@@ -17,12 +17,14 @@ public static class CQRSRegistrationExtensions
 {
     public static IServiceCollection AddCqrs(
         this IServiceCollection services,
-        Assembly[]? assemblies = null,
         ServiceLifetime serviceLifetime = ServiceLifetime.Transient,
-        Action<IServiceCollection>? doMoreActions = null)
+        Action<IServiceCollection>? doMoreActions = null,
+        params Assembly[] assemblies)
     {
+        var assembliesToScan = assemblies.Any() ? assemblies : new[] {Assembly.GetCallingAssembly()};
+
         services.AddMediatR(
-            assemblies ?? new[] {Assembly.GetCallingAssembly()},
+            assembliesToScan,
             x =>
             {
                 switch (serviceLifetime)
@@ -47,10 +49,27 @@ public static class CQRSRegistrationExtensions
             .Add<IDomainEventPublisher, DomainEventPublisher>(serviceLifetime)
             .Add<IDomainNotificationEventPublisher, DomainNotificationEventPublisher>(serviceLifetime);
 
+        RegisterEventMappers(services, assembliesToScan);
+
         services.AddScoped<IDomainEventsAccessor, NullDomainEventsAccessor>();
 
         doMoreActions?.Invoke(services);
 
         return services;
+    }
+
+    private static void RegisterEventMappers(IServiceCollection services, params Assembly[] assembliesToScan)
+    {
+        services.Scan(scan => scan
+            .FromAssemblies(assembliesToScan.Any() ? assembliesToScan : AppDomain.CurrentDomain.GetAssemblies())
+            .AddClasses(classes => classes.AssignableTo(typeof(IEventMapper)), false)
+            .AsImplementedInterfaces()
+            .WithSingletonLifetime()
+            .AddClasses(classes => classes.AssignableTo(typeof(IIntegrationEventMapper)), false)
+            .AsImplementedInterfaces()
+            .WithSingletonLifetime()
+            .AddClasses(classes => classes.AssignableTo(typeof(IIDomainNotificationEventMapper)), false)
+            .AsImplementedInterfaces()
+            .WithSingletonLifetime());
     }
 }

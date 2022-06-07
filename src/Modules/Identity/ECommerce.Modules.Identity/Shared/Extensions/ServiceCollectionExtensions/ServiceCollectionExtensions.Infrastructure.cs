@@ -30,7 +30,11 @@ public static partial class ServiceCollectionExtensions
                 .AddScoped(typeof(IPipelineBehavior<,>), typeof(EfTxBehavior<,>));
         });
 
-        services.AddCore(configuration, Assembly.GetExecutingAssembly());
+        services.AddCore(
+            configuration,
+            IdentityModuleConfiguration.ModuleName,
+            Assembly.GetExecutingAssembly());
+
 
         services.AddEmailService(configuration, $"{IdentityModuleConfiguration.ModuleName}:{nameof(EmailOptions)}");
 

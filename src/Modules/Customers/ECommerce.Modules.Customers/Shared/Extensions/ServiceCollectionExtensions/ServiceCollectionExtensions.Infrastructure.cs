@@ -32,7 +32,10 @@ public static partial class ServiceCollectionExtensions
 
         SnowFlakIdGenerator.Configure(2);
 
-        services.AddCore(configuration, Assembly.GetExecutingAssembly());
+        services.AddCore(
+            configuration,
+            CustomersModuleConfiguration.ModuleName,
+            Assembly.GetExecutingAssembly());
 
         // services.AddMonitoring(healthChecksBuilder =>
         // {

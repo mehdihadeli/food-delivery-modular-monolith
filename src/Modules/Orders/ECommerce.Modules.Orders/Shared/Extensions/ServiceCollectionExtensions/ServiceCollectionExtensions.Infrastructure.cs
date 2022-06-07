@@ -1,15 +1,11 @@
-using Ardalis.GuardClauses;
 using BuildingBlocks.Caching.InMemory;
 using BuildingBlocks.Core.Caching;
-using BuildingBlocks.Core.Extensions;
 using BuildingBlocks.Core.IdsGenerator;
 using BuildingBlocks.Core.Persistence.EfCore;
 using BuildingBlocks.Core.Registrations;
 using BuildingBlocks.Email;
 using BuildingBlocks.Email.Options;
 using BuildingBlocks.Logging;
-using BuildingBlocks.Monitoring;
-using BuildingBlocks.Persistence.EfCore.Postgres;
 using BuildingBlocks.Validation;
 using BuildingBlocks.Web.Extensions.ServiceCollectionExtensions;
 
@@ -23,7 +19,11 @@ public static partial class ServiceCollectionExtensions
 
         SnowFlakIdGenerator.Configure(3);
 
-        services.AddCore(configuration, Assembly.GetExecutingAssembly());
+        services.AddCore(
+            configuration,
+            OrdersModuleConfiguration.ModuleName,
+            Assembly.GetExecutingAssembly());
+
 
         // services.AddMonitoring(healthChecksBuilder =>
         // {

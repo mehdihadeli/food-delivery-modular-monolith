@@ -17,10 +17,11 @@ public static class MessagingCoreRegistrationExtensions
         this IServiceCollection services,
         IConfiguration configuration,
         ServiceLifetime serviceLifetime = ServiceLifetime.Transient,
+        string? rootSectionName = null,
         params Assembly[] assembliesToScan)
     {
         AddHandlers(services, serviceLifetime, assembliesToScan);
-        AddPersistenceMessage(services, configuration, serviceLifetime);
+        AddPersistenceMessage(services, configuration, serviceLifetime, rootSectionName);
         services.AddSingleton<IBus, NullBus>();
         services.AddHostedService<BusBackgroundService>();
     }
@@ -28,12 +29,18 @@ public static class MessagingCoreRegistrationExtensions
     internal static void AddPersistenceMessage(
         IServiceCollection services,
         IConfiguration configuration,
-        ServiceLifetime serviceLifetime)
+        ServiceLifetime serviceLifetime,
+        string? rootSectionName = null)
     {
         services.Add<IMessagePersistenceService, NullMessagePersistenceService>(serviceLifetime);
         services.AddHostedService<MessagePersistenceBackgroundService>();
+
+        var section = string.IsNullOrEmpty(rootSectionName)
+            ? nameof(MessagePersistenceOptions)
+            : $"{rootSectionName}:{nameof(MessagePersistenceOptions)}";
+
         services.AddOptions<MessagePersistenceOptions>()
-            .Bind(configuration.GetSection(nameof(MessagePersistenceOptions)))
+            .Bind(configuration.GetSection(section))
             .ValidateDataAnnotations();
     }
 

@@ -17,6 +17,7 @@ public static class CoreRegistrationExtensions
     public static IServiceCollection AddCore(
         this IServiceCollection services,
         IConfiguration configuration,
+        string? rootSectionName = null,
         params Assembly[] assembliesToScan)
     {
         var systemInfo = MachineInstanceInfo.New();
@@ -33,9 +34,7 @@ public static class CoreRegistrationExtensions
 
         AddDefaultSerializer(services);
 
-        RegisterEventMappers(services, assembliesToScan);
-
-        services.AddMessagingCore(configuration);
+        services.AddMessagingCore(configuration, rootSectionName: rootSectionName);
 
         switch (configuration["IdGenerator:Type"])
         {
@@ -50,20 +49,6 @@ public static class CoreRegistrationExtensions
         return services;
     }
 
-    private static void RegisterEventMappers(IServiceCollection services, params Assembly[] assembliesToScan)
-    {
-        services.Scan(scan => scan
-            .FromAssemblies(assembliesToScan.Any() ? assembliesToScan : AppDomain.CurrentDomain.GetAssemblies())
-            .AddClasses(classes => classes.AssignableTo(typeof(IEventMapper)), false)
-            .AsImplementedInterfaces()
-            .WithSingletonLifetime()
-            .AddClasses(classes => classes.AssignableTo(typeof(IIntegrationEventMapper)), false)
-            .AsImplementedInterfaces()
-            .WithSingletonLifetime()
-            .AddClasses(classes => classes.AssignableTo(typeof(IIDomainNotificationEventMapper)), false)
-            .AsImplementedInterfaces()
-            .WithSingletonLifetime());
-    }
 
     private static void AddDefaultSerializer(
         IServiceCollection services,

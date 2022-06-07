@@ -31,7 +31,10 @@ public static partial class ServiceCollectionExtensions
 
         SnowFlakIdGenerator.Configure(1);
 
-        services.AddCore(configuration, Assembly.GetExecutingAssembly());
+        services.AddCore(
+            configuration,
+            CatalogModuleConfiguration.ModuleName,
+            Assembly.GetExecutingAssembly());
 
         services.AddEmailService(configuration, $"{CatalogModuleConfiguration.ModuleName}:{nameof(EmailOptions)}");
 
