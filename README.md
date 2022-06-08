@@ -99,11 +99,11 @@ When `In-Memory Call` reached to the internal module, the module should process 
 
 Each module is running within its own `Composition Root` or its own `Service Provider` and has directly access to its own local `Database` or `Schema` and its dependencies such as files, Mappers, etc. All these dependencies are only accessible for that module and not other modules. In fact modules are decoupled from each other and are autonomous (Not physically but virtually). also This approach makes migrating to the microservice easier for each module when we need that for example, scaling purpose. In this case we can extract given module to a separated microservice and our modular monolith will communicate with this service maybe with different broker like rabbitmq.
 
-![](./assets/modular.png)
-
 In this architecture modules should talk each other [asynchronously](https://www.kamilgrzybek.com/design/modular-monolith-integration-styles/) most of the cases unless, we need the data immediately for example getting some data and sending to user. For async communications between modules we use a [In-Memory Broker](src/BuildingBlocks/BuildingBlocks.Core/Messaging/Broker/InMemory/InMemoryBus.cs) but we could use other message brokers depending on the needs and for `sync` communication we use REST calls or gRPC calls.
 
 Modules are event based which means they can publish and/or subscribe to any events occurring in the setup. By using this approach for communicating between modules, each module does not need to know about the other modules or handle errors occurred in other modules. 
+
+![](./assets/modules.png)
 
 In this architecture we use [CQRS Pattern](https://www.eventecommerce.com/cqrs-pattern) for separating read and write model beside of other [CQRS Advantages](https://youtu.be/dK4Yb6-LxAk?t=1029). Here for now I don't use [Event Sourcing](https://www.eventecommerce.com/blog/event-sourcing-and-cqrs) for simplicity but I will use it in future for syncing read and write side with sending streams and using [Projection Feature](https://event-driven.io/en/how_to_do_events_projections_with_entity_framework/) for some subscribers to syncing their data through sent streams and creating our [Custom Read Models](https://codeopinion.com/projections-in-event-sourcing-build-any-model-you-want/) in subscribers side.
 
