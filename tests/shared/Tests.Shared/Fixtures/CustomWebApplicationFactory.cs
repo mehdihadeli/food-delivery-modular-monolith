@@ -1,12 +1,9 @@
-using BuildingBlocks.Abstractions.Persistence;
 using BuildingBlocks.Core.Extensions.ServiceCollection;
-using BuildingBlocks.Web.Module;
 using Microsoft.AspNetCore.Authentication;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc.Testing;
 using Microsoft.AspNetCore.TestHost;
-using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.DependencyInjection.Extensions;
@@ -136,5 +133,4 @@ public class CustomWebApplicationFactory<TEntryPoint> : WebApplicationFactory<TE
     {
         return new MockAuthUser();
     }
-
 }
