@@ -94,6 +94,9 @@ When `In-Memory Call` reached to the internal module, the module should process 
 
 > **Composition Root**: With using separate Composition Root for module we can reach to autonomy also a given module can create its own object dependency graph or `Dependency Container`, i.e. it should have its own [Composition Root](https://blog.ploeh.dk/2011/07/28/CompositionRoot/).
 
+
+![](./assets/composition-roots.png)
+
 Each module is running within its own `Composition Root` or its own `Service Provider` and has directly access to its own local `Database` or `Schema` and its dependencies such as files, Mappers, etc. All these dependencies are only accessible for that module and not other modules. In fact modules are decoupled from each other and are autonomous (Not physically but virtually). also This approach makes migrating to the microservice easier for each module when we need that for example, scaling purpose. In this case we can extract given module to a separated microservice and our modular monolith will communicate with this service maybe with different broker like rabbitmq.
 
 ![](./assets/modular.png)
