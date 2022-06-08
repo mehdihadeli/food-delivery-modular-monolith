@@ -1,5 +1,3 @@
-using Microsoft.Extensions.Http;
-
 namespace Tests.Shared.Fixtures;
 
 public class DelegateHttpClientFactory : IHttpClientFactory
@@ -13,8 +11,9 @@ public class DelegateHttpClientFactory : IHttpClientFactory
 
     public HttpClient CreateClient(string name)
     {
+        if (name == "k8s-cluster-service" || name == "health-checks-webhooks" || name == "health-checks")
+            return new HttpClient();
+
         return _httpClientProvider(name);
     }
 }
-
-// public class  M:ITypedHttpClientFactory<>

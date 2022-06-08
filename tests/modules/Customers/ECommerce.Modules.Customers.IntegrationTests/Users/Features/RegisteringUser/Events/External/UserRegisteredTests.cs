@@ -124,7 +124,7 @@ public class
 
         await shouldConsume.Validate(60.Seconds());
 
-        var customer = await ModuleFixture.ExecuteWriteContextAsync(async ctx =>
+        var customer = await ModuleFixture.ExecuteContextAsync(async ctx =>
         {
             var res = await ctx.Customers.AnyAsync(x => x.Email == _userRegistered.Email);
 
@@ -142,7 +142,7 @@ public class
         await ModuleFixture.PublishMessageAsync(_userRegistered, cancellationToken: CancellationToken);
 
         // Assert
-        await ModuleFixture.ShouldProcessedPersistCommand<CreateMongoCustomerReadModels>();
+        await ModuleFixture.ShouldProcessedPersistInternalCommand<CreateMongoCustomerReadModels>();
 
         var existsCustomer = await ModuleFixture.ExecuteReadContextAsync(async ctx =>
         {

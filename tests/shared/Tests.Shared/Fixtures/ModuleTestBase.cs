@@ -112,6 +112,26 @@ public class ModuleTestBase<TEntryPoint, TModule> :
         }
     }
 
+    public async Task InitializeAsync()
+    {
+        ModuleFixture.ServiceProvider.StartHostedServices(CancellationToken);
+        await ResetState();
+        SeedData();
+    }
+
+    public async Task DisposeAsync()
+    {
+        await ModuleFixture.ServiceProvider.StopHostedServices(CancellationToken);
+        _mongoRunner.Dispose();
+
+        CancellationTokenSource.Cancel();
+        ModuleFixture.DisposeAsync().GetAwaiter().GetResult();
+        AdminClient.Dispose();
+        GuestClient.Dispose();
+        UserClient.Dispose();
+        Scope.Dispose();
+    }
+
     private void SeedData()
     {
         using (var scope = ModuleFixture.ServiceProvider.CreateScope())
@@ -145,26 +165,6 @@ public class ModuleTestBase<TEntryPoint, TModule> :
             // ignored
         }
     }
-
-    public async Task InitializeAsync()
-    {
-        ModuleFixture.ServiceProvider.StartHostedServices(CancellationToken);
-        await ResetState();
-        SeedData();
-    }
-
-    public async Task DisposeAsync()
-    {
-        await ModuleFixture.ServiceProvider.StopHostedServices(CancellationToken);
-        _mongoRunner.Dispose();
-
-        CancellationTokenSource.Cancel();
-        ModuleFixture.DisposeAsync().GetAwaiter().GetResult();
-        AdminClient.Dispose();
-        GuestClient.Dispose();
-        UserClient.Dispose();
-        Scope.Dispose();
-    }
 }
 
 public class ModuleTestBase<TEntryPoint, TModule, TWContext> : ModuleTestBase<TEntryPoint, TModule>
@@ -172,8 +172,6 @@ public class ModuleTestBase<TEntryPoint, TModule, TWContext> : ModuleTestBase<TE
     where TWContext : DbContext
     where TEntryPoint : class
 {
-    public new ModuleFixture<TModule, TWContext> ModuleFixture { get; }
-
     public ModuleTestBase(IntegrationTestFixture<TEntryPoint> integrationTestFixture, ITestOutputHelper outputHelper)
         : base(integrationTestFixture, outputHelper)
     {
@@ -181,9 +179,12 @@ public class ModuleTestBase<TEntryPoint, TModule, TWContext> : ModuleTestBase<TE
             CompositionRootRegistry.GetByModule<TModule>()!.ServiceProvider,
             integrationTestFixture.ServiceProvider.GetRequiredService<IGatewayProcessor<TModule>>());
     }
+
+    public new ModuleFixture<TModule, TWContext> ModuleFixture { get; }
 }
 
-public class ModuleTestBase<TEntryPoint, TModule, TWContext, TRContext> : ModuleTestBase<TEntryPoint, TModule, TWContext>
+public class
+    ModuleTestBase<TEntryPoint, TModule, TWContext, TRContext> : ModuleTestBase<TEntryPoint, TModule, TWContext>
     where TModule : class, IModuleDefinition
     where TWContext : DbContext
     where TRContext : MongoDbContext

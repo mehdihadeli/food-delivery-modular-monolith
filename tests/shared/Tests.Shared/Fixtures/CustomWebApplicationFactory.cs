@@ -39,11 +39,11 @@ public class CustomWebApplicationFactory<TEntryPoint> : WebApplicationFactory<TE
     // https://github.com/dotnet/aspnetcore/pull/33462
     // https://github.com/dotnet/aspnetcore/issues/33846
     // https://milestone.topics.it/2021/04/28/you-wanna-test-http.html
-    protected override IHost CreateHost(IHostBuilder builder)
+    protected override void ConfigureWebHost(IWebHostBuilder builder)
     {
         builder.UseContentRoot(Directory.GetCurrentDirectory());
 
-        builder.UseSerilog((_, _, loggerConfiguration) =>
+        builder.UseSerilog((ctx, loggerConfiguration) =>
         {
             //https://github.com/jhquirino/Serilog.Sinks.Xunit2
             if (OutputHelper is { })
@@ -65,13 +65,6 @@ public class CustomWebApplicationFactory<TEntryPoint> : WebApplicationFactory<TE
         //         logging.AddXUnit(OutputHelper); // Use the ITestOutputHelper instance
         // });
 
-        var host = base.CreateHost(builder);
-
-        return host;
-    }
-
-    protected override void ConfigureWebHost(IWebHostBuilder builder)
-    {
         //https://docs.microsoft.com/en-us/aspnet/core/test/integration-tests#set-the-environment
         //https://stackoverflow.com/questions/43927955/should-getenvironmentvariable-work-in-xunit-test/43951218
 

@@ -129,6 +129,27 @@ public class ModuleFixture<TModule> : IAsyncDisposable
         return hypothesis;
     }
 
+    public async ValueTask<IHypothesis<TMessage>> ShouldConsume<TMessage, TMessageHandler>(
+        Predicate<TMessage>? match = null)
+        where TMessage : class, IMessage
+        where TMessageHandler : class, IMessageHandler<TMessage>
+    {
+        var hypothesis = Hypothesis
+            .For<TMessage>()
+            .Any(match ?? (_ => true));
+
+        Bus.MessageConsumed += async (message, handlerType) =>
+        {
+            if (message.GetType() == typeof(TMessage) && message is TMessage messageData &&
+                typeof(TMessageHandler).IsAssignableTo(handlerType))
+            {
+                await hypothesis.Test(messageData);
+            }
+        };
+
+        return hypothesis;
+    }
+
     public async ValueTask<IHypothesis<TMessage>> ShouldConsumeWithNewConsumer<TMessage>(
         Predicate<TMessage>? match = null)
         where TMessage : class, IMessage
@@ -162,27 +183,6 @@ public class ModuleFixture<TModule> : IAsyncDisposable
         return hypothesis;
     }
 
-    public async ValueTask<IHypothesis<TMessage>> ShouldConsume<TMessage, TMessageHandler>(
-        Predicate<TMessage>? match = null)
-        where TMessage : class, IMessage
-        where TMessageHandler : class, IMessageHandler<TMessage>
-    {
-        var hypothesis = Hypothesis
-            .For<TMessage>()
-            .Any(match ?? (_ => true));
-
-        Bus.MessageConsumed += async (message, handlerType) =>
-        {
-            if (message.GetType() == typeof(TMessage) && message is TMessage messageData &&
-                typeof(TMessageHandler).IsAssignableTo(handlerType))
-            {
-                await hypothesis.Test(messageData);
-            }
-        };
-
-        return hypothesis;
-    }
-
     public async ValueTask ShouldProcessedOutboxPersistMessage<TMessage>()
         where TMessage : class, IMessage
     {
@@ -196,7 +196,7 @@ public class ModuleFixture<TModule> : IAsyncDisposable
         });
     }
 
-    public async ValueTask ShouldProcessedPersistCommand<TInternalCommand>()
+    public async ValueTask ShouldProcessedPersistInternalCommand<TInternalCommand>()
         where TInternalCommand : class, IInternalCommand
     {
         await WaitUntilConditionMetOrTimedOut(async () =>
@@ -218,19 +218,19 @@ public class ModuleFixture<TModule> : IAsyncDisposable
     }
 }
 
-public class ModuleFixture<TModule, TWContext> : ModuleFixture<TModule>
+public class ModuleFixture<TModule, TContext> : ModuleFixture<TModule>
     where TModule : class, IModuleDefinition
-    where TWContext : DbContext
+    where TContext : DbContext
 {
     public ModuleFixture(IServiceProvider serviceProvider, IGatewayProcessor<TModule> gatewayProcessor) : base(
         serviceProvider, gatewayProcessor)
     {
     }
 
-    public async Task ExecuteTxWriteContextAsync(Func<IServiceProvider, TWContext, ValueTask> action)
+    public async Task ExecuteTxContextAsync(Func<IServiceProvider, TContext, ValueTask> action)
     {
         using var scope = ServiceProvider.CreateScope();
-        var dbContext = scope.ServiceProvider.GetRequiredService<TWContext>();
+        var dbContext = scope.ServiceProvider.GetRequiredService<TContext>();
         var strategy = dbContext.Database.CreateExecutionStrategy();
         await strategy.ExecuteAsync(async () =>
         {
@@ -250,11 +250,11 @@ public class ModuleFixture<TModule, TWContext> : ModuleFixture<TModule>
         });
     }
 
-    public async Task<T> ExecuteTxWriteContextAsync<T>(Func<IServiceProvider, TWContext, ValueTask<T>> action)
+    public async Task<T> ExecuteTxContextAsync<T>(Func<IServiceProvider, TContext, ValueTask<T>> action)
     {
         using var scope = ServiceProvider.CreateScope();
         //https://weblogs.asp.net/dixin/entity-framework-core-and-linq-to-entities-7-data-changes-and-transactions
-        var dbContext = scope.ServiceProvider.GetRequiredService<TWContext>();
+        var dbContext = scope.ServiceProvider.GetRequiredService<TContext>();
         var strategy = dbContext.Database.CreateExecutionStrategy();
         return await strategy.ExecuteAsync(async () =>
         {
@@ -276,23 +276,23 @@ public class ModuleFixture<TModule, TWContext> : ModuleFixture<TModule>
         });
     }
 
-    public ValueTask ExecuteWriteContextAsync(Func<TWContext, ValueTask> action)
-        => ExecuteScopeAsync(sp => action(sp.GetRequiredService<TWContext>()));
+    public ValueTask ExecuteContextAsync(Func<TContext, ValueTask> action)
+        => ExecuteScopeAsync(sp => action(sp.GetRequiredService<TContext>()));
 
-    public ValueTask ExecuteWriteContextAsync(Func<TWContext, ICommandProcessor, ValueTask> action)
+    public ValueTask ExecuteContextAsync(Func<TContext, ICommandProcessor, ValueTask> action)
         => ExecuteScopeAsync(sp =>
-            action(sp.GetRequiredService<TWContext>(), sp.GetRequiredService<ICommandProcessor>()));
+            action(sp.GetRequiredService<TContext>(), sp.GetRequiredService<ICommandProcessor>()));
 
-    public ValueTask<T> ExecuteWriteContextAsync<T>(Func<TWContext, ValueTask<T>> action)
-        => ExecuteScopeAsync(sp => action(sp.GetRequiredService<TWContext>()));
+    public ValueTask<T> ExecuteContextAsync<T>(Func<TContext, ValueTask<T>> action)
+        => ExecuteScopeAsync(sp => action(sp.GetRequiredService<TContext>()));
 
-    public ValueTask<T> ExecuteWriteContextAsync<T>(Func<TWContext, ICommandProcessor, ValueTask<T>> action)
+    public ValueTask<T> ExecuteContextAsync<T>(Func<TContext, ICommandProcessor, ValueTask<T>> action)
         => ExecuteScopeAsync(sp =>
-            action(sp.GetRequiredService<TWContext>(), sp.GetRequiredService<ICommandProcessor>()));
+            action(sp.GetRequiredService<TContext>(), sp.GetRequiredService<ICommandProcessor>()));
 
     public async ValueTask<int> InsertAsync<T>(params T[] entities) where T : class
     {
-        return await ExecuteWriteContextAsync(async db =>
+        return await ExecuteContextAsync(async db =>
         {
             foreach (var entity in entities)
             {
@@ -305,7 +305,7 @@ public class ModuleFixture<TModule, TWContext> : ModuleFixture<TModule>
 
     public async ValueTask<int> InsertAsync<TEntity>(TEntity entity) where TEntity : class
     {
-        return await ExecuteWriteContextAsync(async db =>
+        return await ExecuteContextAsync(async db =>
         {
             db.Set<TEntity>().Add(entity);
 
@@ -317,7 +317,7 @@ public class ModuleFixture<TModule, TWContext> : ModuleFixture<TModule>
         where TEntity : class
         where TEntity2 : class
     {
-        return await ExecuteWriteContextAsync(async db =>
+        return await ExecuteContextAsync(async db =>
         {
             db.Set<TEntity>().Add(entity);
             db.Set<TEntity2>().Add(entity2);
@@ -332,7 +332,7 @@ public class ModuleFixture<TModule, TWContext> : ModuleFixture<TModule>
         where TEntity2 : class
         where TEntity3 : class
     {
-        return await ExecuteWriteContextAsync(async db =>
+        return await ExecuteContextAsync(async db =>
         {
             db.Set<TEntity>().Add(entity);
             db.Set<TEntity2>().Add(entity2);
@@ -349,7 +349,7 @@ public class ModuleFixture<TModule, TWContext> : ModuleFixture<TModule>
         where TEntity3 : class
         where TEntity4 : class
     {
-        return await ExecuteWriteContextAsync(async db =>
+        return await ExecuteContextAsync(async db =>
         {
             db.Set<TEntity>().Add(entity);
             db.Set<TEntity2>().Add(entity2);
@@ -360,9 +360,9 @@ public class ModuleFixture<TModule, TWContext> : ModuleFixture<TModule>
         });
     }
 
-    public ValueTask<T?> FindWriteAsync<T>(object id) where T : class
+    public ValueTask<T?> FindAsync<T>(object id) where T : class
     {
-        return ExecuteWriteContextAsync(db => db.Set<T>().FindAsync(id));
+        return ExecuteContextAsync(db => db.Set<T>().FindAsync(id));
     }
 }
 
