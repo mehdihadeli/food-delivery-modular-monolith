@@ -32,8 +32,6 @@ public class ModuleTestBase<TEntryPoint, TModule> :
 
     public ModuleTestBase(IntegrationTestFixture<TEntryPoint> integrationTestFixture, ITestOutputHelper outputHelper)
     {
-        CancellationToken.ThrowIfCancellationRequested();
-
         integrationTestFixture.RegisterTestServices(RegisterTestsServices);
         ModuleHook.ModuleServicesConfigured += RegisterModulesTestsServices;
         integrationTestFixture.SetOutputHelper(outputHelper);
@@ -114,7 +112,8 @@ public class ModuleTestBase<TEntryPoint, TModule> :
 
     public async Task InitializeAsync()
     {
-        ModuleFixture.ServiceProvider.StartHostedServices(CancellationToken);
+        CancellationToken.ThrowIfCancellationRequested();
+        await ModuleFixture.ServiceProvider.StartHostedServices(CancellationToken);
         await ResetState();
         SeedData();
     }
@@ -122,9 +121,8 @@ public class ModuleTestBase<TEntryPoint, TModule> :
     public async Task DisposeAsync()
     {
         await ModuleFixture.ServiceProvider.StopHostedServices(CancellationToken);
-        _mongoRunner.Dispose();
-
         CancellationTokenSource.Cancel();
+        _mongoRunner.Dispose();
         ModuleFixture.DisposeAsync().GetAwaiter().GetResult();
         AdminClient.Dispose();
         GuestClient.Dispose();

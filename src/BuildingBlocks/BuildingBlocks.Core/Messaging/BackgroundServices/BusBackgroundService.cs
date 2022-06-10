@@ -3,7 +3,8 @@ using Microsoft.Extensions.Hosting;
 
 namespace BuildingBlocks.Core.Messaging.BackgroundServices;
 
-public class BusBackgroundService : IHostedService
+// https://docs.microsoft.com/en-us/aspnet/core/fundamentals/host/hosted-services
+public class BusBackgroundService : BackgroundService
 {
     private readonly IBus _bus;
 
@@ -12,13 +13,15 @@ public class BusBackgroundService : IHostedService
         _bus = bus;
     }
 
-    public async Task StartAsync(CancellationToken cancellationToken)
+    protected override Task ExecuteAsync(CancellationToken stoppingToken)
     {
-        await _bus.StartAsync(cancellationToken);
+        return _bus.StartAsync(stoppingToken);
     }
 
-    public Task StopAsync(CancellationToken cancellationToken)
+    public override async Task StopAsync(CancellationToken cancellationToken)
     {
-        return _bus.StartAsync(cancellationToken);
+        await _bus.StopAsync(cancellationToken);
+
+        await base.StopAsync(cancellationToken);
     }
 }

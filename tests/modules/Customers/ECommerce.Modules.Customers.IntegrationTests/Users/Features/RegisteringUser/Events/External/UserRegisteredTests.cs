@@ -72,7 +72,7 @@ public class
         var shouldConsume = await ModuleFixture.ShouldConsume<UserRegistered>();
 
         // Act
-        await ModuleFixture.Bus.PublishAsync(_userRegistered, null, CancellationToken);
+        await ModuleFixture.PublishMessageAsync(_userRegistered, null, CancellationToken);
 
         // Assert
         await shouldConsume.Validate(60.Seconds());
@@ -120,13 +120,13 @@ public class
 
         // Assert
         var shouldConsume = await ModuleFixture.ShouldConsume<UserRegistered, UserRegisteredConsumer>(x =>
-            x.Email == _userRegistered.Email);
+            x.Email.ToLower() == _userRegistered.Email.ToLower());
 
         await shouldConsume.Validate(60.Seconds());
 
         var customer = await ModuleFixture.ExecuteContextAsync(async ctx =>
         {
-            var res = await ctx.Customers.AnyAsync(x => x.Email == _userRegistered.Email);
+            var res = await ctx.Customers.AnyAsync(x => x.Email == _userRegistered.Email.ToLower());
 
             return res;
         });

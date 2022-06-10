@@ -1,3 +1,5 @@
+using System.Security.Claims;
+using Ardalis.GuardClauses;
 using BuildingBlocks.Abstractions.CQRS.Command;
 using BuildingBlocks.Abstractions.Messaging;
 using BuildingBlocks.Abstractions.Messaging.PersistMessage;
@@ -6,6 +8,8 @@ using BuildingBlocks.Abstractions.Web.Module;
 using BuildingBlocks.Core.Types;
 using BuildingBlocks.Persistence.Mongo;
 using Hypothesist;
+using MediatR;
+using Microsoft.AspNetCore.Http;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.DependencyInjection;
 using Tests.Shared.Probing;
@@ -20,12 +24,9 @@ public class ModuleFixture<TModule> : IAsyncDisposable
         ServiceProvider = serviceProvider;
         GatewayProcessor = gatewayProcessor;
         Scope = serviceProvider.CreateScope();
-        MessagePersistenceService = Scope.ServiceProvider.GetRequiredService<IMessagePersistenceService>();
     }
 
     public IServiceProvider ServiceProvider { get; }
-
-    public IMessagePersistenceService MessagePersistenceService { get; }
 
     public IBus Bus => ServiceProvider.GetRequiredService<IBus>();
     public IServiceScope Scope { get; }
@@ -51,6 +52,52 @@ public class ModuleFixture<TModule> : IAsyncDisposable
         return result;
     }
 
+    public void SetUserRole(string role, string? sub = null)
+    {
+        sub ??= Guid.NewGuid().ToString();
+        var claims = new List<Claim> {new Claim(ClaimTypes.Role, role), new(ClaimTypes.Name, sub)};
+
+        var identity = new ClaimsIdentity(claims);
+        var claimsPrincipal = new ClaimsPrincipal(identity);
+
+        var httpContext = Substitute.For<HttpContext>();
+        httpContext.User.Returns(_ => claimsPrincipal);
+
+        var httpContextAccessor = ServiceProvider.GetRequiredService<IHttpContextAccessor>();
+        httpContextAccessor.HttpContext = httpContext;
+    }
+
+    public void SetUserRoles(string[] roles, string? sub = null)
+    {
+        sub ??= Guid.NewGuid().ToString();
+        var claims = new List<Claim>();
+        foreach (var role in roles)
+        {
+            claims.Add(new Claim(ClaimTypes.Role, role));
+        }
+
+        claims.Add(new Claim(ClaimTypes.Name, sub));
+
+        var identity = new ClaimsIdentity(claims);
+        var claimsPrincipal = new ClaimsPrincipal(identity);
+
+        var httpContext = Substitute.For<HttpContext>();
+        httpContext.User.Returns(_ => claimsPrincipal);
+
+        var httpContextAccessor = ServiceProvider.GetRequiredService<IHttpContextAccessor>();
+        httpContextAccessor.HttpContext = httpContext;
+    }
+
+    public async Task<TResponse> SendAsync<TResponse>(IRequest<TResponse> request)
+    {
+        return await ExecuteScopeAsync(async sp =>
+        {
+            var mediator = sp.GetRequiredService<IMediator>();
+
+            return await mediator.Send(request);
+        });
+    }
+
     public async ValueTask PublishMessageAsync<TMessage>(
         TMessage message,
         IDictionary<string, object?>? headers = null,
@@ -67,13 +114,16 @@ public class ModuleFixture<TModule> : IAsyncDisposable
     }
 
     // Ref: https://tech.energyhelpline.com/in-memory-testing-with-masstransit/
-    public async ValueTask WaitUntilConditionMetOrTimedOut(Func<Task<bool>> conditionToMet, int timeoutSecond = 60)
+    public async ValueTask WaitUntilConditionMet(Func<Task<bool>> conditionToMet, int timeoutSecond = 60)
     {
         var startTime = DateTime.Now;
         var timeoutExpired = false;
         var meet = await conditionToMet.Invoke();
-        while (!meet && !timeoutExpired)
+        while (!meet)
         {
+            if (timeoutExpired)
+                throw new TimeoutException("Condition not met for the test.");
+
             await Task.Delay(100);
             meet = await conditionToMet.Invoke();
             timeoutExpired = DateTime.Now - startTime > TimeSpan.FromSeconds(timeoutSecond);
@@ -186,26 +236,40 @@ public class ModuleFixture<TModule> : IAsyncDisposable
     public async ValueTask ShouldProcessedOutboxPersistMessage<TMessage>()
         where TMessage : class, IMessage
     {
-        await WaitUntilConditionMetOrTimedOut(async () =>
+        await WaitUntilConditionMet(async () =>
         {
-            var filter = await MessagePersistenceService.GetByFilterAsync(x =>
-                x.DeliveryType == MessageDeliveryType.Outbox &&
-                TypeMapper.GetTypeName(typeof(TMessage)) == x.DataType);
+            return await ExecuteScopeAsync(async sp =>
+            {
+                var messagePersistenceService = sp.GetService<IMessagePersistenceService>();
+                Guard.Against.Null(messagePersistenceService, nameof(messagePersistenceService));
 
-            return filter.Any(x => x.MessageStatus == MessageStatus.Processed);
+                var filter = await messagePersistenceService.GetByFilterAsync(x =>
+                    x.DeliveryType == MessageDeliveryType.Outbox &&
+                    TypeMapper.GetTypeName(typeof(TMessage)) == x.DataType);
+
+                return filter.Any(x => x.MessageStatus == MessageStatus.Processed);
+            });
         });
     }
 
     public async ValueTask ShouldProcessedPersistInternalCommand<TInternalCommand>()
         where TInternalCommand : class, IInternalCommand
     {
-        await WaitUntilConditionMetOrTimedOut(async () =>
+        await WaitUntilConditionMet(async () =>
         {
-            var filter = await MessagePersistenceService.GetByFilterAsync(x =>
-                x.DeliveryType == MessageDeliveryType.Internal &&
-                TypeMapper.GetTypeName(typeof(TInternalCommand)) == x.DataType);
+            return await ExecuteScopeAsync(async sp =>
+            {
+                var messagePersistenceService = sp.GetService<IMessagePersistenceService>();
+                Guard.Against.Null(messagePersistenceService, nameof(messagePersistenceService));
 
-            return filter.Any(x => x.MessageStatus == MessageStatus.Processed);
+                var filter = await messagePersistenceService.GetByFilterAsync(x =>
+                    x.DeliveryType == MessageDeliveryType.Internal &&
+                    TypeMapper.GetTypeName(typeof(TInternalCommand)) == x.DataType);
+
+                var res = filter.Any(x => x.MessageStatus == MessageStatus.Processed);
+
+                return res;
+            });
         });
     }
 

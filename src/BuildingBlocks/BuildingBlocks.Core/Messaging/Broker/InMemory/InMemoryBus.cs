@@ -24,8 +24,8 @@ public class InMemoryBus : IBus
     private static readonly Dictionary<Type, List<Type>> _handlers = new();
     private static readonly Dictionary<Type, Func<object, CancellationToken, Task>> _delegateHandlers = new();
 
-    private static event Action<object, Type> _consumedMessage;
-    private static event Action<object> _publishedMessage;
+    private static event Action<object, Type>? ConsumedMessage;
+    private static event Action<object>? PublishedMessage;
 
     static InMemoryBus()
     {
@@ -54,8 +54,11 @@ public class InMemoryBus : IBus
         var threads = 5;
 
         Task.WhenAll(Enumerable.Range(0, threads)
-            .Select(_ => Task.Factory.StartNew(() => ReceivingMessages(cancellationToken), cancellationToken,
-                TaskCreationOptions.LongRunning, TaskScheduler.Default))
+            .Select(_ => Task.Factory.StartNew(
+                () => ReceivingMessages(cancellationToken),
+                cancellationToken,
+                TaskCreationOptions.LongRunning,
+                TaskScheduler.Default))
             .ToArray());
 
         return Task.CompletedTask;
@@ -63,8 +66,6 @@ public class InMemoryBus : IBus
 
     public Task StopAsync(CancellationToken cancellationToken = default)
     {
-        _channel.Writer.Complete();
-
         return Task.CompletedTask;
     }
 
@@ -120,7 +121,7 @@ public class InMemoryBus : IBus
                                 typedConsumedContext,
                                 cancellationToken);
 
-                            _consumedMessage?.Invoke(typedConsumedContext?.Message, handlerType);
+                            ConsumedMessage?.Invoke(typedConsumedContext?.Message, handlerType);
                         }
                     }
                 }
@@ -149,7 +150,7 @@ public class InMemoryBus : IBus
 
                     await delegateHandler.Invoke(typedConsumedContext, cancellationToken);
 
-                    _consumedMessage?.Invoke(typedConsumedContext?.Message, delegateHandler.GetType());
+                    ConsumedMessage?.Invoke(typedConsumedContext?.Message, delegateHandler.GetType());
                 }
             }
             catch (System.Exception e)
@@ -172,7 +173,7 @@ public class InMemoryBus : IBus
 
         await _channel.Writer.WriteAsync(json, cancellationToken);
 
-        _publishedMessage?.Invoke(message);
+        PublishedMessage?.Invoke(message);
     }
 
     public async Task PublishAsync<TMessage>(
@@ -198,7 +199,7 @@ public class InMemoryBus : IBus
 
         await _channel.Writer.WriteAsync(json, cancellationToken);
 
-        _publishedMessage?.Invoke(message);
+        PublishedMessage?.Invoke(message);
     }
 
     public async Task PublishAsync(
@@ -344,11 +345,11 @@ public class InMemoryBus : IBus
     {
         add
         {
-            _consumedMessage += value;
+            ConsumedMessage += value;
         }
         remove
         {
-            _consumedMessage -= value;
+            ConsumedMessage -= value;
         }
     }
 
@@ -356,11 +357,11 @@ public class InMemoryBus : IBus
     {
         add
         {
-            _publishedMessage += value;
+            PublishedMessage += value;
         }
         remove
         {
-            _publishedMessage -= value;
+            PublishedMessage -= value;
         }
     }
 

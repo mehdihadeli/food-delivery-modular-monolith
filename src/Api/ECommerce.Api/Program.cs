@@ -153,12 +153,14 @@ static async Task ConfigureApplication(WebApplication app)
 
     app.Lifetime.ApplicationStopping.Register(() =>
     {
-        foreach (var compositionRoot in CompositionRootRegistry.CompositionRoots)
+        if (app.Environment.IsEnvironment("test") == false)
         {
-            compositionRoot.ServiceProvider.StopHostedServices().GetAwaiter().GetResult();
+            foreach (var compositionRoot in CompositionRootRegistry.CompositionRoots)
+            {
+                compositionRoot.ServiceProvider.StopHostedServices().GetAwaiter().GetResult();
+            }
         }
     });
-
 
     Log.Logger = new LoggerConfiguration()
         .WriteTo.Console()

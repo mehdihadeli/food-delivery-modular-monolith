@@ -7,7 +7,8 @@ using Microsoft.Extensions.Options;
 
 namespace BuildingBlocks.Core.Messaging.BackgroundServices;
 
-public class MessagePersistenceBackgroundService : IHostedService
+// https://docs.microsoft.com/en-us/aspnet/core/fundamentals/host/hosted-services
+public class MessagePersistenceBackgroundService : BackgroundService
 {
     private readonly ILogger<MessagePersistenceBackgroundService> _logger;
     private readonly MessagePersistenceOptions _options;
@@ -26,12 +27,12 @@ public class MessagePersistenceBackgroundService : IHostedService
         _machineInstanceInfo = machineInstanceInfo;
     }
 
-    public async Task StartAsync(CancellationToken cancellationToken)
+    protected override Task ExecuteAsync(CancellationToken stoppingToken)
     {
         _logger.LogInformation(
             $"MessagePersistence Background Service is starting on client '{_machineInstanceInfo.ClientId}' and group '{_machineInstanceInfo.ClientGroup}'.");
 
-        await ProcessAsync(cancellationToken);
+        return ProcessAsync(stoppingToken);
     }
 
     private async Task ProcessAsync(CancellationToken stoppingToken)
@@ -50,10 +51,5 @@ public class MessagePersistenceBackgroundService : IHostedService
 
             await Task.Delay(delay, stoppingToken);
         }
-    }
-
-    public Task StopAsync(CancellationToken cancellationToken)
-    {
-        return Task.CompletedTask;
     }
 }

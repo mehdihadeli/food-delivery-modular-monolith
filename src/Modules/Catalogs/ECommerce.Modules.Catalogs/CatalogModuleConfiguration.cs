@@ -37,7 +37,7 @@ public class CatalogModuleConfiguration : IModuleDefinition
         if (environment.IsEnvironment("test") == false)
         {
             // HostedServices just run on main service provider - It should not await because it will block the main thread.
-            app.ApplicationServices.StartHostedServices();
+           await app.ApplicationServices.StartHostedServices();
         }
 
         ServiceActivator.Configure(app.ApplicationServices);
