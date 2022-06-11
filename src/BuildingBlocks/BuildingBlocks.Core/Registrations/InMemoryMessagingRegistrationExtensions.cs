@@ -15,7 +15,7 @@ public static partial class InMemoryMessagingRegistrationExtensions
         this IServiceCollection services,
         ServiceLifetime serviceLifetime = ServiceLifetime.Transient)
     {
-        services.AddSingleton<InMemoryMessagePersistenceRepository>();
+        services.Add<IMessagePersistenceRepository, InMemoryMessagePersistenceRepository>(serviceLifetime);
 
         services.Replace<IMessagePersistenceService, InMemoryMessagePersistenceService>(serviceLifetime);
 

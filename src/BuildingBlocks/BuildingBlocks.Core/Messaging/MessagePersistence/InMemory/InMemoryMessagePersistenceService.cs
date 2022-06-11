@@ -11,10 +11,11 @@ using Microsoft.Extensions.Logging;
 
 namespace BuildingBlocks.Core.Messaging.MessagePersistence.InMemory;
 
+
 public class InMemoryMessagePersistenceService : IMessagePersistenceService
 {
     private readonly ILogger<InMemoryMessagePersistenceService> _logger;
-    private readonly InMemoryMessagePersistenceRepository _inMemoryMessagePersistenceRepository;
+    private readonly IMessagePersistenceRepository _messagePersistenceRepository;
     private readonly IMessageSerializer _messageSerializer;
     private readonly IMediator _mediator;
     private readonly IBus _bus;
@@ -22,14 +23,14 @@ public class InMemoryMessagePersistenceService : IMessagePersistenceService
 
     public InMemoryMessagePersistenceService(
         ILogger<InMemoryMessagePersistenceService> logger,
-        InMemoryMessagePersistenceRepository inMemoryMessagePersistenceRepository,
+        IMessagePersistenceRepository messagePersistenceRepository,
         IMessageSerializer messageSerializer,
         IMediator mediator,
         IBus bus,
         ISerializer serializer)
     {
         _logger = logger;
-        _inMemoryMessagePersistenceRepository = inMemoryMessagePersistenceRepository;
+        _messagePersistenceRepository = messagePersistenceRepository;
         _messageSerializer = messageSerializer;
         _mediator = mediator;
         _bus = bus;
@@ -40,7 +41,7 @@ public class InMemoryMessagePersistenceService : IMessagePersistenceService
         Expression<Func<StoreMessage, bool>>? predicate = null,
         CancellationToken cancellationToken = default)
     {
-        return _inMemoryMessagePersistenceRepository.GetByFilterAsync(predicate ?? (_ => true), cancellationToken);
+        return _messagePersistenceRepository.GetByFilterAsync(predicate ?? (_ => true), cancellationToken);
     }
 
     public async Task AddPublishMessageAsync<TMessageEnvelope>(
@@ -71,7 +72,7 @@ public class InMemoryMessagePersistenceService : IMessagePersistenceService
         IDomainNotificationEvent notification,
         CancellationToken cancellationToken = default)
     {
-        await _inMemoryMessagePersistenceRepository.AddAsync(
+        await _messagePersistenceRepository.AddAsync(
             new StoreMessage(
                 notification.EventId,
                 TypeMapper.GetTypeName(notification.GetType()),
@@ -101,7 +102,7 @@ public class InMemoryMessagePersistenceService : IMessagePersistenceService
             id = Guid.NewGuid();
         }
 
-        await _inMemoryMessagePersistenceRepository.AddAsync(
+        await _messagePersistenceRepository.AddAsync(
             new StoreMessage(
                 id,
                 TypeMapper.GetTypeName(messageEnvelope.Message.GetType()),
@@ -120,7 +121,7 @@ public class InMemoryMessagePersistenceService : IMessagePersistenceService
         MessageDeliveryType deliveryType,
         CancellationToken cancellationToken = default)
     {
-        var message = (await _inMemoryMessagePersistenceRepository.GetByFilterAsync(
+        var message = (await _messagePersistenceRepository.GetByFilterAsync(
                 x => x.Id == messageId && x.DeliveryType == deliveryType, cancellationToken))
             .FirstOrDefault();
 
@@ -145,8 +146,8 @@ public class InMemoryMessagePersistenceService : IMessagePersistenceService
 
     public async Task ProcessAllAsync(CancellationToken cancellationToken = default)
     {
-        var messages = await _inMemoryMessagePersistenceRepository
-            .GetByFilterAsync(x => x.MessageStatus != MessageStatus.Processed, cancellationToken: cancellationToken);
+        var messages = await _messagePersistenceRepository
+            .GetByFilterAsync(x => x.MessageStatus != MessageStatus.Processed, cancellationToken);
 
         foreach (var message in messages)
         {

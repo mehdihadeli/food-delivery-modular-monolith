@@ -8,7 +8,11 @@ namespace BuildingBlocks.Core.Messaging.MessagePersistence.InMemory;
 
 public class InMemoryMessagePersistenceRepository : IMessagePersistenceRepository
 {
-    private readonly ConcurrentDictionary<Guid, StoreMessage> _messages = new();
+    private static readonly ConcurrentDictionary<Guid, StoreMessage> _messages = new();
+
+    public InMemoryMessagePersistenceRepository()
+    {
+    }
 
     public Task AddAsync(StoreMessage storeMessage, CancellationToken cancellationToken = default)
     {
@@ -21,9 +25,9 @@ public class InMemoryMessagePersistenceRepository : IMessagePersistenceRepositor
 
     public Task<IReadOnlyList<StoreMessage>> GetAllAsync(CancellationToken cancellationToken = default)
     {
-        IReadOnlyList<StoreMessage> result = _messages.Select(x => x.Value).ToImmutableList();
+        var result = _messages.Select(x => x.Value).ToImmutableList();
 
-        return Task.FromResult(result);
+        return Task.FromResult<IReadOnlyList<StoreMessage>>(result);
     }
 
     public Task<IReadOnlyList<StoreMessage>> GetByFilterAsync(
@@ -32,11 +36,9 @@ public class InMemoryMessagePersistenceRepository : IMessagePersistenceRepositor
     {
         Guard.Against.Null(predicate, nameof(predicate));
 
-        IReadOnlyList<StoreMessage> result = _messages.Select(x => x.Value)
-            .Where(predicate.Compile())
-            .ToImmutableList();
+        var result = _messages.Select(x => x.Value).Where(predicate.Compile()).ToImmutableList();
 
-        return Task.FromResult(result);
+        return Task.FromResult<IReadOnlyList<StoreMessage>>(result);
     }
 
     public Task<StoreMessage?> GetByIdAsync(Guid id, CancellationToken cancellationToken = default)
@@ -53,5 +55,15 @@ public class InMemoryMessagePersistenceRepository : IMessagePersistenceRepositor
         var result = _messages.Remove(storeMessage.Id, out _);
 
         return Task.FromResult(result)!;
+    }
+
+    public Task CleanupMessages()
+    {
+        foreach (var storeMessage in _messages)
+        {
+            _messages.TryRemove(storeMessage);
+        }
+
+        return Task.CompletedTask;
     }
 }

@@ -15,6 +15,8 @@ public class MessagePersistenceBackgroundService : BackgroundService
     private readonly IServiceScopeFactory _serviceScopeFactory;
     private readonly IMachineInstanceInfo _machineInstanceInfo;
 
+    private Task? _executingTask;
+
     public MessagePersistenceBackgroundService(
         ILogger<MessagePersistenceBackgroundService> logger,
         IOptions<MessagePersistenceOptions> options,
@@ -32,7 +34,9 @@ public class MessagePersistenceBackgroundService : BackgroundService
         _logger.LogInformation(
             $"MessagePersistence Background Service is starting on client '{_machineInstanceInfo.ClientId}' and group '{_machineInstanceInfo.ClientGroup}'.");
 
-        return ProcessAsync(stoppingToken);
+        _executingTask = ProcessAsync(stoppingToken);
+
+        return _executingTask;
     }
 
     private async Task ProcessAsync(CancellationToken stoppingToken)

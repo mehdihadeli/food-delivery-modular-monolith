@@ -7,6 +7,7 @@ namespace BuildingBlocks.Core.Messaging.BackgroundServices;
 public class BusBackgroundService : BackgroundService
 {
     private readonly IBus _bus;
+    private Task? _executingTask;
 
     public BusBackgroundService(IBus bus)
     {
@@ -15,7 +16,9 @@ public class BusBackgroundService : BackgroundService
 
     protected override Task ExecuteAsync(CancellationToken stoppingToken)
     {
-        return _bus.StartAsync(stoppingToken);
+        _executingTask = _bus.StartAsync(stoppingToken);
+
+        return _executingTask;
     }
 
     public override async Task StopAsync(CancellationToken cancellationToken)
