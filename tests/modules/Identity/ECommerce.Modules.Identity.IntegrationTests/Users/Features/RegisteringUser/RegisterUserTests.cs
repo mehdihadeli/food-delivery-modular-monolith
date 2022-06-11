@@ -37,8 +37,7 @@ public class RegisterUserTests : ModuleTestBase<Program, IdentityModuleConfigura
     public async Task register_new_user_command_should_persist_new_user_in_db()
     {
         // Act
-        var result = await ModuleFixture.GatewayProcessor.ExecuteCommand(
-            async commandProcessor => await commandProcessor.SendAsync(_registerUser, CancellationToken));
+        var result = await ModuleFixture.GatewayProcessor.SendCommandAsync(_registerUser, CancellationToken);
 
         // Assert
         result.UserIdentity.Should().NotBeNull();
@@ -47,8 +46,7 @@ public class RegisterUserTests : ModuleTestBase<Program, IdentityModuleConfigura
         // user.Should().NotBeNull();
 
         UserByIdResponse userByIdResponse =
-            await ModuleFixture.GatewayProcessor.ExecuteQuery<GetUserById, UserByIdResponse>(
-                new GetUserById(result.UserIdentity.Id));
+            await ModuleFixture.GatewayProcessor.SendQueryAsync(new GetUserById(result.UserIdentity.Id));
 
         userByIdResponse.IdentityUser.Should().NotBeNull();
         userByIdResponse.IdentityUser.Id.Should().Be(result.UserIdentity.Id);
@@ -62,8 +60,7 @@ public class RegisterUserTests : ModuleTestBase<Program, IdentityModuleConfigura
         var shouldConsumeWithNewConsumer = await ModuleFixture.ShouldConsumeWithNewConsumer<UserRegistered>();
 
         // Act
-        await ModuleFixture.GatewayProcessor.ExecuteCommand(
-            async commandProcessor => await commandProcessor.SendAsync(_registerUser, CancellationToken));
+        await ModuleFixture.GatewayProcessor.SendCommandAsync(_registerUser, CancellationToken);
 
         // Assert
         await shouldPublish.Validate(60.Seconds());

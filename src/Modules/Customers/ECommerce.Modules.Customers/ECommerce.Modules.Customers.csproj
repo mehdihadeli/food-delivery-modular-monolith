@@ -42,6 +42,11 @@
   </ItemGroup>
 
   <ItemGroup>
+    <InternalsVisibleTo Include="BuildingBlocks.Core.IntegrationTests" />
+    <InternalsVisibleTo Include="ECommerce.Modules.Customers.IntegrationTests" />
+  </ItemGroup>
+
+  <ItemGroup>
     <Using Include="MediatR" />
     <Using Include="System.Collections.Generic" />
     <Using Include="System.Reflection" />

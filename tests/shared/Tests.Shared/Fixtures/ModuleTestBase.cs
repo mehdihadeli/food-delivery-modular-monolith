@@ -1,8 +1,10 @@
 using System.Net.Http.Headers;
+using BuildingBlocks.Abstractions.Messaging.PersistMessage;
 using BuildingBlocks.Abstractions.Persistence;
 using BuildingBlocks.Abstractions.Web;
 using BuildingBlocks.Abstractions.Web.Module;
 using BuildingBlocks.Core.Extensions;
+using BuildingBlocks.Core.Extensions.ServiceCollection;
 using BuildingBlocks.Persistence.EfCore.Postgres;
 using BuildingBlocks.Persistence.Mongo;
 using BuildingBlocks.Web.Module;
@@ -27,11 +29,13 @@ public class ModuleTestBase<TEntryPoint, TModule> :
     where TModule : class, IModuleDefinition
     where TEntryPoint : class
 {
+    private readonly IntegrationTestFixture<TEntryPoint> _integrationTestFixture;
     private readonly Checkpoint _checkpoint;
     private readonly MongoDbRunner _mongoRunner;
 
     public ModuleTestBase(IntegrationTestFixture<TEntryPoint> integrationTestFixture, ITestOutputHelper outputHelper)
     {
+        _integrationTestFixture = integrationTestFixture;
         integrationTestFixture.RegisterTestServices(RegisterTestsServices);
         ModuleHook.ModuleServicesConfigured += RegisterModulesTestsServices;
         integrationTestFixture.SetOutputHelper(outputHelper);
@@ -82,7 +86,7 @@ public class ModuleTestBase<TEntryPoint, TModule> :
             mongoOptions.Value.ConnectionString = _mongoRunner.ConnectionString;
     }
 
-    public IServiceScope Scope { get; }
+    public AsyncServiceScope Scope { get; }
 
     protected ILogger Logger { get; }
 
@@ -99,6 +103,8 @@ public class ModuleTestBase<TEntryPoint, TModule> :
 
     protected virtual void RegisterTestsServices(IServiceCollection services)
     {
+        var user = _integrationTestFixture.CreateAdminUserMock();
+        services.ReplaceScoped(_ => user);
     }
 
     protected virtual void RegisterModulesTestsServices(IServiceCollection services, IModuleDefinition module)
@@ -115,7 +121,7 @@ public class ModuleTestBase<TEntryPoint, TModule> :
         CancellationToken.ThrowIfCancellationRequested();
         await ModuleFixture.ServiceProvider.StartHostedServices(CancellationToken);
         await ResetState();
-        SeedData();
+        await SeedData();
     }
 
     public async Task DisposeAsync()
@@ -123,24 +129,32 @@ public class ModuleTestBase<TEntryPoint, TModule> :
         await ModuleFixture.ServiceProvider.StopHostedServices(CancellationToken);
         CancellationTokenSource.Cancel();
         _mongoRunner.Dispose();
-        ModuleFixture.DisposeAsync().GetAwaiter().GetResult();
+
+        await ModuleFixture.ExecuteScopeAsync(async sp =>
+        {
+            var messagePersistenceRepository = sp.GetRequiredService<IMessagePersistenceRepository>();
+            await messagePersistenceRepository.CleanupMessages();
+        });
+
+        await ModuleFixture.DisposeAsync();
         AdminClient.Dispose();
         GuestClient.Dispose();
         UserClient.Dispose();
-        Scope.Dispose();
+
+        await Scope.DisposeAsync();
     }
 
-    private void SeedData()
+    private async Task SeedData()
     {
         using (var scope = ModuleFixture.ServiceProvider.CreateScope())
         {
             var ctx = scope.ServiceProvider.GetRequiredService<IDbFacadeResolver>();
             var seeders = scope.ServiceProvider.GetServices<IDataSeeder>();
-            ctx.Database.Migrate();
+            await ctx.Database.MigrateAsync(CancellationToken);
 
             foreach (var seeder in seeders)
             {
-                seeder.SeedAllAsync().GetAwaiter().GetResult();
+                await seeder.SeedAllAsync();
             }
         }
     }

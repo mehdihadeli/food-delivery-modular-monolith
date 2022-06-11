@@ -1,6 +1,6 @@
-using System.Security.Claims;
 using Ardalis.GuardClauses;
 using BuildingBlocks.Abstractions.CQRS.Command;
+using BuildingBlocks.Abstractions.CQRS.Query;
 using BuildingBlocks.Abstractions.Messaging;
 using BuildingBlocks.Abstractions.Messaging.PersistMessage;
 using BuildingBlocks.Abstractions.Web;
@@ -9,7 +9,6 @@ using BuildingBlocks.Core.Types;
 using BuildingBlocks.Persistence.Mongo;
 using Hypothesist;
 using MediatR;
-using Microsoft.AspNetCore.Http;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.DependencyInjection;
 using Tests.Shared.Probing;
@@ -23,13 +22,13 @@ public class ModuleFixture<TModule> : IAsyncDisposable
     {
         ServiceProvider = serviceProvider;
         GatewayProcessor = gatewayProcessor;
-        Scope = serviceProvider.CreateScope();
+        Scope = serviceProvider.CreateAsyncScope();
     }
 
     public IServiceProvider ServiceProvider { get; }
 
     public IBus Bus => ServiceProvider.GetRequiredService<IBus>();
-    public IServiceScope Scope { get; }
+    public AsyncServiceScope Scope { get; }
     public IGatewayProcessor<TModule> GatewayProcessor { get; }
 
     public async Task AssertEventually(IProbe probe, int timeout)
@@ -39,53 +38,17 @@ public class ModuleFixture<TModule> : IAsyncDisposable
 
     public async ValueTask ExecuteScopeAsync(Func<IServiceProvider, ValueTask> action)
     {
-        using var scope = ServiceProvider.CreateScope();
+        await using var scope = ServiceProvider.CreateAsyncScope();
         await action(scope.ServiceProvider);
     }
 
     public async ValueTask<T> ExecuteScopeAsync<T>(Func<IServiceProvider, ValueTask<T>> action)
     {
-        using var scope = ServiceProvider.CreateScope();
+        await using var scope = ServiceProvider.CreateAsyncScope();
 
         var result = await action(scope.ServiceProvider);
 
         return result;
-    }
-
-    public void SetUserRole(string role, string? sub = null)
-    {
-        sub ??= Guid.NewGuid().ToString();
-        var claims = new List<Claim> {new Claim(ClaimTypes.Role, role), new(ClaimTypes.Name, sub)};
-
-        var identity = new ClaimsIdentity(claims);
-        var claimsPrincipal = new ClaimsPrincipal(identity);
-
-        var httpContext = Substitute.For<HttpContext>();
-        httpContext.User.Returns(_ => claimsPrincipal);
-
-        var httpContextAccessor = ServiceProvider.GetRequiredService<IHttpContextAccessor>();
-        httpContextAccessor.HttpContext = httpContext;
-    }
-
-    public void SetUserRoles(string[] roles, string? sub = null)
-    {
-        sub ??= Guid.NewGuid().ToString();
-        var claims = new List<Claim>();
-        foreach (var role in roles)
-        {
-            claims.Add(new Claim(ClaimTypes.Role, role));
-        }
-
-        claims.Add(new Claim(ClaimTypes.Name, sub));
-
-        var identity = new ClaimsIdentity(claims);
-        var claimsPrincipal = new ClaimsPrincipal(identity);
-
-        var httpContext = Substitute.For<HttpContext>();
-        httpContext.User.Returns(_ => claimsPrincipal);
-
-        var httpContextAccessor = ServiceProvider.GetRequiredService<IHttpContextAccessor>();
-        httpContextAccessor.HttpContext = httpContext;
     }
 
     public async Task<TResponse> SendAsync<TResponse>(IRequest<TResponse> request)
@@ -95,6 +58,41 @@ public class ModuleFixture<TModule> : IAsyncDisposable
             var mediator = sp.GetRequiredService<IMediator>();
 
             return await mediator.Send(request);
+        });
+    }
+
+    public async Task<TResponse> SendAsync<TResponse>(
+        ICommand<TResponse> request,
+        CancellationToken cancellationToken = default)
+        where TResponse : notnull
+    {
+        return await ExecuteScopeAsync(async sp =>
+        {
+            var commandProcessor = sp.GetRequiredService<ICommandProcessor>();
+
+            return await commandProcessor.SendAsync(request, cancellationToken);
+        });
+    }
+
+    public async Task SendAsync<T>(T request, CancellationToken cancellationToken = default) where T : class, ICommand
+    {
+        await ExecuteScopeAsync(async sp =>
+        {
+            var commandProcessor = sp.GetRequiredService<ICommandProcessor>();
+
+            return await commandProcessor.SendAsync(request, cancellationToken);
+        });
+    }
+
+    public async Task<TResponse> QueryAsync<TResponse>(
+        IQuery<TResponse> query,
+        CancellationToken cancellationToken = default) where TResponse : class
+    {
+        return await ExecuteScopeAsync(async sp =>
+        {
+            var queryProcessor = sp.GetRequiredService<IQueryProcessor>();
+
+            return await queryProcessor.SendAsync(query, cancellationToken);
         });
     }
 
@@ -273,12 +271,9 @@ public class ModuleFixture<TModule> : IAsyncDisposable
         });
     }
 
-
-    public ValueTask DisposeAsync()
+    public async ValueTask DisposeAsync()
     {
-        Scope.Dispose();
-
-        return ValueTask.CompletedTask;
+        await Scope.DisposeAsync();
     }
 }
 
@@ -293,7 +288,7 @@ public class ModuleFixture<TModule, TContext> : ModuleFixture<TModule>
 
     public async Task ExecuteTxContextAsync(Func<IServiceProvider, TContext, ValueTask> action)
     {
-        using var scope = ServiceProvider.CreateScope();
+        await using var scope = ServiceProvider.CreateAsyncScope();
         var dbContext = scope.ServiceProvider.GetRequiredService<TContext>();
         var strategy = dbContext.Database.CreateExecutionStrategy();
         await strategy.ExecuteAsync(async () =>
@@ -316,7 +311,7 @@ public class ModuleFixture<TModule, TContext> : ModuleFixture<TModule>
 
     public async Task<T> ExecuteTxContextAsync<T>(Func<IServiceProvider, TContext, ValueTask<T>> action)
     {
-        using var scope = ServiceProvider.CreateScope();
+        await using var scope = ServiceProvider.CreateAsyncScope();
         //https://weblogs.asp.net/dixin/entity-framework-core-and-linq-to-entities-7-data-changes-and-transactions
         var dbContext = scope.ServiceProvider.GetRequiredService<TContext>();
         var strategy = dbContext.Database.CreateExecutionStrategy();
