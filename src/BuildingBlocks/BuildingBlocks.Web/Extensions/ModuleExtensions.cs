@@ -3,9 +3,9 @@ using BuildingBlocks.Abstractions.Web.Module;
 using BuildingBlocks.Web.Extensions.ServiceCollectionExtensions;
 using BuildingBlocks.Web.Module;
 using Microsoft.AspNetCore.Builder;
+using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.Routing;
 using Microsoft.Extensions.Configuration;
-using Microsoft.Extensions.Hosting;
 
 namespace BuildingBlocks.Web.Extensions;
 
@@ -15,23 +15,27 @@ public static class ModuleExtensions
 {
     public static void AddModuleServices<TModule>(
         this WebApplicationBuilder webApplicationBuilder,
+        IWebHostEnvironment webHostEnvironment,
         bool useNewComposition = false)
         where TModule : class, IModuleDefinition
     {
         AddModuleServices<TModule>(
             webApplicationBuilder.Services,
             webApplicationBuilder.Configuration,
+            webHostEnvironment,
             useNewComposition);
     }
 
     public static void AddModulesServices(
         this WebApplicationBuilder webApplicationBuilder,
+        IWebHostEnvironment webHostEnvironment,
         bool useCompositionRootForModules = false,
         params Assembly[] scanAssemblies)
     {
         AddModulesServices(
             webApplicationBuilder.Services,
             webApplicationBuilder.Configuration,
+            webHostEnvironment,
             useCompositionRootForModules,
             scanAssemblies);
     }
@@ -39,6 +43,7 @@ public static class ModuleExtensions
     public static void AddModulesServices(
         this IServiceCollection services,
         IConfiguration configuration,
+        IWebHostEnvironment webHostEnvironment,
         bool useCompositionRootForModules = false,
         params Assembly[] scanAssemblies)
     {
@@ -51,7 +56,7 @@ public static class ModuleExtensions
 
         foreach (var module in modules)
         {
-            AddModuleServices(services, configuration, module, useCompositionRootForModules);
+            AddModuleServices(services, configuration, webHostEnvironment, module, useCompositionRootForModules);
         }
 
         // For handling specific composition root for processing commands and queries based on module
@@ -61,10 +66,11 @@ public static class ModuleExtensions
     public static void AddModuleServices<TModule>(
         this IServiceCollection services,
         IConfiguration configuration,
+        IWebHostEnvironment webHostEnvironment,
         bool useCompositionRootForModules = false)
         where TModule : class, IModuleDefinition
     {
-        AddModuleServices(services, configuration, typeof(TModule), useCompositionRootForModules);
+        AddModuleServices(services, configuration, webHostEnvironment, typeof(TModule), useCompositionRootForModules);
 
         // For handling specific composition root for processing commands and queries based on module
         services.AddGatewayProcessor();
@@ -73,15 +79,17 @@ public static class ModuleExtensions
     public static void AddModuleServices(
         this IServiceCollection services,
         IConfiguration configuration,
+        IWebHostEnvironment webHostEnvironment,
         Type moduleType,
         bool useCompositionRootForModules = false)
     {
-        AddModulesDependency(services, configuration, moduleType, useCompositionRootForModules);
+        AddModulesDependency(services, configuration, webHostEnvironment, moduleType, useCompositionRootForModules);
     }
 
     private static void AddModulesDependency(
         IServiceCollection services,
         IConfiguration configuration,
+        IWebHostEnvironment webHostEnvironment,
         Type module,
         bool useCompositionRootForModules)
     {
@@ -89,7 +97,7 @@ public static class ModuleExtensions
             useCompositionRootForModules ? services.CreatNewServiceCollection() : services;
 
         var instantiatedType = (IModuleDefinition)Activator.CreateInstance(module)!;
-        instantiatedType.AddModuleServices(newServiceCollection, configuration);
+        instantiatedType.AddModuleServices(newServiceCollection, configuration, webHostEnvironment);
 
         ModuleHook.ModuleServicesConfigured?.Invoke(newServiceCollection, instantiatedType);
 

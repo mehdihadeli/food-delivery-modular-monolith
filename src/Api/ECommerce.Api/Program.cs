@@ -79,7 +79,7 @@ static void RegisterServices(WebApplicationBuilder builder)
         });
 
     /*----------------- Module Services Setup ------------------*/
-    builder.AddModulesServices(useCompositionRootForModules: true);
+    builder.AddModulesServices(builder.Environment, useCompositionRootForModules: true);
 
     // https://andrewlock.net/controller-activation-and-dependency-injection-in-asp-net-core-mvc/
     builder.Services.AddControllers(options =>

@@ -17,11 +17,15 @@ public class CatalogModuleConfiguration : IModuleDefinition
     public const string CatalogModulePrefixUri = "api/v1/catalogs";
     public const string ModuleName = "Catalogs";
 
-    public void AddModuleServices(IServiceCollection services, IConfiguration configuration)
+    public void AddModuleServices(
+        IServiceCollection services,
+        IConfiguration configuration,
+        IWebHostEnvironment environment)
     {
         services.AddInfrastructure(configuration);
         services.AddStorage(configuration);
 
+        // Add Sub Modules Services
         services.AddBrandsServices();
         services.AddCategoriesServices();
         services.AddSuppliersServices();
@@ -37,7 +41,7 @@ public class CatalogModuleConfiguration : IModuleDefinition
         if (environment.IsEnvironment("test") == false)
         {
             // HostedServices just run on main service provider - It should not await because it will block the main thread.
-           await app.ApplicationServices.StartHostedServices();
+            await app.ApplicationServices.StartHostedServices();
         }
 
         ServiceActivator.Configure(app.ApplicationServices);
@@ -50,6 +54,7 @@ public class CatalogModuleConfiguration : IModuleDefinition
 
     public void MapEndpoints(IEndpointRouteBuilder endpoints)
     {
+        // Add Sub Modules Endpoints
         endpoints.MapProductsEndpoints();
 
         endpoints.MapGet("catalogs", (HttpContext context) =>

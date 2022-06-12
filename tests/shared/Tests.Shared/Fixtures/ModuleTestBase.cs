@@ -119,16 +119,9 @@ public class ModuleTestBase<TEntryPoint, TModule> :
     public async Task InitializeAsync()
     {
         CancellationToken.ThrowIfCancellationRequested();
-        await ModuleFixture.ServiceProvider.StartHostedServices(CancellationToken);
+
         await ResetState();
         await SeedData();
-    }
-
-    public async Task DisposeAsync()
-    {
-        await ModuleFixture.ServiceProvider.StopHostedServices(CancellationToken);
-        CancellationTokenSource.Cancel();
-        _mongoRunner.Dispose();
 
         await ModuleFixture.ExecuteScopeAsync(async sp =>
         {
@@ -136,6 +129,14 @@ public class ModuleTestBase<TEntryPoint, TModule> :
             await messagePersistenceRepository.CleanupMessages();
         });
 
+        await ModuleFixture.ServiceProvider.StartHostedServices(CancellationToken);
+    }
+
+    public async Task DisposeAsync()
+    {
+        await ModuleFixture.ServiceProvider.StopHostedServices(CancellationToken);
+        CancellationTokenSource.Cancel();
+        _mongoRunner.Dispose();
         await ModuleFixture.DisposeAsync();
         AdminClient.Dispose();
         GuestClient.Dispose();

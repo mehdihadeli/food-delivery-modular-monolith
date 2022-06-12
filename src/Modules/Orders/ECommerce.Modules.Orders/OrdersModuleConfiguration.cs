@@ -1,7 +1,6 @@
 using BuildingBlocks.Abstractions.Web.Module;
 using BuildingBlocks.Core.Extensions;
 using BuildingBlocks.Core.Messaging.Extensions;
-using BuildingBlocks.Web.Extensions;
 using ECommerce.Modules.Orders.Shared.Extensions.ApplicationBuilderExtensions;
 using ECommerce.Modules.Orders.Shared.Extensions.ServiceCollectionExtensions;
 
@@ -12,11 +11,16 @@ public class OrdersModuleConfiguration : IModuleDefinition
     public const string OrderModulePrefixUri = "api/v1/orders";
     public const string ModuleName = "Orders";
 
-    public void AddModuleServices(IServiceCollection services, IConfiguration configuration)
+    public void AddModuleServices(
+        IServiceCollection services,
+        IConfiguration configuration,
+        IWebHostEnvironment environment)
     {
         services.AddInfrastructure(configuration);
 
         services.AddStorage(configuration);
+
+        // Add Sub Modules Services
     }
 
     public async Task ConfigureModule(
@@ -47,5 +51,7 @@ public class OrdersModuleConfiguration : IModuleDefinition
 
             return $"Orders Service Apis, RequestId: {requestId}";
         }).ExcludeFromDescription();
+
+        // Add Sub Modules Endpoints
     }
 }

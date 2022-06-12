@@ -8,7 +8,7 @@ namespace BuildingBlocks.Abstractions.Web.Module;
 
 public interface IModuleDefinition
 {
-    void AddModuleServices(IServiceCollection services, IConfiguration configuration);
+    void AddModuleServices(IServiceCollection services, IConfiguration configuration, IWebHostEnvironment environment);
 
     Task ConfigureModule(
         IApplicationBuilder app,

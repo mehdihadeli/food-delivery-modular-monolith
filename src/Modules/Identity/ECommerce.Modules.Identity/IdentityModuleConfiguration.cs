@@ -14,11 +14,15 @@ public class IdentityModuleConfiguration : IModuleDefinition
     public const string IdentityModulePrefixUri = "api/v1/identity";
     public const string ModuleName = "Identity";
 
-    public void AddModuleServices(IServiceCollection services, IConfiguration configuration)
+    public void AddModuleServices(
+        IServiceCollection services,
+        IConfiguration configuration,
+        IWebHostEnvironment environment)
     {
         services.AddInfrastructure(configuration);
 
-        services.AddIdentityServices(configuration);
+        // Add Sub Modules Endpoints
+        services.AddIdentityServices(configuration, environment);
         services.AddUsersServices(configuration);
     }
 
@@ -32,9 +36,10 @@ public class IdentityModuleConfiguration : IModuleDefinition
         {
             // HostedServices just run on main service provider - It should not await because it will block the main thread.
             await app.ApplicationServices.StartHostedServices();
-        }
+            app.UseIdentityServer();
 
-        app.UseIdentityServer();
+            // TODO: Add Monitoring
+        }
 
         app.SubscribeAllMessageFromAssemblyOfType<IdentityRoot>();
 
@@ -53,6 +58,7 @@ public class IdentityModuleConfiguration : IModuleDefinition
             return $"Identity Service Apis, RequestId: {requestId}";
         }).ExcludeFromDescription();
 
+        // Add Sub Modules Endpoints
         endpoints.MapIdentityEndpoints();
         endpoints.MapUsersEndpoints();
     }

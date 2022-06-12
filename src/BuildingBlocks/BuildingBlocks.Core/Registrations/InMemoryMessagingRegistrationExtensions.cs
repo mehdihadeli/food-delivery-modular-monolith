@@ -13,7 +13,7 @@ public static partial class InMemoryMessagingRegistrationExtensions
 {
     public static IServiceCollection AddInMemoryMessagePersistence(
         this IServiceCollection services,
-        ServiceLifetime serviceLifetime = ServiceLifetime.Transient)
+        ServiceLifetime serviceLifetime = ServiceLifetime.Scoped)
     {
         services.Add<IMessagePersistenceRepository, InMemoryMessagePersistenceRepository>(serviceLifetime);
 

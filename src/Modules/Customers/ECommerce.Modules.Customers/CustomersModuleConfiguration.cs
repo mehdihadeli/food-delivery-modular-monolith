@@ -15,11 +15,16 @@ public class CustomersModuleConfiguration : IModuleDefinition
     public const string CustomerModulePrefixUri = "api/v1/customers";
     public const string ModuleName = "Customers";
 
-    public void AddModuleServices(IServiceCollection services, IConfiguration configuration)
+    public void AddModuleServices(
+        IServiceCollection services,
+        IConfiguration configuration,
+        IWebHostEnvironment environment)
     {
         services.AddInfrastructure(configuration);
+
         services.AddStorage(configuration);
 
+        // Add Sub Modules Services
         services.AddCustomersServices();
         services.AddRestockSubscriptionServices();
     }
@@ -46,6 +51,7 @@ public class CustomersModuleConfiguration : IModuleDefinition
 
     public void MapEndpoints(IEndpointRouteBuilder endpoints)
     {
+        // Add Sub Modules Endpoints
         endpoints.MapCustomersEndpoints();
         endpoints.MapRestockSubscriptionsEndpoints();
 

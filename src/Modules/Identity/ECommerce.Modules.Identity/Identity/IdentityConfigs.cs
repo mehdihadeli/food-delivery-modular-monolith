@@ -20,14 +20,17 @@ internal static class IdentityConfigs
 
     internal static IServiceCollection AddIdentityServices(
         this IServiceCollection services,
-        IConfiguration configuration)
+        IConfiguration configuration,
+        IWebHostEnvironment environment)
     {
-        services.AddScoped<IDataSeeder, IdentityDataSeeder>();
         services.AddCustomIdentity(
             configuration,
             $"{IdentityModuleConfiguration.ModuleName}:{nameof(IdentityOptions)}");
 
-        services.AddCustomIdentityServer();
+        services.AddScoped<IDataSeeder, IdentityDataSeeder>();
+
+        if (environment.IsEnvironment("test") == false)
+            services.AddCustomIdentityServer();
 
         return services;
     }

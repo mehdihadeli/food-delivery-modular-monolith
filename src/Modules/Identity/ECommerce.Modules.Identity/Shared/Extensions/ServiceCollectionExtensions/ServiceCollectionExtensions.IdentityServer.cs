@@ -1,8 +1,5 @@
-using Duende.IdentityServer.Services;
 using ECommerce.Modules.Identity.Identity.Services;
 using ECommerce.Modules.Identity.Shared.Models;
-using Microsoft.AspNetCore.Builder;
-using Microsoft.AspNetCore.Identity;
 
 // Ref:https://www.scottbrady91.com/identity-server/getting-started-with-identityserver-4
 namespace ECommerce.Modules.Identity.Shared.Extensions.ServiceCollectionExtensions;
@@ -18,8 +15,6 @@ public static partial class ServiceCollectionExtensions
 
     public static IServiceCollection AddCustomIdentityServer(this IServiceCollection services)
     {
-        services.AddScoped<IProfileService, IdentityProfileService>();
-
         services.AddIdentityServer(options =>
             {
                 options.Events.RaiseErrorEvents = true;

@@ -82,11 +82,15 @@ public class CustomWebApplicationFactory<TEntryPoint> : WebApplicationFactory<TE
         //The test app's builder.ConfigureTestServices callback is executed after the app's Startup.ConfigureServices code is executed.
         builder.ConfigureTestServices(services =>
         {
-            services.RemoveAll(typeof(IHostedService));
+            // services.RemoveAll(typeof(IHostedService));
+
             services.AddScoped(_ => CreateAnonymouslyUserMock());
+
             // https://milestone.topics.it/2021/11/10/http-client-factory-in-integration-testing.html
             services.Replace(new ServiceDescriptor(typeof(IHttpClientFactory),
                 new DelegateHttpClientFactory(ClientProvider)));
+
+            // This helper just supports jwt Scheme, and for Identity server Scheme will crash so we should disable AddIdentityServer()
             services.ReplaceSingleton(CreateHttpContextAccessorMock);
             services.AddTestAuthentication();
 

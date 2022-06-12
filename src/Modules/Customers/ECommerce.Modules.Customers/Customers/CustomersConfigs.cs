@@ -18,7 +18,7 @@ internal static class CustomersConfigs
 
     internal static IEndpointRouteBuilder MapCustomersEndpoints(this IEndpointRouteBuilder endpoints)
     {
-        // Routes mapped by conventions with implementing `IMinimalEndpointDefinition` but we can map them here without convention.
+        // Routes mapped by conventions, with implementing `IMinimalEndpointDefinition` but we can map them here without convention.
         return endpoints;
     }
 }
