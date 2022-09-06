@@ -1,3 +1,4 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
 <Project Sdk="Microsoft.NET.Sdk">
 
     <ItemGroup>
@@ -20,9 +21,9 @@
     </ItemGroup>
 
     <ItemGroup>
-        <PackageReference Include="Ardalis.ApiEndpoints" Version="4.0.1" />
-        <PackageReference Include="Bogus" Version="34.0.1" />
-        <PackageReference Include="Dapper" Version="2.0.123" />
+        <PackageReference Include="Ardalis.ApiEndpoints" />
+        <PackageReference Include="Bogus" />
+        <PackageReference Include="Dapper" />
     </ItemGroup>
 
     <ItemGroup>
