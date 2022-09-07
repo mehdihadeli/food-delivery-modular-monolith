@@ -27,14 +27,13 @@
     <PackageReference Include="System.Reactive.Linq" />
     <PackageReference Include="AutoBogus" />
     <PackageReference Include="AutoBogus.NSubstitute" />
-    <PackageReference Include="MartinCostello.Logging.XUnit" />
     <PackageReference Include="xunit.analyzers" />
   </ItemGroup>
-  
+
  <ItemGroup Label="Implicit usings">
     <Using Include="FluentAssertions" />
     <Using Include="NSubstitute" />
     <Using Include="Xunit" />
   </ItemGroup>
-  
+
 </Project>
