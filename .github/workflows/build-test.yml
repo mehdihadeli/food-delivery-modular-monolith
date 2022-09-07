@@ -6,7 +6,6 @@ on:
   pull_request:
     branches: [ main, develop ]
 
-
 jobs:
   build:
     runs-on: ubuntu-22.04
