@@ -13,7 +13,7 @@ public static class RefreshTokenEndpoint
         endpoints.MapPost($"{IdentityConfigs.IdentityPrefixUri}/refresh-token", RefreshToken)
             .WithTags(IdentityConfigs.Tag)
             .RequireAuthorization()
-            .Produces<RefreshTokenResult>()
+            .Produces<RefreshTokenResponse>()
             .Produces(StatusCodes.Status404NotFound)
             .Produces(StatusCodes.Status400BadRequest)
             .WithDisplayName("Refresh Token.");
@@ -28,7 +28,7 @@ public static class RefreshTokenEndpoint
     {
         return gatewayProcessor.ExecuteCommand(async commandProcessor =>
         {
-            var command = new RefreshTokenCommand(request.AccessToken, request.RefreshToken);
+            var command = new RefreshToken(request.AccessToken, request.RefreshToken);
 
             var result = await commandProcessor.SendAsync(command, cancellationToken);
 

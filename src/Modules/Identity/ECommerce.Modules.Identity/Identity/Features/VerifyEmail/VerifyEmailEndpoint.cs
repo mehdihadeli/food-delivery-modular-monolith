@@ -26,7 +26,7 @@ public static class VerifyEmailEndpoint
     {
         return gatewayProcessor.ExecuteCommand(async commandProcessor =>
         {
-            var command = new VerifyEmailCommand(request.Email, request.Code);
+            var command = new VerifyEmail(request.Email, request.Code);
 
             await commandProcessor.SendAsync(command, cancellationToken);
 

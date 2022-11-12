@@ -9,7 +9,7 @@ public static class RegisterUserEndpoint
         endpoints.MapPost($"{UsersConfigs.UsersPrefixUri}", RegisterUser)
             .AllowAnonymous()
             .WithTags(UsersConfigs.Tag)
-            .Produces<RegisterUserResult>(StatusCodes.Status201Created)
+            .Produces<RegisterUserResponse>(StatusCodes.Status201Created)
             .Produces(StatusCodes.Status400BadRequest)
             .WithDisplayName("Register New user.");
 

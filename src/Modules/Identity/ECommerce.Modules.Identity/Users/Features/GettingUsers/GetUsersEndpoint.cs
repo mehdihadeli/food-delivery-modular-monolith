@@ -9,7 +9,7 @@ namespace ECommerce.Modules.Identity.Users.Features.GettingUsers;
 // https://github.com/ardalis/ApiEndpoints
 public class GetUsersEndpoint : EndpointBaseAsync
     .WithRequest<GetUsersRequest?>
-    .WithActionResult<GetUsersResult>
+    .WithActionResult<GetUsersResponse>
 {
     private readonly IQueryProcessor _queryProcessor;
 
@@ -27,7 +27,7 @@ public class GetUsersEndpoint : EndpointBaseAsync
         Description = "Get all users",
         OperationId = "GetUsers",
         Tags = new[] { UsersConfigs.Tag })]
-    public override async Task<ActionResult<GetUsersResult>> HandleAsync(
+    public override async Task<ActionResult<GetUsersResponse>> HandleAsync(
         [FromQuery] GetUsersRequest? request,
         CancellationToken cancellationToken = default)
     {

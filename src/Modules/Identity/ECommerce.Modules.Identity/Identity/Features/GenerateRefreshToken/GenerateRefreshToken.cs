@@ -8,38 +8,38 @@ using Microsoft.EntityFrameworkCore;
 
 namespace ECommerce.Modules.Identity.Identity.Features.GenerateRefreshToken;
 
-public record GenerateRefreshTokenCommand : ICommand<GenerateRefreshTokenCommandResult>
+public record GenerateRefreshToken : ICommand<GenerateRefreshTokenResponse>
 {
     public Guid UserId { get; init; }
     public string Token { get; init; }
 }
 
 public class
-    GenerateRefreshTokenCommandHandler : ICommandHandler<GenerateRefreshTokenCommand, GenerateRefreshTokenCommandResult>
+    GenerateRefreshTokenHandler : ICommandHandler<GenerateRefreshToken, GenerateRefreshTokenResponse>
 {
     private readonly IdentityContext _context;
 
-    public GenerateRefreshTokenCommandHandler(IdentityContext context)
+    public GenerateRefreshTokenHandler(IdentityContext context)
     {
         _context = context;
     }
 
-    public async Task<GenerateRefreshTokenCommandResult> Handle(
-        GenerateRefreshTokenCommand request,
+    public async Task<GenerateRefreshTokenResponse> Handle(
+        GenerateRefreshToken request,
         CancellationToken cancellationToken)
     {
-        Guard.Against.Null(request, nameof(GenerateRefreshTokenCommand));
+        Guard.Against.Null(request, nameof(GenerateRefreshToken));
 
-        var refreshToken = await _context.Set<global::ECommerce.Modules.Identity.Shared.Models.RefreshToken>()
+        var refreshToken = await _context.Set<Shared.Models.RefreshToken>()
             .FirstOrDefaultAsync(
                 rt => rt.UserId == request.UserId && rt.Token == request.Token,
                 cancellationToken);
 
         if (refreshToken == null)
         {
-            var token = global::ECommerce.Modules.Identity.Shared.Models.RefreshToken.GetRefreshToken();
+            var token = Shared.Models.RefreshToken.GetRefreshToken();
 
-            refreshToken = new global::ECommerce.Modules.Identity.Shared.Models.RefreshToken
+            refreshToken = new Shared.Models.RefreshToken
             {
                 UserId = request.UserId,
                 Token = token,
@@ -48,7 +48,7 @@ public class
                 CreatedByIp = IpUtilities.GetIpAddress()
             };
 
-            await _context.Set<global::ECommerce.Modules.Identity.Shared.Models.RefreshToken>().AddAsync(refreshToken, cancellationToken);
+            await _context.Set<Shared.Models.RefreshToken>().AddAsync(refreshToken, cancellationToken);
             await _context.SaveChangesAsync(cancellationToken);
         }
         else
@@ -56,14 +56,14 @@ public class
             if (!refreshToken.IsRefreshTokenValid())
                 throw new InvalidRefreshTokenException(refreshToken);
 
-            var token = global::ECommerce.Modules.Identity.Shared.Models.RefreshToken.GetRefreshToken();
+            var token = Shared.Models.RefreshToken.GetRefreshToken();
 
             refreshToken.Token = token;
             refreshToken.ExpiredAt = DateTime.Now;
             refreshToken.CreatedAt = DateTime.Now.AddDays(10);
             refreshToken.CreatedByIp = IpUtilities.GetIpAddress();
 
-            _context.Set<global::ECommerce.Modules.Identity.Shared.Models.RefreshToken>().Update(refreshToken);
+            _context.Set<Shared.Models.RefreshToken>().Update(refreshToken);
             await _context.SaveChangesAsync(cancellationToken);
         }
 
@@ -71,7 +71,7 @@ public class
         // we could also maintain them on the database with changing their revoke date
         await RemoveOldRefreshTokens(request.UserId);
 
-        return new GenerateRefreshTokenCommandResult(new RefreshTokenDto
+        return new GenerateRefreshTokenResponse(new RefreshTokenDto
         {
             Token = refreshToken.Token,
             CreatedAt = refreshToken.CreatedAt,
@@ -88,7 +88,7 @@ public class
 
     private Task RemoveOldRefreshTokens(Guid userId, long? ttlRefreshToken = null)
     {
-        var refreshTokens = _context.Set<global::ECommerce.Modules.Identity.Shared.Models.RefreshToken>().Where(rt => rt.UserId == userId);
+        var refreshTokens = _context.Set<Shared.Models.RefreshToken>().Where(rt => rt.UserId == userId);
 
         refreshTokens.ToList().RemoveAll(x => !x.IsRefreshTokenValid(ttlRefreshToken));
 

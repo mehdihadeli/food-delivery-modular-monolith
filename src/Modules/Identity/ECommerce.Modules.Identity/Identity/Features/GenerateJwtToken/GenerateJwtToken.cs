@@ -7,9 +7,9 @@ using Microsoft.AspNetCore.Identity;
 
 namespace ECommerce.Modules.Identity.Identity.Features.GenerateJwtToken;
 
-public record GenerateJwtTokenCommand(ApplicationUser User, string RefreshToken) : ICommand<string>;
+public record GenerateJwtToken(ApplicationUser User, string RefreshToken) : ICommand<string>;
 
-public class GenerateRefreshTokenCommandHandler : ICommandHandler<GenerateJwtTokenCommand, string>
+public class GenerateRefreshTokenCommandHandler : ICommandHandler<GenerateJwtToken, string>
 {
     private readonly ILogger<GenerateRefreshTokenCommandHandler> _logger;
     private readonly UserManager<ApplicationUser> _userManager;
@@ -26,7 +26,7 @@ public class GenerateRefreshTokenCommandHandler : ICommandHandler<GenerateJwtTok
     }
 
     public async Task<string> Handle(
-        GenerateJwtTokenCommand request,
+        GenerateJwtToken request,
         CancellationToken cancellationToken)
     {
         var identityUser = request.User;

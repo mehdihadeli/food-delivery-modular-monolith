@@ -10,18 +10,18 @@ using Microsoft.EntityFrameworkCore;
 
 namespace ECommerce.Modules.Identity.Identity.Features.VerifyEmail;
 
-public record VerifyEmailCommand(string Email, string Code) : ICommand;
+public record VerifyEmail(string Email, string Code) : ICommand;
 
-internal class VerifyEmailCommandHandler : ICommandHandler<VerifyEmailCommand>
+internal class VerifyEmailHandler : ICommandHandler<VerifyEmail>
 {
     private readonly UserManager<ApplicationUser> _userManager;
     private readonly IdentityContext _dbContext;
-    private readonly ILogger<VerifyEmailCommandHandler> _logger;
+    private readonly ILogger<VerifyEmailHandler> _logger;
 
-    public VerifyEmailCommandHandler(
+    public VerifyEmailHandler(
         UserManager<ApplicationUser> userManager,
         IdentityContext dbContext,
-        ILogger<VerifyEmailCommandHandler> logger)
+        ILogger<VerifyEmailHandler> logger)
     {
         _userManager = userManager;
         _dbContext = dbContext;
@@ -29,9 +29,9 @@ internal class VerifyEmailCommandHandler : ICommandHandler<VerifyEmailCommand>
     }
 
 
-    public async Task<Unit> Handle(VerifyEmailCommand request, CancellationToken cancellationToken)
+    public async Task<Unit> Handle(VerifyEmail request, CancellationToken cancellationToken)
     {
-        Guard.Against.Null(request, nameof(VerifyEmailCommand));
+        Guard.Against.Null(request, nameof(VerifyEmail));
 
         var user = await _userManager.FindByEmailAsync(request.Email);
         if (user == null)

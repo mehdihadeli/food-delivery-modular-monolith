@@ -8,22 +8,22 @@ using Microsoft.EntityFrameworkCore;
 
 namespace ECommerce.Modules.Identity.Identity.Features.RevokeRefreshToken;
 
-public record RevokeRefreshTokenCommand(string RefreshToken) : ICommand;
+public record RevokeRefreshToken(string RefreshToken) : ICommand;
 
-internal class RevokeRefreshTokenCommandHandler : ICommandHandler<RevokeRefreshTokenCommand>
+internal class RevokeRefreshTokenHandler : ICommandHandler<RevokeRefreshToken>
 {
     private readonly IdentityContext _context;
 
-    public RevokeRefreshTokenCommandHandler(IdentityContext context)
+    public RevokeRefreshTokenHandler(IdentityContext context)
     {
         _context = context;
     }
 
     public async Task<Unit> Handle(
-        RevokeRefreshTokenCommand request,
+        RevokeRefreshToken request,
         CancellationToken cancellationToken)
     {
-        Guard.Against.Null(request, nameof(RevokeRefreshTokenCommand));
+        Guard.Against.Null(request, nameof(RevokeRefreshToken));
 
         var refreshToken = await _context.Set<global::ECommerce.Modules.Identity.Shared.Models.RefreshToken>()
             .FirstOrDefaultAsync(x => x.Token == request.RefreshToken, cancellationToken: cancellationToken);
