@@ -1,0 +1,5 @@
+using ECommerce.Modules.Customers.RestockSubscriptions.Dtos;
+
+namespace ECommerce.Modules.Customers.RestockSubscriptions.Features.CreatingRestockSubscription;
+
+public record CreateRestockSubscriptionResponse(RestockSubscriptionDto RestockSubscription);
