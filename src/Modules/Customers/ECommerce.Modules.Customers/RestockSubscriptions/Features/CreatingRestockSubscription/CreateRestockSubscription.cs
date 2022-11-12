@@ -18,7 +18,7 @@ using FluentValidation;
 namespace ECommerce.Modules.Customers.RestockSubscriptions.Features.CreatingRestockSubscription;
 
 public record CreateRestockSubscription(long CustomerId, long ProductId, string Email)
-    : ITxCreateCommand<CreateRestockSubscriptionResult>
+    : ITxCreateCommand<CreateRestockSubscriptionResponse>
 {
     public long Id { get; init; } = SnowFlakIdGenerator.NewId();
 }
@@ -39,10 +39,8 @@ internal class CreateRestockSubscriptionValidator : AbstractValidator<CreateRest
     }
 }
 
-public record CreateRestockSubscriptionResult(RestockSubscriptionDto RestockSubscription);
-
 internal class CreateRestockSubscriptionHandler
-    : ICommandHandler<CreateRestockSubscription, CreateRestockSubscriptionResult>
+    : ICommandHandler<CreateRestockSubscription, CreateRestockSubscriptionResponse>
 {
     private readonly CustomersDbContext _customersDbContext;
     private readonly ICatalogApiClient _catalogApiClient;
@@ -61,7 +59,7 @@ internal class CreateRestockSubscriptionHandler
         _logger = logger;
     }
 
-    public async Task<CreateRestockSubscriptionResult> Handle(
+    public async Task<CreateRestockSubscriptionResponse> Handle(
         CreateRestockSubscription request,
         CancellationToken cancellationToken)
     {
@@ -97,6 +95,6 @@ internal class CreateRestockSubscriptionHandler
 
         var restockSubscriptionDto = _mapper.Map<RestockSubscriptionDto>(restockSubscription);
 
-        return new CreateRestockSubscriptionResult(restockSubscriptionDto);
+        return new CreateRestockSubscriptionResponse(restockSubscriptionDto);
     }
 }

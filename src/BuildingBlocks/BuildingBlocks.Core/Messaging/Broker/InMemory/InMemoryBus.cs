@@ -95,7 +95,7 @@ public class InMemoryBus : IBus
                         data!,
                         messageEnvelope.Headers,
                         messageEnvelope.GetMessageId(),
-                        TypeMapper.GetTypeName(messageType),
+                        TypeMapper.GetFullTypeName(messageType),
                         0,
                         0,
                         DateTime.Now);
@@ -137,7 +137,7 @@ public class InMemoryBus : IBus
                         data!,
                         messageEnvelope.Headers,
                         messageEnvelope.GetMessageId(),
-                        TypeMapper.GetTypeName(messageType),
+                        TypeMapper.GetFullTypeName(messageType),
                         0,
                         0,
                         DateTime.Now);

@@ -13,7 +13,7 @@ public static class GetProductByIdEndpoint
                 GetProductById)
             .WithTags(ProductsConfigs.Tag)
             // .RequireAuthorization()
-            .Produces<GetProductByIdResult>(StatusCodes.Status200OK)
+            .Produces<GetProductByIdResponse>(StatusCodes.Status200OK)
             .Produces(StatusCodes.Status401Unauthorized)
             .Produces(StatusCodes.Status400BadRequest)
             .Produces(StatusCodes.Status404NotFound)

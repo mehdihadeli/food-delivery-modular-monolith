@@ -1,6 +1,6 @@
 namespace ECommerce.Modules.Customers.Customers.Features.CreatingCustomer;
 
-public record CreateCustomerResult(
+public record CreateCustomerResponse(
     long CustomerId,
     string Email,
     string FirstName,

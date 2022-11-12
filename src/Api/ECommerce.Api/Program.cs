@@ -1,6 +1,7 @@
 using BuildingBlocks.Core.Extensions;
 using BuildingBlocks.Core.Extensions.ServiceCollection;
 using BuildingBlocks.Logging;
+using BuildingBlocks.Monitoring;
 using BuildingBlocks.Security;
 using BuildingBlocks.Security.Jwt;
 using BuildingBlocks.Swagger;
@@ -60,6 +61,8 @@ static void RegisterServices(WebApplicationBuilder builder)
     DotNetEnv.Env.TraversePath().Load();
 
     builder.Services.AddHttpContextAccessor();
+
+    builder.Services.AddECommerceMonitoring(builder.Configuration);
 
     builder.Services.AddApplicationOptions(builder.Configuration);
     var loggingOptions = builder.Configuration.GetSection(nameof(LoggerOptions)).Get<LoggerOptions>();
@@ -152,6 +155,8 @@ static async Task ConfigureApplication(WebApplication app)
     app.MapEndpoints();
 
     app.MapGet("/", (HttpContext _) => "ECommerce Modular Monolith Api.").ExcludeFromDescription();
+
+    app.UseECommerceMonitoring();
 
     app.Lifetime.ApplicationStopping.Register(() =>
     {

@@ -1,5 +1,7 @@
+using Ardalis.GuardClauses;
 using BuildingBlocks.Caching.InMemory;
 using BuildingBlocks.Core.Caching;
+using BuildingBlocks.Core.Extensions;
 using BuildingBlocks.Core.IdsGenerator;
 using BuildingBlocks.Core.Persistence.EfCore;
 using BuildingBlocks.Core.Registrations;
@@ -48,18 +50,6 @@ public static partial class ServiceCollectionExtensions
         services.AddCustomInMemoryCache(configuration)
             .AddCachingRequestPolicies(Assembly.GetExecutingAssembly());
 
-        // services.AddMonitoring(healthChecksBuilder =>
-        // {
-        //     var postgresOptions = configuration.GetOptions<PostgresOptions>(
-        //         $"{CatalogModuleConfiguration.ModuleName}:{nameof(PostgresOptions)}");
-        //
-        //     Guard.Against.Null(postgresOptions, nameof(postgresOptions));
-        //
-        //     healthChecksBuilder.AddNpgSql(
-        //         postgresOptions.ConnectionString,
-        //         name: "Catalogs-Module-Postgres-Check",
-        //         tags: new[] {"catalogs-postgres"});
-        // });
 
         services.AddSingleton<ILoggerFactory>(new Serilog.Extensions.Logging.SerilogLoggerFactory());
 

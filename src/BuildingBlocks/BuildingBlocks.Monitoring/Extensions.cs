@@ -22,7 +22,7 @@ public static class Extensions
 
         healthChecksBuilder?.Invoke(healCheckBuilder);
 
-        //// health check ui has problem with .net 6
+        // health check ui has problem with .net 7
         services.AddHealthChecksUI(setup =>
         {
             setup.SetEvaluationTimeInSeconds(60); // time in seconds between check
@@ -37,7 +37,8 @@ public static class Extensions
         app.UseHttpMetrics();
         app.UseGrpcMetrics();
 
-        app.UseHealthChecks("/healthz",
+        app.UseHealthChecks(
+                "/healthz",
                 new HealthCheckOptions
                 {
                     Predicate = _ => true,
@@ -49,14 +50,16 @@ public static class Extensions
                         [HealthStatus.Unhealthy] = StatusCodes.Status503ServiceUnavailable,
                     },
                 })
-            .UseHealthChecks("/health",
+            .UseHealthChecks(
+                "/health",
                 new HealthCheckOptions
                 {
                     Predicate = (check) => !check.Tags.Contains("services"),
                     AllowCachingResponses = false,
                     ResponseWriter = WriteResponseAsync,
                 })
-            .UseHealthChecks("/health/ready",
+            .UseHealthChecks(
+                "/health/ready",
                 new HealthCheckOptions
                 {
                     Predicate = _ => true, AllowCachingResponses = false, ResponseWriter = WriteResponseAsync,

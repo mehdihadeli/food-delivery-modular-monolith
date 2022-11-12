@@ -9,7 +9,7 @@ namespace ECommerce.Modules.Customers.RestockSubscriptions.Features.GettingResto
 // https://github.com/ardalis/ApiEndpoints
 public class GetRestockSubscriptionsEndpoint : EndpointBaseAsync
     .WithRequest<GetRestockSubscriptionsRequest?>
-    .WithActionResult<GetRestockSubscriptionsResult>
+    .WithActionResult<GetRestockSubscriptionsResponse>
 {
     private readonly IQueryProcessor _queryProcessor;
 
@@ -28,7 +28,7 @@ public class GetRestockSubscriptionsEndpoint : EndpointBaseAsync
         OperationId = "GetRestockSubscriptions",
         Tags = new[] { RestockSubscriptionsConfigs.Tag })]
     [Authorize(Roles = CustomersConstants.Role.Admin)]
-    public override async Task<ActionResult<GetRestockSubscriptionsResult>> HandleAsync(
+    public override async Task<ActionResult<GetRestockSubscriptionsResponse>> HandleAsync(
         [FromQuery] GetRestockSubscriptionsRequest? request,
         CancellationToken cancellationToken = default)
     {

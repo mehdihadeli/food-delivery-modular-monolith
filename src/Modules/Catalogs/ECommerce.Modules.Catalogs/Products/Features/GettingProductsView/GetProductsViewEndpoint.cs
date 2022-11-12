@@ -12,7 +12,7 @@ public static class GetProductsViewEndpoint
                 GetProductsView)
             .WithTags(ProductsConfigs.Tag)
             // .RequireAuthorization()
-            .Produces<GetProductsViewResult>(StatusCodes.Status200OK)
+            .Produces<GetProductsViewResponse>(StatusCodes.Status200OK)
             .Produces(StatusCodes.Status401Unauthorized)
             .Produces(StatusCodes.Status400BadRequest)
             .WithDisplayName("Get products.");

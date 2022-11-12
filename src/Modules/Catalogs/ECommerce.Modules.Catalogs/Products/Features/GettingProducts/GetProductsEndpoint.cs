@@ -9,7 +9,7 @@ namespace ECommerce.Modules.Catalogs.Products.Features.GettingProducts;
 // https://github.com/ardalis/ApiEndpoints
 public class GetProductsEndpoint : EndpointBaseAsync
     .WithRequest<GetProductsRequest?>
-    .WithActionResult<GetProductsResult>
+    .WithActionResult<GetProductsResponse>
 {
     private readonly IQueryProcessor _queryProcessor;
 
@@ -27,7 +27,7 @@ public class GetProductsEndpoint : EndpointBaseAsync
         Description = "Get all products",
         OperationId = "GetProducts",
         Tags = new[] { ProductsConfigs.Tag })]
-    public override async Task<ActionResult<GetProductsResult>> HandleAsync(
+    public override async Task<ActionResult<GetProductsResponse>> HandleAsync(
         [FromQuery] GetProductsRequest? request,
         CancellationToken cancellationToken = default)
     {

@@ -11,7 +11,7 @@ using Microsoft.EntityFrameworkCore;
 
 namespace ECommerce.Modules.Catalogs.Products.Features.GettingProducts;
 
-public record GetProducts : ListQuery<GetProductsResult>;
+public record GetProducts : ListQuery<GetProductsResponse>;
 
 public class GetProductsValidator : AbstractValidator<GetProducts>
 {
@@ -27,7 +27,7 @@ public class GetProductsValidator : AbstractValidator<GetProducts>
     }
 }
 
-public class GetProductsHandler : IQueryHandler<GetProducts, GetProductsResult>
+public class GetProductsHandler : IQueryHandler<GetProducts, GetProductsResponse>
 {
     private readonly ICatalogDbContext _catalogDbContext;
     private readonly IMapper _mapper;
@@ -38,7 +38,7 @@ public class GetProductsHandler : IQueryHandler<GetProducts, GetProductsResult>
         _mapper = mapper;
     }
 
-    public async Task<GetProductsResult> Handle(GetProducts request, CancellationToken cancellationToken)
+    public async Task<GetProductsResponse> Handle(GetProducts request, CancellationToken cancellationToken)
     {
         var products = await _catalogDbContext.Products
             .OrderByDescending(x => x.Created)
@@ -47,8 +47,6 @@ public class GetProductsHandler : IQueryHandler<GetProducts, GetProductsResult>
             .AsNoTracking()
             .ApplyPagingAsync<Product, ProductDto>(_mapper.ConfigurationProvider, request.Page, request.PageSize, cancellationToken: cancellationToken);
 
-        return new GetProductsResult(products);
+        return new GetProductsResponse(products);
     }
 }
-
-public record GetProductsResult(ListResultModel<ProductDto> Products);
