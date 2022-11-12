@@ -52,10 +52,12 @@ internal class SendRestockNotificationHandler : ICommandHandler<SendRestockNotif
 
         var restockSubscription =
             await _customersDbContext.RestockSubscriptions
-                .SingleOrDefaultAsync(x => x.Id == command.RestockSubscriptionId, cancellationToken: cancellationToken);
+                .FirstOrDefaultAsync(x => x.Id == command.RestockSubscriptionId, cancellationToken: cancellationToken);
 
         if (_emailConfig.Enable && restockSubscription is not null)
         {
+            Guard.Against.Null(restockSubscription.Email);
+
             await _emailSender.SendAsync(
                 new EmailObject(
                     restockSubscription.Email!,

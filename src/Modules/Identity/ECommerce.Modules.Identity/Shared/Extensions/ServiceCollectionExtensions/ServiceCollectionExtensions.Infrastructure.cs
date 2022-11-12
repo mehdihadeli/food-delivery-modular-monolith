@@ -1,10 +1,14 @@
+using Ardalis.GuardClauses;
 using BuildingBlocks.Caching.InMemory;
 using BuildingBlocks.Core.Caching;
+using BuildingBlocks.Core.Extensions;
 using BuildingBlocks.Core.Persistence.EfCore;
 using BuildingBlocks.Core.Registrations;
 using BuildingBlocks.Email;
 using BuildingBlocks.Email.Options;
 using BuildingBlocks.Logging;
+using BuildingBlocks.Monitoring;
+using BuildingBlocks.Persistence.EfCore.Postgres;
 using BuildingBlocks.Security;
 using BuildingBlocks.Security.Jwt;
 using BuildingBlocks.Validation;
@@ -35,7 +39,6 @@ public static partial class ServiceCollectionExtensions
             IdentityModuleConfiguration.ModuleName,
             Assembly.GetExecutingAssembly());
 
-
         services.AddEmailService(configuration, $"{IdentityModuleConfiguration.ModuleName}:{nameof(EmailOptions)}");
 
         services.AddCustomValidators(Assembly.GetExecutingAssembly());
@@ -48,17 +51,6 @@ public static partial class ServiceCollectionExtensions
         services.AddInMemoryCommandScheduler();
         services.AddInMemoryBroker(configuration);
 
-        // services.AddMonitoring(healthChecksBuilder =>
-        // {
-        //     var postgresOptions = configuration.GetOptions<PostgresOptions>(
-        //         $"{IdentityModuleConfiguration.ModuleName}:{nameof(PostgresOptions)}");
-        //     Guard.Against.Null(postgresOptions, nameof(postgresOptions));
-        //
-        //     healthChecksBuilder.AddNpgSql(
-        //         postgresOptions.ConnectionString,
-        //         name: "Identity-Module-Postgres-Check",
-        //         tags: new[] {"identity-postgres"});
-        // });
 
         services.AddCustomInMemoryCache(configuration)
             .AddCachingRequestPolicies(Assembly.GetExecutingAssembly());

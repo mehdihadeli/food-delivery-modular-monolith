@@ -3,6 +3,7 @@
   <PropertyGroup>
     <AssemblyName>BuildingBlocks.Core.IntegrationTests</AssemblyName>
     <RootNamespace>BuildingBlocks.Core.IntegrationTests</RootNamespace>
+    <TargetFramework>net7.0</TargetFramework>
   </PropertyGroup>
 
   <ItemGroup>

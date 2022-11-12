@@ -1,6 +1,6 @@
 namespace ECommerce.Api.Extensions.ApplicationBuilderExtensions;
 
-public static class ApplicationBuilderExtensions
+public static partial class ApplicationBuilderExtensions
 {
     /// <summary>
     ///     Register CORS.

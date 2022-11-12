@@ -11,25 +11,46 @@ public static class TypeMapper
     private static readonly ConcurrentDictionary<string, Type> _typeMap = new();
 
     /// <summary>
+    /// Gets the full type name from a generic Type class.
+    /// </summary>
+    /// <typeparam name="T"></typeparam>
+    /// <returns></returns>
+    public static string GetFullTypeName<T>() => ToName(typeof(T));
+
+    /// <summary>
     /// Gets the type name from a generic Type class.
     /// </summary>
     /// <typeparam name="T"></typeparam>
     /// <returns></returns>
-    public static string GetTypeName<T>() => ToName(typeof(T));
+    public static string GetTypeName<T>() => ToName(typeof(T), false);
+
+    /// <summary>
+    /// Gets the full type name from a Type class.
+    /// </summary>
+    /// <param name="type"></param>
+    /// <returns></returns>
+    public static string GetFullTypeName(Type type) => ToName(type);
 
     /// <summary>
     /// Gets the type name from a Type class.
     /// </summary>
     /// <param name="type"></param>
     /// <returns></returns>
-    public static string GetTypeName(Type type) => ToName(type);
+    public static string GetTypeName(Type type) => ToName(type, false);
+
+    /// <summary>
+    /// Gets the full type name from a instance object.
+    /// </summary>
+    /// <param name="o"></param>
+    /// <returns></returns>
+    public static string GetTypeFullNameByObject(object o) => ToName(o.GetType());
 
     /// <summary>
     /// Gets the type name from a instance object.
     /// </summary>
     /// <param name="o"></param>
     /// <returns></returns>
-    public static string GetTypeNameByObject(object o) => ToName(o.GetType());
+    public static string GetTypeNameByObject(object o) => ToName(o.GetType(), false);
 
     /// <summary>
     /// Gets the type class from a type name.
@@ -49,13 +70,13 @@ public static class TypeMapper
 
     public static bool IsTypeRegistered<T>() => _typeNameMap.ContainsKey(typeof(T));
 
-    private static string ToName(Type type)
+    private static string ToName(Type type, bool fullName = true)
     {
-        Guard.Against.Null(type, nameof(type));
+        Guard.Against.Null(type);
 
         return _typeNameMap.GetOrAdd(type, _ =>
         {
-            var eventTypeName = type.FullName!.Replace(".", "_", StringComparison.Ordinal);
+            var eventTypeName = fullName ? type.FullName! : type.Name;
 
             _typeMap.GetOrAdd(eventTypeName, type);
 
@@ -63,22 +84,20 @@ public static class TypeMapper
         });
     }
 
-    private static Type ToType(string typeName, Assembly? assembly) => _typeMap.GetOrAdd(typeName, _ =>
+    private static Type ToType(string typeName, Assembly? assembly)
     {
-        Guard.Against.NullOrEmpty(typeName, nameof(typeName));
+        Guard.Against.NullOrEmpty(typeName);
 
         return _typeMap.GetOrAdd(typeName, _ =>
         {
             var type = assembly is { }
-                ? ReflectionUtilities.GetFirstMatchingTypeFromAssembly(
-                    typeName.Replace("_", ".", StringComparison.Ordinal), assembly)
-                : ReflectionUtilities.GetFirstMatchingTypeFromCurrentDomainAssemblies(
-                    typeName.Replace("_", ".", StringComparison.Ordinal))!;
+                ? ReflectionUtilities.GetFirstMatchingTypeFromAssembly(typeName, assembly)
+                : ReflectionUtilities.GetFirstMatchingTypeFromCurrentDomainAssemblies(typeName)!;
 
             if (type == null)
                 throw new System.Exception($"Type map for '{typeName}' wasn't found!");
 
             return type;
         });
-    });
+    }
 }

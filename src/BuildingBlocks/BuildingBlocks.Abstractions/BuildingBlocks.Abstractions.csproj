@@ -1,6 +1,6 @@
 ﻿<?xml version="1.0" encoding="utf-8"?>
 <Project Sdk="Microsoft.NET.Sdk">
-
+  
   <ItemGroup>
     <!--https://github.com/dotnet/aspnetcore/issues/19481-->
     <!--https://docs.microsoft.com/en-us/aspnet/core/fundamentals/metapackage-app-->

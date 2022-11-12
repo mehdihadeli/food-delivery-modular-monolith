@@ -2,17 +2,15 @@ using BuildingBlocks.Abstractions.CQRS.Command;
 
 namespace ECommerce.Modules.Catalogs.Products.Features.ChangingProductBrand;
 
-internal record ChangeProductBrand : ITxCommand<ChangeProductBrandResult>;
-
-internal record ChangeProductBrandResult;
+internal record ChangeProductBrand : ITxCommand<ChangeProductBrandResponse>;
 
 internal class ChangeProductBrandHandler :
-    ICommandHandler<ChangeProductBrand, ChangeProductBrandResult>
+    ICommandHandler<ChangeProductBrand, ChangeProductBrandResponse>
 {
-    public Task<ChangeProductBrandResult> Handle(
+    public Task<ChangeProductBrandResponse> Handle(
         ChangeProductBrand command,
         CancellationToken cancellationToken)
     {
-       return Task.FromResult<ChangeProductBrandResult>(null!);
+       return Task.FromResult<ChangeProductBrandResponse>(null!);
     }
 }

@@ -14,9 +14,9 @@ namespace ECommerce.Modules.Customers.RestockSubscriptions.Models.Write;
 
 public class RestockSubscription : Aggregate<RestockSubscriptionId>, IHaveSoftDelete
 {
-    public CustomerId CustomerId { get; private set; } = null!;
-    public Email Email { get; private set; } = null!;
-    public ProductInformation ProductInformation { get; private set; } = null!;
+    public CustomerId CustomerId { get; private set; } = default!;
+    public Email Email { get; private set; } = default!;
+    public ProductInformation ProductInformation { get; private set; } = default!;
     public bool Processed { get; private set; }
     public DateTime? ProcessedTime { get; private set; }
 

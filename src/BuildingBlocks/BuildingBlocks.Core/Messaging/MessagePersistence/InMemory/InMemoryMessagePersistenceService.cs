@@ -75,7 +75,7 @@ public class InMemoryMessagePersistenceService : IMessagePersistenceService
         await _messagePersistenceRepository.AddAsync(
             new StoreMessage(
                 notification.EventId,
-                TypeMapper.GetTypeName(notification.GetType()),
+                TypeMapper.GetFullTypeName(notification.GetType()),
                 _serializer.Serialize(notification),
                 MessageDeliveryType.Internal),
             cancellationToken);
@@ -105,7 +105,7 @@ public class InMemoryMessagePersistenceService : IMessagePersistenceService
         await _messagePersistenceRepository.AddAsync(
             new StoreMessage(
                 id,
-                TypeMapper.GetTypeName(messageEnvelope.Message.GetType()),
+                TypeMapper.GetFullTypeName(messageEnvelope.Message.GetType()),
                 _messageSerializer.Serialize(messageEnvelope),
                 deliveryType),
             cancellationToken);

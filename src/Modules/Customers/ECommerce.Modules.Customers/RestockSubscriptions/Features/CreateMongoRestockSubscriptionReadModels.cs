@@ -18,7 +18,7 @@ public record CreateMongoRestockSubscriptionReadModels(
     bool Processed,
     DateTime? ProcessedTime = null) : InternalCommand
 {
-    public bool IsDeleted { get; init; } = false;
+    public bool IsDeleted { get; init; }
 }
 
 internal class CreateRestockSubscriptionReadModelHandler : ICommandHandler<CreateMongoRestockSubscriptionReadModels>

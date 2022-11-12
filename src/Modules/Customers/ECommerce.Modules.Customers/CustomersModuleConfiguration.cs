@@ -2,6 +2,7 @@ using BuildingBlocks.Abstractions.Web.Module;
 using BuildingBlocks.Core;
 using BuildingBlocks.Core.Extensions;
 using BuildingBlocks.Core.Messaging.Extensions;
+using BuildingBlocks.Monitoring;
 using BuildingBlocks.Web.Extensions;
 using ECommerce.Modules.Customers.Customers;
 using ECommerce.Modules.Customers.RestockSubscriptions;

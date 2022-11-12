@@ -48,6 +48,8 @@ public class CatalogModuleConfiguration : IModuleDefinition
 
         app.SubscribeAllMessageFromAssemblyOfType<CatalogRoot>();
 
+        app.UseInfrastructure();
+
         await app.ApplyDatabaseMigrations(logger);
         await app.SeedData(logger, environment);
     }

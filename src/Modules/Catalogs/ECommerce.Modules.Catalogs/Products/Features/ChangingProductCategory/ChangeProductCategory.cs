@@ -2,17 +2,15 @@ using BuildingBlocks.Abstractions.CQRS.Command;
 
 namespace ECommerce.Modules.Catalogs.Products.Features.ChangingProductCategory;
 
-internal record ChangeProductCategory : ITxCommand<ChangeProductCategoryResult>;
-
-internal record ChangeProductCategoryResult;
+internal record ChangeProductCategory : ITxCommand<ChangeProductCategoryResponse>;
 
 internal class ChangeProductCategoryHandler :
-    ICommandHandler<ChangeProductCategory, ChangeProductCategoryResult>
+    ICommandHandler<ChangeProductCategory, ChangeProductCategoryResponse>
 {
-    public Task<ChangeProductCategoryResult> Handle(
+    public Task<ChangeProductCategoryResponse> Handle(
         ChangeProductCategory command,
         CancellationToken cancellationToken)
     {
-        return Task.FromResult<ChangeProductCategoryResult>(null!);
+        return Task.FromResult<ChangeProductCategoryResponse>(null!);
     }
 }

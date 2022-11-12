@@ -11,9 +11,7 @@ using MongoDB.Driver.Linq;
 
 namespace ECommerce.Modules.Customers.Customers.Features.GettingCustomerById;
 
-public record GetCustomerById(long Id) : IQuery<GetCustomerByIdResult>;
-
-public record GetCustomerByIdResult(CustomerReadDto Customer);
+public record GetCustomerById(long Id) : IQuery<GetCustomerByIdResponse>;
 
 internal class GetCustomerByIdValidator : AbstractValidator<GetCustomerById>
 {
@@ -25,7 +23,7 @@ internal class GetCustomerByIdValidator : AbstractValidator<GetCustomerById>
 }
 
 internal class GetRestockSubscriptionByIdHandler
-    : IQueryHandler<GetCustomerById, GetCustomerByIdResult>
+    : IQueryHandler<GetCustomerById, GetCustomerByIdResponse>
 {
     private readonly CustomersReadDbContext _customersReadDbContext;
     private readonly IMapper _mapper;
@@ -36,7 +34,7 @@ internal class GetRestockSubscriptionByIdHandler
         _mapper = mapper;
     }
 
-    public async Task<GetCustomerByIdResult> Handle(
+    public async Task<GetCustomerByIdResponse> Handle(
         GetCustomerById query,
         CancellationToken cancellationToken)
     {
@@ -49,6 +47,6 @@ internal class GetRestockSubscriptionByIdHandler
 
         var customerDto = _mapper.Map<CustomerReadDto>(customer);
 
-        return new GetCustomerByIdResult(customerDto);
+        return new GetCustomerByIdResponse(customerDto);
     }
 }

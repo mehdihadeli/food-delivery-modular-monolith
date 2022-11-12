@@ -11,7 +11,7 @@ public class CreateCustomerEndpoint : IMinimalEndpointDefinition
         builder.MapPost(CustomersConfigs.CustomersPrefixUri, CreateCustomer)
             .AllowAnonymous()
             .WithTags(CustomersConfigs.Tag)
-            .Produces<CreateCustomerResult>(StatusCodes.Status201Created)
+            .Produces<CreateCustomerResponse>(StatusCodes.Status201Created)
             .Produces(StatusCodes.Status400BadRequest)
             .WithName("CreateCustomer")
             .WithDisplayName("Register New Customer.");

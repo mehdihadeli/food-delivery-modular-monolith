@@ -5,15 +5,16 @@
     <CentralPackageTransitivePinningEnabled>false</CentralPackageTransitivePinningEnabled>
   </PropertyGroup>
   <ItemGroup>
-    <PackageVersion Include="AspNetCore.HealthChecks.EventStore" Version="5.0.1" />
+    <PackageVersion Include="Microsoft.Extensions.Diagnostics.HealthChecks" Version="$(AspNetCoreVersion)" />
+    <PackageVersion Include="AspNetCore.HealthChecks.EventStore" Version="$(AspNetCoreHealthCheckVersion)" />
     <PackageVersion Include="AspNetCore.HealthChecks.MongoDb" Version="$(AspNetCoreHealthCheckVersion)" />
     <PackageVersion Include="AspNetCore.HealthChecks.NpgSql" Version="$(AspNetCoreHealthCheckVersion)" />
     <PackageVersion Include="AspNetCore.HealthChecks.Rabbitmq" Version="$(AspNetCoreHealthCheckVersion)" />
-    <PackageVersion Include="AspNetCore.HealthChecks.UI" Version="$(AspNetCoreHealthCheckVersion)" />
-    <PackageVersion Include="AspNetCore.HealthChecks.UI.Client" Version="$(AspNetCoreHealthCheckVersion)" />
-    <PackageVersion Include="AspNetCore.HealthChecks.UI.InMemory.Storage" Version="$(AspNetCoreHealthCheckVersion)" />
-    <PackageVersion Include="AspNetCore.HealthChecks.UI.SQLite.Storage" Version="$(AspNetCoreHealthCheckVersion)" />
-    <PackageVersion Include="AspNetCore.HealthChecks.Uris" Version="$(AspNetCoreHealthCheckVersion)" />
+    <PackageVersion Include="AspNetCore.HealthChecks.UI" Version="$(AspNetCoreHealthCheckUIVersion)" />
+    <PackageVersion Include="AspNetCore.HealthChecks.UI.Client" Version="$(AspNetCoreHealthCheckUIVersion)" />
+    <PackageVersion Include="AspNetCore.HealthChecks.UI.InMemory.Storage" Version="$(AspNetCoreHealthCheckUIVersion)" />
+    <PackageVersion Include="AspNetCore.HealthChecks.UI.SQLite.Storage" Version="$(AspNetCoreHealthCheckUIVersion)" />
+    <PackageVersion Include="AspNetCore.HealthChecks.Uris" Version="6.0.3" />
     <PackageVersion Include="AspNetCoreAnalyzers" Version="0.3.0" />
     <PackageVersion Include="AsyncFixer" Version="1.5.1" />
     <PackageVersion Include="AutoMapper" Version="11.0.1" />
@@ -21,7 +22,6 @@
     <PackageVersion Include="Bogus" Version="34.0.2" />
     <PackageVersion Include="Dapper" Version="2.0.123" />
     <PackageVersion Include="DotNetEnv" Version="2.3.0" />
-    <PackageVersion Include="EFCore.NamingConventions" Version="6.0.0" />
     <PackageVersion Include="FluentMigrator.Extensions.Postgres" Version="3.3.2" />
     <PackageVersion Include="FluentMigrator.Runner.Postgres" Version="3.3.2" />
     <PackageVersion Include="FluentValidation.AspNetCore" Version="10.4.0" />
@@ -50,6 +50,8 @@
     <PackageVersion Include="Microsoft.EntityFrameworkCore.Relational.Design" Version="$(AspNetCoreVersion)" />
     <PackageVersion Include="Microsoft.EntityFrameworkCore.SqlServer" Version="$(AspNetCoreVersion)" />
     <PackageVersion Include="Microsoft.EntityFrameworkCore.Tools" Version="$(AspNetCoreVersion)" />
+    <PackageVersion Include="Npgsql.EntityFrameworkCore.PostgreSQL" Version="$(AspNetCoreVersion)" />
+	<PackageVersion Include="EFCore.NamingConventions" Version="$(AspNetCoreVersion)" />
     <PackageVersion Include="Microsoft.Extensions.Caching.StackExchangeRedis" Version="$(AspNetCoreVersion)" />
     <PackageVersion Include="Microsoft.Extensions.Configuration" Version="$(MicrosoftConfigurationVersion)" />
     <PackageVersion Include="Microsoft.Extensions.Configuration.Abstractions" Version="$(MicrosoftConfigurationVersion)" />
@@ -59,7 +61,6 @@
     <PackageVersion Include="Microsoft.Extensions.Configuration.Json" Version="$(MicrosoftConfigurationVersion)" />
     <PackageVersion Include="Microsoft.Extensions.DependencyInjection.Abstractions" Version="$(MicrosoftDependencyInjectionVersion)" />
     <PackageVersion Include="Microsoft.Extensions.DiagnosticAdapter" Version="3.1.22" />
-    <PackageVersion Include="Microsoft.Extensions.Diagnostics.HealthChecks" Version="$(AspNetCoreHealthCheckVersion)" />
     <PackageVersion Include="Microsoft.Extensions.Hosting" Version="6.0.0" />
     <PackageVersion Include="Microsoft.Extensions.Hosting.Abstractions" Version="6.0.0" />
     <PackageVersion Include="Microsoft.Extensions.Http.Polly" Version="$(AspNetCoreVersion)" />
@@ -77,7 +78,6 @@
     <PackageVersion Include="Nito.AsyncEx" Version="5.1.2" />
     <PackageVersion Include="Nito.AsyncEx.Context" Version="5.1.2" />
     <PackageVersion Include="Nito.AsyncEx.Tasks" Version="5.1.2" />
-    <PackageVersion Include="Npgsql.EntityFrameworkCore.PostgreSQL" Version="6.0.2" />
     <PackageVersion Include="prometheus-net.AspNetCore" Version="5.0.2" />
     <PackageVersion Include="prometheus-net.AspNetCore.Grpc" Version="5.0.2" />
     <PackageVersion Include="prometheus-net.AspNetCore.HealthChecks" Version="5.0.2" />
@@ -107,15 +107,15 @@
     <PackageVersion Include="SqlKata" Version="2.3.7" />
     <PackageVersion Include="SqlStreamStore" Version="1.2.1-alpha.3" />
     <PackageVersion Include="StyleCop.Analyzers" Version="1.2.0-beta.354" />
-    <PackageVersion Include="Swashbuckle.AspNetCore.Annotations" Version="6.3.0" />
-    <PackageVersion Include="Swashbuckle.AspNetCore.ReDoc" Version="6.3.1" />
-    <PackageVersion Include="Swashbuckle.AspNetCore.SwaggerGen" Version="6.3.0" />
-    <PackageVersion Include="Swashbuckle.AspNetCore.SwaggerUI" Version="6.3.0" />
+    <PackageVersion Include="Swashbuckle.AspNetCore.Annotations" Version="6.4.0" />
+    <PackageVersion Include="Swashbuckle.AspNetCore.ReDoc" Version="6.4.0" />
+    <PackageVersion Include="Swashbuckle.AspNetCore.SwaggerGen" Version="6.4.0" />
+    <PackageVersion Include="Swashbuckle.AspNetCore.SwaggerUI" Version="6.4.0" />
     <PackageVersion Include="System.Interactive.Async" Version="6.0.1" />
     <PackageVersion Include="System.Reactive" Version="5.0.0" />
     <PackageVersion Include="System.Reactive.Linq" Version="5.0.0" />
 	<PackageVersion Include="MongoDB.Driver" Version="2.17.1" />
-	<PackageVersion Include="Ardalis.GuardClauses" Version="4.0.0" />
+	<PackageVersion Include="Ardalis.GuardClauses" Version="4.0.1" />
 	<PackageVersion Include="Microsoft.DotNet.PlatformAbstractions" Version="3.1.6" />
 	<PackageVersion Include="MediatR" Version="10.0.0" />
 	<PackageVersion Include="MediatR.Extensions.Microsoft.DependencyInjection" Version="10.0.0" />

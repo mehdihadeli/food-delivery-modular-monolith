@@ -9,7 +9,7 @@ namespace ECommerce.Modules.Customers.Customers.Features.GettingCustomers;
 // https://github.com/ardalis/ApiEndpoints
 public class GetCustomersEndpoint : EndpointBaseAsync
     .WithRequest<GetCustomersRequest?>
-    .WithActionResult<GetCustomersResult>
+    .WithActionResult<GetCustomersResponse>
 {
     private readonly IQueryProcessor _queryProcessor;
 
@@ -27,7 +27,7 @@ public class GetCustomersEndpoint : EndpointBaseAsync
         Description = "Get all customers",
         OperationId = "GetCustomers",
         Tags = new[] { CustomersConfigs.Tag })]
-    public override async Task<ActionResult<GetCustomersResult>> HandleAsync(
+    public override async Task<ActionResult<GetCustomersResponse>> HandleAsync(
         [FromQuery] GetCustomersRequest? request,
         CancellationToken cancellationToken = default)
     {

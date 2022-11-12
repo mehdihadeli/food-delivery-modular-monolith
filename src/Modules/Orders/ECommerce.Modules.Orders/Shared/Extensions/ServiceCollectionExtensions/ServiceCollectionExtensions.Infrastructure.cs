@@ -1,11 +1,15 @@
+using Ardalis.GuardClauses;
 using BuildingBlocks.Caching.InMemory;
 using BuildingBlocks.Core.Caching;
+using BuildingBlocks.Core.Extensions;
 using BuildingBlocks.Core.IdsGenerator;
 using BuildingBlocks.Core.Persistence.EfCore;
 using BuildingBlocks.Core.Registrations;
 using BuildingBlocks.Email;
 using BuildingBlocks.Email.Options;
 using BuildingBlocks.Logging;
+using BuildingBlocks.Monitoring;
+using BuildingBlocks.Persistence.EfCore.Postgres;
 using BuildingBlocks.Validation;
 using BuildingBlocks.Web.Extensions.ServiceCollectionExtensions;
 
@@ -23,21 +27,6 @@ public static partial class ServiceCollectionExtensions
             configuration,
             OrdersModuleConfiguration.ModuleName,
             Assembly.GetExecutingAssembly());
-
-
-        // services.AddMonitoring(healthChecksBuilder =>
-        // {
-        //     var postgresOptions =
-        //         configuration.GetOptions<PostgresOptions>(
-        //             $"{OrdersModuleConfiguration.ModuleName}:{nameof(PostgresOptions)}");
-        //
-        //     Guard.Against.Null(postgresOptions, nameof(postgresOptions));
-        //
-        //     healthChecksBuilder.AddNpgSql(
-        //         postgresOptions.ConnectionString,
-        //         name: "Orders-Modules-Postgres-Check",
-        //         tags: new[] {"orders-postgres"});
-        // });
 
         services.AddEmailService(configuration, $"{OrdersModuleConfiguration.ModuleName}:{nameof(EmailOptions)}");
 
