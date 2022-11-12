@@ -10,8 +10,8 @@ public static class GetUserByIdEndpoint
         endpoints.MapGet($"{UsersConfigs.UsersPrefixUri}/{{userId:guid}}", GetUserById)
             .AllowAnonymous()
             .WithTags(UsersConfigs.Tag)
-            .Produces<RegisterUserResult>(StatusCodes.Status200OK)
-            .Produces<RegisterUserResult>(StatusCodes.Status404NotFound)
+            .Produces<RegisterUserResponse>(StatusCodes.Status200OK)
+            .Produces<RegisterUserResponse>(StatusCodes.Status404NotFound)
             .Produces(StatusCodes.Status400BadRequest)
             .WithName("GetUserById")
             .WithDisplayName("Get User by Id.");

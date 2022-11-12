@@ -24,7 +24,7 @@ public static class RevokeRefreshTokenEndpoint
     {
        return gatewayProcessor.ExecuteCommand(async commandProcessor =>
         {
-            var command = new RevokeRefreshTokenCommand(request.RefreshToken);
+            var command = new RevokeRefreshToken(request.RefreshToken);
 
             await commandProcessor.SendAsync(command, cancellationToken);
 

@@ -10,7 +10,7 @@ public static class UpdateUserStateEndpoint
         endpoints.MapPut($"{UsersConfigs.UsersPrefixUri}/{{userId:guid}}/state", UpdateUserState)
             .AllowAnonymous()
             .WithTags(UsersConfigs.Tag)
-            .Produces<RegisterUserResult>(StatusCodes.Status204NoContent)
+            .Produces<RegisterUserResponse>(StatusCodes.Status204NoContent)
             .Produces(StatusCodes.Status404NotFound)
             .Produces(StatusCodes.Status400BadRequest)
             .WithDisplayName("Update User State.");

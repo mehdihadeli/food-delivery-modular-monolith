@@ -17,7 +17,7 @@ public record RegisterUser(
     string Email,
     string Password,
     string ConfirmPassword,
-    List<string>? Roles = null) : ITxCreateCommand<RegisterUserResult>
+    List<string>? Roles = null) : ITxCreateCommand<RegisterUserResponse>
 {
     public DateTime CreatedAt { get; init; } = DateTime.Now;
     public Guid Id { get; init; } = Guid.NewGuid();
@@ -69,7 +69,7 @@ internal class RegisterUserValidator : AbstractValidator<RegisterUser>
 
 // using transaction script instead of using domain business logic here
 // https://www.youtube.com/watch?v=PrJIMTZsbDw
-internal class RegisterUserHandler : ICommandHandler<RegisterUser, RegisterUserResult>
+internal class RegisterUserHandler : ICommandHandler<RegisterUser, RegisterUserResponse>
 {
     private readonly IBus _bus;
 
@@ -81,7 +81,7 @@ internal class RegisterUserHandler : ICommandHandler<RegisterUser, RegisterUserR
         _userManager = Guard.Against.Null(userManager, nameof(userManager));
     }
 
-    public async Task<RegisterUserResult> Handle(RegisterUser request, CancellationToken cancellationToken)
+    public async Task<RegisterUserResponse> Handle(RegisterUser request, CancellationToken cancellationToken)
     {
         var applicationUser = new ApplicationUser
         {
@@ -118,7 +118,7 @@ internal class RegisterUserHandler : ICommandHandler<RegisterUser, RegisterUserR
             null,
             cancellationToken);
 
-        return new RegisterUserResult(new IdentityUserDto
+        return new RegisterUserResponse(new IdentityUserDto
         {
             Id = applicationUser.Id,
             Email = applicationUser.Email,
@@ -132,5 +132,3 @@ internal class RegisterUserHandler : ICommandHandler<RegisterUser, RegisterUserR
         });
     }
 }
-
-internal record RegisterUserResult(IdentityUserDto? UserIdentity);

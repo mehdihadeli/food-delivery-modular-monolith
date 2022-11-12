@@ -9,7 +9,7 @@ public static class GetClaimsEndpoint
         endpoints.MapGet($"{IdentityConfigs.IdentityPrefixUri}/claims", GetClaims)
             .WithTags(IdentityConfigs.Tag)
             .RequireAuthorization()
-            .Produces<GetClaimsQueryResult>()
+            .Produces<GetClaimsResponse>()
             .Produces(StatusCodes.Status401Unauthorized)
             .WithDisplayName("Get User claims");
 
@@ -22,7 +22,7 @@ public static class GetClaimsEndpoint
     {
        return gatewayProcessor.ExecuteQuery(async queryProcessor =>
        {
-           var result = await queryProcessor.SendAsync(new GetClaimsQuery(), cancellationToken);
+           var result = await queryProcessor.SendAsync(new GetClaims(), cancellationToken);
 
            return Results.Ok(result);
        });
