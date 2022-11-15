@@ -1,3 +1,4 @@
+using Asp.Versioning.Conventions;
 using BuildingBlocks.Abstractions.Web;
 
 namespace ECommerce.Modules.Identity.Identity.Features.GetClaims;
@@ -11,7 +12,9 @@ public static class GetClaimsEndpoint
             .RequireAuthorization()
             .Produces<GetClaimsResponse>()
             .Produces(StatusCodes.Status401Unauthorized)
-            .WithDisplayName("Get User claims");
+            .WithDisplayName("Get User claims")
+            .WithApiVersionSet(IdentityConfigs.VersionSet)
+            .HasApiVersion(1.0);
 
         return endpoints;
     }

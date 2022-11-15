@@ -1,3 +1,4 @@
+using Asp.Versioning.Conventions;
 using BuildingBlocks.Abstractions.Web;
 using BuildingBlocks.Abstractions.Web.MinimalApi;
 
@@ -9,12 +10,14 @@ public class DeleteRestockSubscriptionEndpoint : IMinimalEndpointDefinition
     {
         builder.MapDelete($"{RestockSubscriptionsConfigs.RestockSubscriptionsUrl}/{{id}}", DeleteRestockSubscription)
             .RequireAuthorization(CustomersConstants.Role.Admin)
-            .WithTags(RestockSubscriptionsConfigs.Tag)
             .Produces(StatusCodes.Status204NoContent)
             .Produces(StatusCodes.Status400BadRequest)
             .Produces(StatusCodes.Status401Unauthorized)
+            .WithTags(RestockSubscriptionsConfigs.Tag)
             .WithName("DeleteRestockSubscription")
-            .WithDisplayName("Delete RestockSubscription for Customer.");
+            .WithDisplayName("Delete RestockSubscription for Customer.")
+            .WithApiVersionSet(RestockSubscriptionsConfigs.VersionSet)
+            .HasApiVersion(1.0);
 
         return builder;
     }

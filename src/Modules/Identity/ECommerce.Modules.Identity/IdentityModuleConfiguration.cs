@@ -1,7 +1,8 @@
+using Asp.Versioning;
+using Asp.Versioning.Builder;
 using BuildingBlocks.Abstractions.Web.Module;
 using BuildingBlocks.Core.Extensions;
 using BuildingBlocks.Core.Messaging.Extensions;
-using BuildingBlocks.Web.Extensions;
 using ECommerce.Modules.Identity.Identity;
 using ECommerce.Modules.Identity.Shared.Extensions.ApplicationBuilderExtensions;
 using ECommerce.Modules.Identity.Shared.Extensions.ServiceCollectionExtensions;
@@ -11,8 +12,9 @@ namespace ECommerce.Modules.Identity;
 
 public class IdentityModuleConfiguration : IModuleDefinition
 {
-    public const string IdentityModulePrefixUri = "api/v1/identity";
+    public const string IdentityModulePrefixUri = "api/v{version:apiVersion}/identity";
     public const string ModuleName = "Identity";
+    public static ApiVersionSet VersionSet { get; private set; } = default!;
 
     public void AddModuleServices(
         IServiceCollection services,
@@ -49,6 +51,16 @@ public class IdentityModuleConfiguration : IModuleDefinition
 
     public void MapEndpoints(IEndpointRouteBuilder endpoints)
     {
+        var v1 = new ApiVersion(1, 0);
+        var v2 = new ApiVersion(2, 0);
+        var v3 = new ApiVersion(3, 0);
+
+        VersionSet = endpoints.NewApiVersionSet()
+            .HasApiVersion(v1)
+            .HasApiVersion(v2)
+            .HasApiVersion(v3)
+            .Build();
+
         endpoints.MapGet("identity", (HttpContext context) =>
         {
             var requestId = context.Request.Headers.TryGetValue("X-Request-Id", out var requestIdHeader)

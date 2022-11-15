@@ -1,3 +1,4 @@
+using Asp.Versioning.Conventions;
 using BuildingBlocks.Abstractions.Web;
 
 namespace ECommerce.Modules.Identity.Identity.Features.Login;
@@ -26,7 +27,10 @@ public static class LoginEndpoint
             .Produces<LoginResponse>()
             .Produces(StatusCodes.Status404NotFound)
             .Produces(StatusCodes.Status400BadRequest)
-            .WithDisplayName("Login User.");
+            .WithDisplayName("Login User.")
+            .WithApiVersionSet(IdentityConfigs.VersionSet)
+            .HasApiVersion(1.0)
+            .HasApiVersion(2.0);
 
         return endpoints;
     }

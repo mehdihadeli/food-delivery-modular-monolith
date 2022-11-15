@@ -25,8 +25,8 @@ public class InvalidateCachingBehavior<TRequest, TResponse> : IPipelineBehavior<
 
     public async Task<TResponse> Handle(
         TRequest request,
-        CancellationToken cancellationToken,
-        RequestHandlerDelegate<TResponse> next)
+        RequestHandlerDelegate<TResponse> next,
+        CancellationToken cancellationToken)
     {
         var cachePolicy = _invalidateCachePolicies.FirstOrDefault();
         if (cachePolicy == null)

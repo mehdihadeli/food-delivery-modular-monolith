@@ -26,8 +26,8 @@ public class CachingBehavior<TRequest, TResponse> : IPipelineBehavior<TRequest, 
 
     public async Task<TResponse> Handle(
         TRequest request,
-        CancellationToken cancellationToken,
-        RequestHandlerDelegate<TResponse> next)
+        RequestHandlerDelegate<TResponse> next,
+        CancellationToken cancellationToken)
     {
         var cachePolicy = _cachePolicies.FirstOrDefault();
         if (cachePolicy == null)
@@ -51,7 +51,6 @@ public class CachingBehavior<TRequest, TResponse> : IPipelineBehavior<TRequest, 
         }
 
         var response = await next();
-
 
         await _cacheManager.SetAsync(cacheKey, response, time.Second);
 
@@ -85,8 +84,8 @@ public class StreamCachingBehavior<TRequest, TResponse> : IStreamPipelineBehavio
 
     public IAsyncEnumerable<TResponse> Handle(
         TRequest request,
-        CancellationToken cancellationToken,
-        StreamHandlerDelegate<TResponse> next)
+        StreamHandlerDelegate<TResponse> next,
+        CancellationToken cancellationToken)
     {
         var cachePolicy = _cachePolicies.FirstOrDefault();
         if (cachePolicy == null)

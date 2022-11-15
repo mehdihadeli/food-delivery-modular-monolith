@@ -1,3 +1,4 @@
+using Asp.Versioning.Conventions;
 using BuildingBlocks.Abstractions.Web;
 using ECommerce.Modules.Identity.Users.Features.RegisteringUser;
 
@@ -13,7 +14,10 @@ public static class UpdateUserStateEndpoint
             .Produces<RegisterUserResponse>(StatusCodes.Status204NoContent)
             .Produces(StatusCodes.Status404NotFound)
             .Produces(StatusCodes.Status400BadRequest)
-            .WithDisplayName("Update User State.");
+            .WithName("UpdateUserState")
+            .WithDisplayName("Update User State.")
+            .WithApiVersionSet(UsersConfigs.VersionSet)
+            .HasApiVersion(1.0);
 
         return endpoints;
     }

@@ -27,8 +27,8 @@ public class FallbackBehavior<TRequest, TResponse> : IPipelineBehavior<TRequest,
 
     public async Task<TResponse> Handle(
         TRequest request,
-        CancellationToken cancellationToken,
-        RequestHandlerDelegate<TResponse> next)
+        RequestHandlerDelegate<TResponse> next,
+        CancellationToken cancellationToken)
     {
         var fallbackHandler = _fallbackHandlers.FirstOrDefault();
         if (fallbackHandler == null)
@@ -40,8 +40,7 @@ public class FallbackBehavior<TRequest, TResponse> : IPipelineBehavior<TRequest,
             .Handle<Exception>()
             .FallbackAsync(ct =>
             {
-                _logger.LogDebug(
-                    $"Initial handler failed. Falling back to `{fallbackHandler.GetType().FullName}@HandleFallback`");
+                _logger.LogDebug("Initial handler failed. Falling back to `{FullName}@HandleFallback`", fallbackHandler.GetType().FullName);
                 return fallbackHandler.HandleFallbackAsync(request, cancellationToken);
             });
 

@@ -1,6 +1,8 @@
 using Ardalis.GuardClauses;
+using Asp.Versioning.Conventions;
 using BuildingBlocks.Abstractions.Web;
 using BuildingBlocks.Abstractions.Web.MinimalApi;
+using Swashbuckle.AspNetCore.Annotations;
 
 namespace ECommerce.Modules.Customers.Customers.Features.CreatingCustomer;
 
@@ -10,11 +12,15 @@ public class CreateCustomerEndpoint : IMinimalEndpointDefinition
     {
         builder.MapPost(CustomersConfigs.CustomersPrefixUri, CreateCustomer)
             .AllowAnonymous()
-            .WithTags(CustomersConfigs.Tag)
             .Produces<CreateCustomerResponse>(StatusCodes.Status201Created)
             .Produces(StatusCodes.Status400BadRequest)
+            .WithTags(CustomersConfigs.Tag)
+            .WithMetadata(new SwaggerOperationAttribute("Creating a Customer", "Creating a Customer"))
             .WithName("CreateCustomer")
-            .WithDisplayName("Register New Customer.");
+            .WithDisplayName("Register New Customer.")
+            .WithApiVersionSet(CustomersConfigs.VersionSet)
+            .HasApiVersion(1.0)
+            .HasApiVersion(2.0);
 
         return builder;
     }

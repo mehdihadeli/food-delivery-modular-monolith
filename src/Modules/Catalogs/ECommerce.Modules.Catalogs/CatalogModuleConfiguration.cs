@@ -1,3 +1,5 @@
+using Asp.Versioning;
+using Asp.Versioning.Builder;
 using BuildingBlocks.Abstractions.Web.Module;
 using BuildingBlocks.Core;
 using BuildingBlocks.Core.Extensions;
@@ -14,9 +16,8 @@ namespace ECommerce.Modules.Catalogs;
 
 public class CatalogModuleConfiguration : IModuleDefinition
 {
-    public const string CatalogModulePrefixUri = "api/v1/catalogs";
+    public const string CatalogModulePrefixUri = "api/v{version:apiVersion}/catalogs";
     public const string ModuleName = "Catalogs";
-
     public void AddModuleServices(
         IServiceCollection services,
         IConfiguration configuration,

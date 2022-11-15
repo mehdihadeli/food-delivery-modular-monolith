@@ -1,5 +1,7 @@
 using Ardalis.GuardClauses;
+using Asp.Versioning.Conventions;
 using BuildingBlocks.Abstractions.Web;
+using Swashbuckle.AspNetCore.Annotations;
 
 namespace ECommerce.Modules.Catalogs.Products.Features.UpdatingProduct;
 
@@ -11,12 +13,15 @@ public static class UpdateProductEndpoint
         endpoints.MapPost(
                 $"{ProductsConfigs.ProductsPrefixUri}/{{id}}",
                 UpdateProducts)
-            .WithTags(ProductsConfigs.Tag)
             .Produces(StatusCodes.Status204NoContent)
             .Produces(StatusCodes.Status401Unauthorized)
             .Produces(StatusCodes.Status400BadRequest)
+            .WithTags(ProductsConfigs.Tag)
+            .WithMetadata(new SwaggerOperationAttribute("Updating Product", "Updating Product"))
             .WithName("UpdateProduct")
-            .WithDisplayName("Update a product.");
+            .WithDisplayName("Update a product.")
+            .WithApiVersionSet(ProductsConfigs.VersionSet)
+            .HasApiVersion(1.0);
 
         return endpoints;
     }

@@ -1,9 +1,9 @@
+using Asp.Versioning;
+using Asp.Versioning.Builder;
 using BuildingBlocks.Abstractions.Web.Module;
 using BuildingBlocks.Core;
 using BuildingBlocks.Core.Extensions;
 using BuildingBlocks.Core.Messaging.Extensions;
-using BuildingBlocks.Monitoring;
-using BuildingBlocks.Web.Extensions;
 using ECommerce.Modules.Customers.Customers;
 using ECommerce.Modules.Customers.RestockSubscriptions;
 using ECommerce.Modules.Customers.Shared.Extensions.ApplicationBuilderExtensions;
@@ -13,7 +13,7 @@ namespace ECommerce.Modules.Customers;
 
 public class CustomersModuleConfiguration : IModuleDefinition
 {
-    public const string CustomerModulePrefixUri = "api/v1/customers";
+    public const string CustomerModulePrefixUri = "api/v{version:apiVersion}/customers";
     public const string ModuleName = "Customers";
 
     public void AddModuleServices(

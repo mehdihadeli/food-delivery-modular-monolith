@@ -1,3 +1,4 @@
+using Asp.Versioning.Conventions;
 using BuildingBlocks.Abstractions.Web;
 
 namespace ECommerce.Modules.Identity.Identity.Features.VerifyEmail;
@@ -14,7 +15,10 @@ public static class VerifyEmailEndpoint
             .Produces(StatusCodes.Status409Conflict)
             .Produces(StatusCodes.Status500InternalServerError)
             .Produces(StatusCodes.Status400BadRequest)
-            .WithDisplayName("Verify Email.");
+            .WithName("VerifyEmail")
+            .WithDisplayName("Verify Email.")
+            .WithApiVersionSet(IdentityConfigs.VersionSet)
+            .HasApiVersion(1.0);
 
         return endpoints;
     }

@@ -1,3 +1,4 @@
+using Asp.Versioning.Builder;
 using BuildingBlocks.Abstractions.Persistence;
 using ECommerce.Modules.Identity.Identity.Data;
 using ECommerce.Modules.Identity.Identity.Features.GetClaims;
@@ -17,6 +18,7 @@ internal static class IdentityConfigs
 {
     public const string Tag = "Identity";
     public const string IdentityPrefixUri = $"{IdentityModuleConfiguration.IdentityModulePrefixUri}";
+    public static ApiVersionSet VersionSet { get; private set; } = default!;
 
     internal static IServiceCollection AddIdentityServices(
         this IServiceCollection services,
@@ -37,6 +39,8 @@ internal static class IdentityConfigs
 
     internal static IEndpointRouteBuilder MapIdentityEndpoints(this IEndpointRouteBuilder endpoints)
     {
+        VersionSet = endpoints.NewApiVersionSet(Tag).Build();
+
         endpoints.MapGet(
             $"{IdentityPrefixUri}/user-role",
             [Authorize(

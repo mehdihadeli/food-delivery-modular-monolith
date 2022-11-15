@@ -1,4 +1,5 @@
 using Ardalis.GuardClauses;
+using Asp.Versioning.Conventions;
 using BuildingBlocks.Abstractions.Web;
 using BuildingBlocks.Abstractions.Web.MinimalApi;
 
@@ -10,12 +11,15 @@ public class CreateRestockSubscriptionEndpoint : IMinimalEndpointDefinition
     {
         builder.MapPost(RestockSubscriptionsConfigs.RestockSubscriptionsUrl, CreateRestockSubscription)
             .AllowAnonymous()
-            .WithTags(RestockSubscriptionsConfigs.Tag)
             .Produces<CreateRestockSubscriptionResponse>(StatusCodes.Status201Created)
             .Produces(StatusCodes.Status400BadRequest)
             .Produces(StatusCodes.Status401Unauthorized)
+            .WithTags(RestockSubscriptionsConfigs.Tag)
             .WithName("CreateRestockSubscription")
-            .WithDisplayName("Register New RestockSubscription for Customer.");
+            .WithDisplayName("Register New RestockSubscription for Customer.")
+            .WithApiVersionSet(RestockSubscriptionsConfigs.VersionSet)
+            .HasApiVersion(1.0)
+            .HasApiVersion(2.0);
 
         return builder;
     }

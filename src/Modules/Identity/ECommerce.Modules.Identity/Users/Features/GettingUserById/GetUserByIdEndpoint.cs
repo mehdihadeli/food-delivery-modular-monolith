@@ -1,3 +1,4 @@
+using Asp.Versioning.Conventions;
 using BuildingBlocks.Abstractions.Web;
 using ECommerce.Modules.Identity.Users.Features.RegisteringUser;
 
@@ -14,7 +15,9 @@ public static class GetUserByIdEndpoint
             .Produces<RegisterUserResponse>(StatusCodes.Status404NotFound)
             .Produces(StatusCodes.Status400BadRequest)
             .WithName("GetUserById")
-            .WithDisplayName("Get User by Id.");
+            .WithDisplayName("Get User by Id.")
+            .WithApiVersionSet(UsersConfigs.VersionSet)
+            .HasApiVersion(1.0);
 
         return endpoints;
     }

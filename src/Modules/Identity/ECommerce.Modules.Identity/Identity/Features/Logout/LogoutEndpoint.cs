@@ -1,7 +1,5 @@
+using Asp.Versioning.Conventions;
 using Microsoft.AspNetCore.Authentication;
-using Microsoft.AspNetCore.Builder;
-using Microsoft.AspNetCore.Http;
-using Microsoft.AspNetCore.Routing;
 
 namespace ECommerce.Modules.Identity.Identity.Features.Logout;
 
@@ -17,7 +15,10 @@ public static class LogoutEndpoint
             .Produces(StatusCodes.Status200OK)
             .WithTags(IdentityConfigs.Tag)
             .RequireAuthorization()
-            .WithDisplayName("Logout User.");
+            .WithName("logout")
+            .WithDisplayName("Logout User.")
+            .WithApiVersionSet(IdentityConfigs.VersionSet)
+            .HasApiVersion(1.0);
 
         return endpoints;
     }

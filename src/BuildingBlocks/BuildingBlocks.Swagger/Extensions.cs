@@ -1,8 +1,6 @@
 using System.Reflection;
+using Asp.Versioning.ApiExplorer;
 using Microsoft.AspNetCore.Builder;
-using Microsoft.AspNetCore.Mvc.Abstractions;
-using Microsoft.AspNetCore.Mvc.ApiExplorer;
-using Microsoft.AspNetCore.Mvc.Versioning;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.Options;
 using Microsoft.OpenApi.Models;
@@ -14,13 +12,9 @@ namespace BuildingBlocks.Swagger;
 public static class Extensions
 {
     // https://github.com/domaindrivendev/Swashbuckle.AspNetCore/blob/master/README.md
-    public static WebApplicationBuilder AddCustomSwagger(
-        this WebApplicationBuilder builder,
-        IConfiguration configuration,
-        bool useApiVersioning = false,
-        params Assembly[] assemblies)
+    public static WebApplicationBuilder AddCustomSwagger(this WebApplicationBuilder builder, Assembly[] assemblies)
     {
-        builder.Services.AddCustomSwagger(configuration, useApiVersioning, assemblies);
+        builder.Services.AddCustomSwagger(builder.Configuration, assemblies);
 
         return builder;
     }
@@ -28,24 +22,9 @@ public static class Extensions
     public static IServiceCollection AddCustomSwagger(
         this IServiceCollection services,
         IConfiguration configuration,
-        bool useApiVersioning = false,
-        params Assembly[] assemblies)
+        Assembly[] assemblies,
+        bool useApiVersioning = false)
     {
-        var assembliesToScan = assemblies.Any() ? assemblies : new[] {Assembly.GetCallingAssembly()};
-        if (useApiVersioning)
-        {
-            services.AddVersionedApiExplorer(options =>
-            {
-                // add the versioned api explorer, which also adds IApiVersionDescriptionProvider service
-                // note: the specified format code will format the version as "'v'major[.minor][-status]"
-                options.GroupNameFormat = "'v'VVV";
-
-                // note: this option is only necessary when versioning by url segment. the SubstitutionFormat
-                // can also be used to control the format of the API version in route templates
-                options.SubstituteApiVersionInUrl = true;
-            });
-        }
-
         // swagger docs for route to code style --> works in .net 6
         // https://dotnetthoughts.net/openapi-support-for-aspnetcore-minimal-webapi/
         // https://jaliyaudagedara.blogspot.com/2021/07/net-6-preview-6-introducing-openapi.html
@@ -60,14 +39,12 @@ public static class Extensions
             options =>
             {
                 options.OperationFilter<SwaggerDefaultValues>();
+                options.OperationFilter<ApiVersionOperationFilter>();
 
-                foreach (var assembly in assembliesToScan)
+                foreach (var assembly in assemblies)
                 {
                     var xmlFile = XmlCommentsFilePath(assembly);
-                    if (File.Exists(xmlFile))
-                    {
-                        options.IncludeXmlComments(xmlFile);
-                    }
+                    if (File.Exists(xmlFile)) options.IncludeXmlComments(xmlFile);
                 }
 
                 options.AddSecurityDefinition("Bearer", new OpenApiSecurityScheme
@@ -118,58 +95,17 @@ public static class Extensions
                     }
                 });
 
-                if (useApiVersioning)
-                {
-                    // Grouping endpoints by version and ApiExplorer group name.
-                    options.DocInclusionPredicate((documentName, apiDescription) =>
-                    {
-                        var actionApiVersionModel = apiDescription.ActionDescriptor
-                            .GetApiVersionModel(ApiVersionMapping.Explicit | ApiVersionMapping.Implicit);
+                options.ResolveConflictingActions(apiDescriptions => apiDescriptions.First());
 
-                        var apiExplorerSettingsAttribute =
-                            (ApiExplorerSettingsAttribute)apiDescription.ActionDescriptor
-                                .EndpointMetadata.FirstOrDefault(x =>
-                                    x.GetType() == typeof(ApiExplorerSettingsAttribute))!;
+                ////https://github.com/domaindrivendev/Swashbuckle.AspNetCore/issues/467
+                // options.OperationFilter<TagByApiExplorerSettingsOperationFilter>();
+                // options.OperationFilter<TagBySwaggerOperationFilter>();
 
-                        if (apiExplorerSettingsAttribute == null) return true;
-
-                        if (actionApiVersionModel.DeclaredApiVersions.Any())
-                        {
-                            return actionApiVersionModel.DeclaredApiVersions.Any(v =>
-                                $"v{v.MajorVersion}" == documentName);
-                        }
-
-                        return actionApiVersionModel.ImplementedApiVersions.Any(v =>
-                            $"v{v.MajorVersion}" == documentName);
-                    });
-
-                    // Adding all the available versions.
-                    var apiVersionDescriptionProvider = services.BuildServiceProvider()
-                        .GetService<IApiVersionDescriptionProvider>();
-
-                    if (apiVersionDescriptionProvider != null)
-                    {
-                        foreach (var description in apiVersionDescriptionProvider.ApiVersionDescriptions)
-                        {
-                            var openApiInfo = new OpenApiInfo
-                            {
-                                Title = $"{description.GroupName} API",
-                                Version = description.ApiVersion.ToString(),
-                                Description = $"{description.GroupName} API description."
-                            };
-
-                            if (description.IsDeprecated)
-                                openApiInfo.Description += " This API version has been deprecated.";
-
-                            options.SwaggerDoc(description.GroupName, openApiInfo);
-                        }
-                    }
-                }
-
-                // Adding swagger data annotation support with [SwaggerOperation] attribute.
+                // Enables Swagger annotations (SwaggerOperationAttribute, SwaggerParameterAttribute etc.)
                 options.EnableAnnotations();
             });
 
+        services.Configure<SwaggerGeneratorOptions>(o => o.InferSecuritySchemes = true);
 
         return services;
 
@@ -181,31 +117,20 @@ public static class Extensions
         }
     }
 
-    /// <summary>
-    ///     Register Swagger endpoints.
-    ///     Hint: Minimal Api not supported api versioning in .Net6.
-    /// </summary>
-    public static IApplicationBuilder UseCustomSwagger(
-        this IApplicationBuilder app,
-        IApiVersionDescriptionProvider provider = null)
+    public static IApplicationBuilder UseCustomSwagger(this WebApplication app)
     {
         app.UseSwagger();
         app.UseSwaggerUI(
             options =>
             {
-                options.DocExpansion(DocExpansion.None);
-                if (provider is null)
+                var descriptions = app.DescribeApiVersions();
+
+                // build a swagger endpoint for each discovered API version
+                foreach (var description in descriptions)
                 {
-                    options.SwaggerEndpoint("/swagger/v1/swagger.json", "API");
-                }
-                else
-                {
-                    foreach (var description in provider.ApiVersionDescriptions)
-                    {
-                        options.SwaggerEndpoint(
-                            $"/swagger/{description.GroupName}/swagger.json",
-                            description.GroupName.ToUpperInvariant());
-                    }
+                    var url = $"/swagger/{description.GroupName}/swagger.json";
+                    var name = description.GroupName.ToUpperInvariant();
+                    options.SwaggerEndpoint(url, name);
                 }
             });
 

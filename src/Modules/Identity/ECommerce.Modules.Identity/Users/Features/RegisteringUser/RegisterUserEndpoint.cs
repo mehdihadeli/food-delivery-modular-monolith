@@ -1,3 +1,4 @@
+using Asp.Versioning.Conventions;
 using BuildingBlocks.Abstractions.Web;
 
 namespace ECommerce.Modules.Identity.Users.Features.RegisteringUser;
@@ -11,7 +12,11 @@ public static class RegisterUserEndpoint
             .WithTags(UsersConfigs.Tag)
             .Produces<RegisterUserResponse>(StatusCodes.Status201Created)
             .Produces(StatusCodes.Status400BadRequest)
-            .WithDisplayName("Register New user.");
+            .WithName("RegisterUser")
+            .WithDisplayName("Register New user.")
+            .WithApiVersionSet(UsersConfigs.VersionSet)
+            .HasApiVersion(1.0)
+            .HasApiVersion(2.0);
 
         return endpoints;
     }

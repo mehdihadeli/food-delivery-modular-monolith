@@ -1,4 +1,6 @@
+using Asp.Versioning.Conventions;
 using BuildingBlocks.Abstractions.Web;
+using Swashbuckle.AspNetCore.Annotations;
 
 namespace ECommerce.Modules.Catalogs.Products.Features.DebitingProductStock;
 
@@ -16,8 +18,12 @@ public static class DebitProductStockEndpoint
             .Produces(StatusCodes.Status401Unauthorized)
             .Produces(StatusCodes.Status400BadRequest)
             .Produces(StatusCodes.Status404NotFound)
+            .WithTags(ProductsConfigs.Tag)
+            .WithMetadata(new SwaggerOperationAttribute("Debiting Product Stock", "Debiting Product Stock"))
             .WithName("DebitProductStock")
-            .WithDisplayName("Debit product stock");
+            .WithDisplayName("Debit product stock")
+            .WithApiVersionSet(ProductsConfigs.VersionSet)
+            .HasApiVersion(1.0);
 
         return endpoints;
     }

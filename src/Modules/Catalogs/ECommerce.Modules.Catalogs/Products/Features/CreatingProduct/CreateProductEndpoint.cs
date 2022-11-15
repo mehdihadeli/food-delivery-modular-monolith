@@ -1,4 +1,5 @@
 using Ardalis.GuardClauses;
+using Asp.Versioning.Conventions;
 using BuildingBlocks.Abstractions.Web;
 using ECommerce.Modules.Catalogs.Products.Features.CreatingProduct.Requests;
 
@@ -9,14 +10,30 @@ public static class CreateProductEndpoint
 {
     internal static IEndpointRouteBuilder MapCreateProductsEndpoint(this IEndpointRouteBuilder endpoints)
     {
+        // https://github.com/dotnet/aspnetcore/issues/45082
+        // https://github.com/dotnet/aspnetcore/issues/40753
+        // https://github.com/domaindrivendev/Swashbuckle.AspNetCore/pull/2414
         endpoints.MapPost($"{ProductsConfigs.ProductsPrefixUri}", CreateProducts)
+            // WithOpenApi should placed before versioning and other things
+            .WithOpenApi(operation => new(operation)
+            {
+                Summary = "Creating a New Product", Description = "Creating a New Product"
+            })
             .WithTags(ProductsConfigs.Tag)
             .RequireAuthorization()
             .Produces<CreateProductResponse>(StatusCodes.Status201Created)
             .Produces(StatusCodes.Status401Unauthorized)
             .Produces(StatusCodes.Status400BadRequest)
             .WithName("CreateProduct")
-            .WithDisplayName("Create a new product.");
+            .WithDisplayName("Create a new product.")
+
+            // .WithMetadata(new SwaggerOperationAttribute("Creating a New Product", "Creating a New Product"))
+            .WithApiVersionSet(ProductsConfigs.VersionSet)
+
+            // .IsApiVersionNeutral()
+            // .MapToApiVersion(1.0)
+            .HasApiVersion(1.0)
+            .HasApiVersion(2.0);
 
         return endpoints;
     }
