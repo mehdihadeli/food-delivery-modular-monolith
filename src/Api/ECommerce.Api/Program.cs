@@ -1,3 +1,4 @@
+using System.Reflection;
 using BuildingBlocks.Core.Extensions;
 using BuildingBlocks.Core.Extensions.ServiceCollection;
 using BuildingBlocks.Logging;
@@ -97,13 +98,12 @@ static void RegisterServices(WebApplicationBuilder builder)
     builder.Services.AddCustomProblemDetails();
     builder.Services.AddCompression();
 
-    builder.AddCustomSwagger(
-        builder.Configuration,
-        false,
+    builder.Services.AddCustomVersioning();
+    builder.AddCustomSwagger(new[]
+    {
+        typeof(CatalogRoot).Assembly, typeof(IdentityRoot).Assembly, typeof(OrdersRoot).Assembly,
         typeof(CustomersRoot).Assembly,
-        typeof(IdentityRoot).Assembly,
-        typeof(CatalogRoot).Assembly,
-        typeof(OrdersRoot).Assembly);
+    });
 
     builder.Services.AddCustomJwtAuthentication(builder.Configuration);
     builder.Services.AddCustomAuthorization(
@@ -117,21 +117,6 @@ static void RegisterServices(WebApplicationBuilder builder)
 static async Task ConfigureApplication(WebApplication app)
 {
     var environment = app.Environment;
-
-    if (environment.IsDevelopment() || environment.IsEnvironment("docker"))
-    {
-        app.UseDeveloperExceptionPage();
-
-        // Minimal Api not supported versioning in .net 6
-        app.UseCustomSwagger();
-
-        // ref: https://christian-schou.dk/how-to-make-api-documentation-using-swagger/
-        app.UseReDoc(options =>
-        {
-            options.DocumentTitle = "Customers Service ReDoc";
-            options.SpecUrl = "/swagger/v1/swagger.json";
-        });
-    }
 
     app.UseProblemDetails();
 
@@ -155,6 +140,12 @@ static async Task ConfigureApplication(WebApplication app)
     app.MapEndpoints();
 
     app.MapGet("/", (HttpContext _) => "ECommerce Modular Monolith Api.").ExcludeFromDescription();
+
+    if (environment.IsDevelopment() || environment.IsEnvironment("docker"))
+    {
+        // swagger middleware should register after register endpoints to discover all endpoints and its versions correctly
+        app.UseCustomSwagger();
+    }
 
     app.UseECommerceMonitoring();
 

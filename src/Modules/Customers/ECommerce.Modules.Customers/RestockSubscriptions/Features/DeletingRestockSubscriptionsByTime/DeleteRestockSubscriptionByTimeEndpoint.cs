@@ -1,4 +1,5 @@
 using Ardalis.GuardClauses;
+using Asp.Versioning.Conventions;
 using BuildingBlocks.Abstractions.Web;
 using BuildingBlocks.Abstractions.Web.MinimalApi;
 
@@ -9,12 +10,14 @@ public class DeleteRestockSubscriptionByTimeEndpoint : IMinimalEndpointDefinitio
     public IEndpointRouteBuilder MapEndpoint(IEndpointRouteBuilder builder)
     {
         builder.MapDelete($"{RestockSubscriptionsConfigs.RestockSubscriptionsUrl}", DeleteRestockSubscriptionByTime)
-            .WithTags(RestockSubscriptionsConfigs.Tag)
             .Produces(StatusCodes.Status204NoContent)
             .Produces(StatusCodes.Status400BadRequest)
             .Produces(StatusCodes.Status401Unauthorized)
+            .WithTags(RestockSubscriptionsConfigs.Tag)
             .WithName("DeleteRestockSubscriptionByTime")
-            .WithDisplayName("Delete RestockSubscriptions by time range.");
+            .WithDisplayName("Delete RestockSubscriptions by time range.")
+            .WithApiVersionSet(RestockSubscriptionsConfigs.VersionSet)
+            .HasApiVersion(1.0);
 
         return builder;
     }

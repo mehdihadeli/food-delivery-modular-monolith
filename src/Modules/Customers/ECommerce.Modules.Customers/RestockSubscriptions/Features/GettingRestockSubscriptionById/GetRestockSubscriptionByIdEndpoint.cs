@@ -1,4 +1,5 @@
 using Ardalis.GuardClauses;
+using Asp.Versioning.Conventions;
 using BuildingBlocks.Abstractions.Web;
 using BuildingBlocks.Abstractions.Web.MinimalApi;
 
@@ -11,14 +12,16 @@ public class GetRestockSubscriptionByIdEndpoint : IMinimalEndpointDefinition
         builder.MapGet(
                 $"{RestockSubscriptionsConfigs.RestockSubscriptionsUrl}/{{id}}",
                 GetRestockSubscriptionById)
-            .WithTags(RestockSubscriptionsConfigs.Tag)
             .RequireAuthorization(CustomersConstants.Role.Admin)
             .Produces<GetRestockSubscriptionByIdResponse>(StatusCodes.Status200OK)
             .Produces(StatusCodes.Status401Unauthorized)
             .Produces(StatusCodes.Status400BadRequest)
             .Produces(StatusCodes.Status404NotFound)
+            .WithTags(RestockSubscriptionsConfigs.Tag)
             .WithName("GetRestockSubscriptionById")
-            .WithDisplayName("Get RestockSubscription By Id.");
+            .WithDisplayName("Get RestockSubscription By Id.")
+            .WithApiVersionSet(RestockSubscriptionsConfigs.VersionSet)
+            .HasApiVersion(1.0);
 
         return builder;
     }

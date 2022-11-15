@@ -29,23 +29,17 @@ public class EfTxBehavior<TRequest, TResponse> : IPipelineBehavior<TRequest, TRe
         _domainEventContext = domainEventContext;
     }
 
-    public Task<TResponse> Handle(
+    public async Task<TResponse> Handle(
         TRequest request,
-        CancellationToken cancellationToken,
-        RequestHandlerDelegate<TResponse> next)
+        RequestHandlerDelegate<TResponse> next,
+        CancellationToken cancellationToken)
     {
-        if (request is not ITxRequest) return next();
+        if (request is not ITxRequest) return await next();
 
         _logger.LogInformation(
             "{Prefix} Handled command {MediatrRequest}",
             nameof(EfTxBehavior<TRequest, TResponse>),
             typeof(TRequest).FullName);
-
-        _logger.LogDebug(
-            "{Prefix} Handled command {MediatrRequest} with content {RequestContent}",
-            nameof(EfTxBehavior<TRequest, TResponse>),
-            typeof(TRequest).FullName,
-            JsonSerializer.Serialize(request));
 
         _logger.LogInformation(
             "{Prefix} Open the transaction for {MediatrRequest}",
@@ -54,7 +48,7 @@ public class EfTxBehavior<TRequest, TResponse> : IPipelineBehavior<TRequest, TRe
 
         var strategy = _dbFacadeResolver.Database.CreateExecutionStrategy();
 
-        return strategy.ExecuteAsync(async () =>
+        return await strategy.ExecuteAsync(async () =>
         {
             // https://www.thinktecture.com/en/entity-framework-core/use-transactionscope-with-caution-in-2-1/
             // https://github.com/dotnet/efcore/issues/6233#issuecomment-242693262

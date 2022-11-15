@@ -1,3 +1,5 @@
+using Asp.Versioning;
+using Asp.Versioning.Builder;
 using BuildingBlocks.Abstractions.Web.Module;
 using BuildingBlocks.Core.Extensions;
 using BuildingBlocks.Core.Messaging.Extensions;
@@ -8,8 +10,9 @@ namespace ECommerce.Modules.Orders;
 
 public class OrdersModuleConfiguration : IModuleDefinition
 {
-    public const string OrderModulePrefixUri = "api/v1/orders";
+    public const string OrderModulePrefixUri = "api/v{version:apiVersion}/orders";
     public const string ModuleName = "Orders";
+    public static ApiVersionSet VersionSet { get; private set; } = default!;
 
     public void AddModuleServices(
         IServiceCollection services,
@@ -43,6 +46,16 @@ public class OrdersModuleConfiguration : IModuleDefinition
 
     public void MapEndpoints(IEndpointRouteBuilder endpoints)
     {
+        var v1 = new ApiVersion(1, 0);
+        var v2 = new ApiVersion(2, 0);
+        var v3 = new ApiVersion(3, 0);
+
+        VersionSet = endpoints.NewApiVersionSet()
+            .HasApiVersion(v1)
+            .HasApiVersion(v2)
+            .HasApiVersion(v3)
+            .Build();
+
         endpoints.MapGet("orders", (HttpContext context) =>
         {
             var requestId = context.Request.Headers.TryGetValue("X-Request-Id", out var requestIdHeader)

@@ -1,3 +1,4 @@
+using Asp.Versioning.Builder;
 using BuildingBlocks.Abstractions.CQRS.Event;
 using BuildingBlocks.Abstractions.Persistence;
 using ECommerce.Modules.Catalogs.Products.Data;
@@ -13,6 +14,7 @@ internal static class ProductsConfigs
 {
     public const string Tag = "Product";
     public const string ProductsPrefixUri = $"{CatalogModuleConfiguration.CatalogModulePrefixUri}/products";
+    public static ApiVersionSet VersionSet { get; private set; } = default!;
 
     internal static IServiceCollection AddProductsServices(this IServiceCollection services)
     {
@@ -22,10 +24,14 @@ internal static class ProductsConfigs
         return services;
     }
 
-    internal static IEndpointRouteBuilder MapProductsEndpoints(this IEndpointRouteBuilder endpoints) =>
-        endpoints.MapCreateProductsEndpoint()
+    internal static IEndpointRouteBuilder MapProductsEndpoints(this IEndpointRouteBuilder endpoints)
+    {
+        VersionSet = endpoints.NewApiVersionSet(Tag).Build();
+
+        return endpoints.MapCreateProductsEndpoint()
             .MapDebitProductStockEndpoint()
             .MapReplenishProductStockEndpoint()
             .MapGetProductByIdEndpoint()
             .MapGetProductsViewEndpoint();
+    }
 }

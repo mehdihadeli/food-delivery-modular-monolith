@@ -26,7 +26,9 @@ public static class Extensions
         services.AddHealthChecksUI(setup =>
         {
             setup.SetEvaluationTimeInSeconds(60); // time in seconds between check
-            setup.AddHealthCheckEndpoint("Basic Health Check", "/healthz");
+            setup.AddHealthCheckEndpoint("All Checks", "/healthz");
+            setup.AddHealthCheckEndpoint("Infra", "/health/infra");
+            setup.AddHealthCheckEndpoint("Database", "/health/database");
         }).AddInMemoryStorage();
 
         return services;
@@ -57,6 +59,22 @@ public static class Extensions
                     Predicate = (check) => !check.Tags.Contains("services"),
                     AllowCachingResponses = false,
                     ResponseWriter = WriteResponseAsync,
+                })
+            .UseHealthChecks(
+                "/health/infra",
+                new HealthCheckOptions
+                {
+                    Predicate = check => check.Tags.Contains("infra"),
+                    AllowCachingResponses = false,
+                    ResponseWriter = UIResponseWriter.WriteHealthCheckUIResponse,
+                })
+            .UseHealthChecks(
+                "/health/database",
+                new HealthCheckOptions
+                {
+                    Predicate = check => check.Tags.Contains("database"),
+                    AllowCachingResponses = false,
+                    ResponseWriter = UIResponseWriter.WriteHealthCheckUIResponse,
                 })
             .UseHealthChecks(
                 "/health/ready",

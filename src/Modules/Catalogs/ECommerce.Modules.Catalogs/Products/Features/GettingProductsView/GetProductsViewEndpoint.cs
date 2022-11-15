@@ -1,4 +1,6 @@
+using Asp.Versioning.Conventions;
 using BuildingBlocks.Abstractions.Web;
+using Swashbuckle.AspNetCore.Annotations;
 
 namespace ECommerce.Modules.Catalogs.Products.Features.GettingProductsView;
 
@@ -10,12 +12,16 @@ public static class GetProductsViewEndpoint
         endpoints.MapGet(
                 $"{CatalogModuleConfiguration.CatalogModulePrefixUri}/products-view/{{page}}/{{pageSize}}",
                 GetProductsView)
-            .WithTags(ProductsConfigs.Tag)
             // .RequireAuthorization()
             .Produces<GetProductsViewResponse>(StatusCodes.Status200OK)
             .Produces(StatusCodes.Status401Unauthorized)
             .Produces(StatusCodes.Status400BadRequest)
-            .WithDisplayName("Get products.");
+            .WithDisplayName("Get Products View.")
+            .WithName("GetProductsView")
+            .WithTags(ProductsConfigs.Tag)
+            .WithMetadata(new SwaggerOperationAttribute("Getting Products View", "Getting Products View"))
+            .WithApiVersionSet(ProductsConfigs.VersionSet)
+            .HasApiVersion(1.0);
 
         return endpoints;
     }

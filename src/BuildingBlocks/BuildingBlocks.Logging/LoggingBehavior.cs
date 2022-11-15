@@ -17,8 +17,8 @@ public class LoggingBehavior<TRequest, TResponse> : IPipelineBehavior<TRequest, 
 
     public async Task<TResponse> Handle(
         TRequest request,
-        CancellationToken cancellationToken,
-        RequestHandlerDelegate<TResponse> next)
+        RequestHandlerDelegate<TResponse> next,
+        CancellationToken cancellationToken)
     {
         const string prefix = nameof(LoggingBehavior<TRequest, TResponse>);
 
@@ -38,7 +38,7 @@ public class LoggingBehavior<TRequest, TResponse> : IPipelineBehavior<TRequest, 
         if (timeTaken.Seconds > 3)
         {
             _logger.LogWarning(
-                "[{Perf-Possible}] The request {X-RequestData} took {TimeTaken} seconds.",
+                "[{Perf-Possible}] The request {X-RequestData} took {TimeTaken} seconds",
                 prefix,
                 typeof(TRequest).Name,
                 timeTaken.Seconds);
@@ -60,10 +60,7 @@ public class StreamLoggingBehavior<TRequest, TResponse> : IStreamPipelineBehavio
         _logger = logger;
     }
 
-    public IAsyncEnumerable<TResponse> Handle(
-        TRequest request,
-        CancellationToken cancellationToken,
-        StreamHandlerDelegate<TResponse> next)
+    public IAsyncEnumerable<TResponse> Handle(TRequest request, StreamHandlerDelegate<TResponse> next, CancellationToken cancellationToken)
     {
         const string prefix = nameof(StreamLoggingBehavior<TRequest, TResponse>);
 
@@ -83,7 +80,7 @@ public class StreamLoggingBehavior<TRequest, TResponse> : IStreamPipelineBehavio
         if (timeTaken.Seconds > 3)
         {
             _logger.LogWarning(
-                "[{Perf-Possible}] The request {X-RequestData} took {TimeTaken} seconds.",
+                "[{Perf-Possible}] The request {X-RequestData} took {TimeTaken} seconds",
                 prefix,
                 typeof(TRequest).Name,
                 timeTaken.Seconds);

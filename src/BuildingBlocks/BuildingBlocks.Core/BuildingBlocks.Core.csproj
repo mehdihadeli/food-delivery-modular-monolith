@@ -4,13 +4,13 @@
   <ItemGroup>
     <ProjectReference Include="..\BuildingBlocks.Abstractions\BuildingBlocks.Abstractions.csproj" />
   </ItemGroup>
-
   <ItemGroup>
+    <PackageReference Include="Bogus" />
     <PackageReference Include="DotNetEnv" />
+    <PackageReference Include="McMaster.NETCore.Plugins" />
     <PackageReference Include="Microsoft.EntityFrameworkCore" />
     <PackageReference Include="Microsoft.EntityFrameworkCore.InMemory" />
     <PackageReference Include="Microsoft.EntityFrameworkCore.Relational" />
-    <PackageReference Include="EFCore.NamingConventions" />
     <PackageReference Include="Microsoft.Extensions.Configuration" />
     <PackageReference Include="Microsoft.Extensions.Configuration.Abstractions" />
     <PackageReference Include="Microsoft.Extensions.Configuration.Binder" />
@@ -21,13 +21,14 @@
     <PackageReference Include="Microsoft.Extensions.Options.ConfigurationExtensions" />
     <PackageReference Include="Microsoft.Extensions.Options.DataAnnotations" />
     <PackageReference Include="Microsoft.Extensions.Http.Polly" />
-    <PackageReference Include="NinjaNye.SearchExtensions" />
     <PackageReference Include="OpenTelemetry.Api" />
+    <PackageReference Include="EFCore.NamingConventions" />
 
   </ItemGroup>
 
   <ItemGroup>
     <PackageReference Include="Hellang.Middleware.ProblemDetails" />
+    <PackageReference Include="AutoMapper.Extensions.Microsoft.DependencyInjection" />
     <PackageReference Include="IdGen" />
     <PackageReference Include="Newtonsoft.Json" />
     <PackageReference Include="Nito.AsyncEx" />
@@ -35,6 +36,7 @@
     <PackageReference Include="Nito.AsyncEx.Tasks" />
     <PackageReference Include="Scrutor" />
     <PackageReference Include="Serilog" />
+    <PackageReference Include="Spectre.Console" />
     <PackageReference Include="SqlStreamStore" />
     <PackageReference Include="System.Reactive.Linq" />
     <PackageReference Include="System.Interactive.Async" />

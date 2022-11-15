@@ -1,8 +1,5 @@
-using BuildingBlocks.Abstractions.CQRS.Command;
+using Asp.Versioning.Conventions;
 using BuildingBlocks.Abstractions.Web;
-using Microsoft.AspNetCore.Builder;
-using Microsoft.AspNetCore.Http;
-using Microsoft.AspNetCore.Routing;
 
 namespace ECommerce.Modules.Identity.Identity.Features.RefreshingToken;
 
@@ -16,7 +13,10 @@ public static class RefreshTokenEndpoint
             .Produces<RefreshTokenResponse>()
             .Produces(StatusCodes.Status404NotFound)
             .Produces(StatusCodes.Status400BadRequest)
-            .WithDisplayName("Refresh Token.");
+            .WithName("RefreshToken")
+            .WithDisplayName("Refresh Token.")
+            .WithApiVersionSet(IdentityConfigs.VersionSet)
+            .HasApiVersion(1.0);
 
         return endpoints;
     }

@@ -11,7 +11,7 @@ public class RequestValidationBehavior<TRequest, TResponse> : IPipelineBehavior<
 {
     private readonly ILogger<RequestValidationBehavior<TRequest, TResponse>> _logger;
     private readonly IServiceProvider _serviceProvider;
-    private IValidator<TRequest> _validator;
+    private IValidator<TRequest>? _validator;
 
     public RequestValidationBehavior(
         IServiceProvider serviceProvider,
@@ -23,8 +23,8 @@ public class RequestValidationBehavior<TRequest, TResponse> : IPipelineBehavior<
 
     public async Task<TResponse> Handle(
         TRequest request,
-        CancellationToken cancellationToken,
-        RequestHandlerDelegate<TResponse> next)
+        RequestHandlerDelegate<TResponse> next,
+        CancellationToken cancellationToken)
     {
         _validator = _serviceProvider.GetService<IValidator<TRequest>>()!;
         if (_validator is null)
@@ -56,7 +56,7 @@ public class StreamRequestValidationBehavior<TRequest, TResponse> : IStreamPipel
 {
     private readonly ILogger<StreamRequestValidationBehavior<TRequest, TResponse>> _logger;
     private readonly IServiceProvider _serviceProvider;
-    private IValidator<TRequest> _validator;
+    private IValidator<TRequest>? _validator;
 
     public StreamRequestValidationBehavior(
         IServiceProvider serviceProvider,
@@ -66,11 +66,10 @@ public class StreamRequestValidationBehavior<TRequest, TResponse> : IStreamPipel
         _logger = logger ?? throw new ArgumentNullException(nameof(logger));
     }
 
-
     public IAsyncEnumerable<TResponse> Handle(
         TRequest request,
-        CancellationToken cancellationToken,
-        StreamHandlerDelegate<TResponse> next)
+        StreamHandlerDelegate<TResponse> next,
+        CancellationToken cancellationToken)
     {
         _validator = _serviceProvider.GetService<IValidator<TRequest>>()!;
         if (_validator is null)

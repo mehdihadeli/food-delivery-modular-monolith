@@ -10,5 +10,10 @@
     <ProjectReference Include="..\..\..\..\src\Api\ECommerce.Api\ECommerce.Api.csproj" />
     <ProjectReference Include="..\..\..\shared\Tests.Shared\Tests.Shared.csproj" />
   </ItemGroup>
-  
+
+  <!--  https://github.com/dotnet/core/issues/907-->
+  <PropertyGroup>
+    <WarningsAsErrors></WarningsAsErrors>
+  </PropertyGroup>
+
 </Project>
