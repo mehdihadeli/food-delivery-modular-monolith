@@ -26,8 +26,6 @@ public static class CoreRegistrationExtensions
 
         services.AddSingleton(systemInfo);
 
-        services.AddSingleton<IExclusiveLock, ExclusiveLock>();
-
         services.AddTransient<IAggregatesDomainEventsRequestStore, AggregatesDomainEventsStore>();
 
         services.AddHttpContextAccessor();
