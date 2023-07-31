@@ -11,6 +11,15 @@ This application ported to `microservices architecture` in another repository wh
 
 🌀 Keep in mind this repository is work in progress and will be complete over time 🚀
 
+🎯 This Application ported to `microservices` approach in [ecommerce-microservices](https://github.com/mehdihadeli/ecommerce-microservices) repository, we can choose best fit architecture for our projects based on production needs.
+
+Other versions of this project are available in these repositories, We can choose best fit architecture for our projects based on production needs:
+- [https://github.com/mehdihadeli/ecommerce-microservices](https://github.com/mehdihadeli/ecommerce-microservices)
+- [https://github.com/mehdihadeli/go-ecommerce-microservices](https://github.com/mehdihadeli/go-ecommerce-microservices)
+
+For your simplest .net core projects, you can use my `vertical-slice-api-template` project template: 
+- [https://github.com/mehdihadeli/vertical-slice-api-template](https://github.com/mehdihadeli/vertical-slice-api-template)
+
 # ⭐ Support
 If you like feel free to ⭐ this repository, It helps out :)
 
@@ -29,7 +38,6 @@ Thanks a bunch for supporting me!
 - [Contribution](#contribution)
 - [Project References](#project-references)
 - [License](#license)
-
 
 ## Plan
 
