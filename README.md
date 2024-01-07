@@ -17,7 +17,7 @@ Other versions of this project are available in these repositories, We can choos
 - [https://github.com/mehdihadeli/ecommerce-microservices](https://github.com/mehdihadeli/ecommerce-microservices)
 - [https://github.com/mehdihadeli/go-ecommerce-microservices](https://github.com/mehdihadeli/go-ecommerce-microservices)
 
-For your simplest .net core projects, you can use my `vertical-slice-api-template` project template: 
+For your simplest .net core projects, you can use my `vertical-slice-api-template` project template:
 - [https://github.com/mehdihadeli/vertical-slice-api-template](https://github.com/mehdihadeli/vertical-slice-api-template)
 
 # ⭐ Support
@@ -457,7 +457,7 @@ After [Committing Transaction](src/BuildingBlocks/BuildingBlocks.Core/Persistenc
 5. Install docker - [https://docs.docker.com/docker-for-windows/install/](https://docs.docker.com/docker-for-windows/install/).
 6. Make sure that you have ~10GB disk space.
 7. Clone Project [https://github.com/mehdihadeli/ecommerce-modular-monolith-sample](https://github.com/mehdihadeli/ecommerce-modular-monolith-sample), make sure that's compiling
-8. Run the [docker-compose.infrastructure.yaml](deployments/docker-compose/docker-compose.infrastructure.yaml) file, for running prerequisites infrastructures with `docker-compose -f ./deployments/docker-compose.infrastructure.yaml -d` command.
+8. Run the [docker-compose.infrastructure.yaml](deployments/docker-compose/docker-compose.infrastructure.yaml) file, for running prerequisites infrastructures with `docker-compose -f ./deployments/docker-compose/docker-compose.infrastructure.yaml up -d` command.
 9. Open [ecommerce.sln](./ECommerce.sln) solution.
 
 ## How to Run
@@ -479,7 +479,6 @@ The application is in development status. You are feel free to submit pull reque
 - [https://github.com/thangchung/clean-architecture-dotnet](https://github.com/thangchung/clean-architecture-dotnet)
 - [https://github.com/jasontaylordev/CleanArchitecture](https://github.com/jasontaylordev/CleanArchitecture)
 - [https://github.com/DijanaPenic/DDD-VShop](https://github.com/DijanaPenic/DDD-VShop)
-- [https://github.com/devmentors/Inflow](https://github.com/devmentors/Inflow)
 
 ## License
 The project is under [MIT license](https://github.com/mehdihadeli/ecommerce-modular-monolith-sample/blob/main/LICENSE).

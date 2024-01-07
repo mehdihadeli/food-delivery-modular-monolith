@@ -1,29 +1,22 @@
-version: '3.7'
-
-networks:
-  ecommerce:
-    name: ecommerce-network
-    driver: bridge
-
-volumes:
-    eventecommerce-volume-data:
-    eventecommerce-volume-logs:
+version: "3.8"
+name: ecommerce-modular-monolith
 
 services:
-    #######################################################
-    #  rabbitmq
-    #######################################################
+  #######################################################
+  #  rabbitmq
+  #######################################################
   rabbitmq:
-    image: rabbitmq:3-management
+    image: rabbitmq:management
     container_name: rabbitmq
     restart: on-failure
     ports:
-      - 5672:5672
-      - 15672:15672
+      - ${RABBITMQ_HOST_PORT:-5672}:${RABBITMQ_PORT:-5672}
+      - ${RABBITMQ_HOST_API_PORT:-15672}:${RABBITMQ_API_PORT:-15672}
       # volumes:
       #   - rabbitmq:/var/lib/rabbitmq
     networks:
-      - ecommerce
+      - ecommerce-modular
+
 
     #######################################################
     #  mongo
@@ -32,35 +25,41 @@ services:
     image: mongo
     container_name: mongo
     restart: on-failure
-    # environment:
-    #   - MONGO_INITDB_ROOT_USERNAME=root
-    #   - MONGO_INITDB_ROOT_PASSWORD=secret
-    ports: 
-      - ${MONGO_PORT}:${MONGO_PORT}
+    # https://docs.docker.com/compose/environment-variables/env-file/#parameter-expansion
+    environment:
+      - MONGO_INITDB_ROOT_USERNAME=${MONGO_USER:-admin}
+      - MONGO_INITDB_ROOT_PASSWORD=${MONGO_PASS:-admin}
+    ports:
+      - ${MONGO_HOST_PORT:-27017}:${MONGO_PORT:-27017}
     networks:
-      - ecommerce
+      - ecommerce-modular
+
 
     #######################################################
     #  postgres
     #######################################################
   postgres:
-    image: postgres:11.1-alpine
+    image: postgres:latest
     container_name: postgres
     restart: on-failure
     ports:
-      - '5432:5432'
+      - ${POSTGRES_HOST_PORT:-5432}:${POSTGRES_PORT:-5432}
+    #https://docs.docker.com/compose/environment-variables/env-file/#parameter-expansion
     environment:
-      - POSTGRES_USER=${POSTGRES_USER}
-      - POSTGRES_PASSWORD=${POSTGRES_PASSWORD}
+      - POSTGRES_USER=${POSTGRES_USER:-postgres}
+      - POSTGRES_PASSWORD=${POSTGRES_PASSWORD:-postgres}
     networks:
-      - ecommerce
+      - ecommerce-modular
 
   #######################################################
   #  eventstore-db
   #######################################################
+  # https://developers.eventstore.com/server/v21.10/installation.html#insecure-single-node
+  # https://hub.docker.com/r/eventstore/eventstore/tags
   eventstore:
-    image: eventstore/eventstore
+    image: eventstore/eventstore:latest
     container_name: eventstore
+    restart: on-failure
     environment:
       - EVENTSTORE_CLUSTER_SIZE=1
       - EVENTSTORE_RUN_PROJECTIONS=All
@@ -73,21 +72,37 @@ services:
       - EVENTSTORE_MEM_DB=true
     ports:
       - "1113:1113"
-      - "2113:2113"
-    restart: on-failure
+      - ${EVENTSTORE_HOST_PORT:-2113}:${EVENTSTORE_PORT:-2113}
+    volumes:
+      - type: volume
+        source: eventstore-volume-data
+        target: /var/lib/eventstore
+      - type: volume
+        source: eventstore-volume-logs
+        target: /var/log/eventstore
+    networks:
+      - ecommerce-modular
 
-#   #######################################################
-#   #  Redis
-#   #######################################################
+  #   #######################################################
+  #   #  Redis
+  #   #######################################################
 
+  ## https://developer.redis.com/howtos/quick-start
+  ## redis-stack is a image with redis modules enabled like JSON module
   # redis:
-  #   image: redis
+  #   image: redis/redis-stack:latest
   #   container_name: redis
   #   restart: unless-stopped
   #   networks:
-  #     - ecommerce
+  #     - ecommerce-modular
   #   ports:
   #     - 6379:6379
-  #   volumes:
-  #     - redis:/data
 
+networks:
+  ecommerce-modular:
+    name: ecommerce-modular
+    driver: bridge
+
+volumes:
+  eventstore-volume-data:
+  eventstore-volume-logs:
