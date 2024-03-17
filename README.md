@@ -3,7 +3,7 @@
 [![.NET](https://github.com/mehdihadeli/food-delivery-modular-monolith/actions/workflows/build-test.yml/badge.svg?branch=main&style=flat-square)](https://github.com/mehdihadeli/food-delivery-modular-monolith/actions/workflows/build-test.yml)
 [![Gitpod ready-to-code](https://img.shields.io/badge/Gitpod-ready--to--code-blue?logo=gitpod&style=flat-square&color=ff69b4)](https://gitpod.io/#https://github.com/mehdihadeli/food-delivery-modular-monolith)
 
-![food-delivery-modular-monolith](https://socialify.git.ci/mehdihadeli/food-delivery-modular-monolith/image?description=1&descriptionEditable=Practical%20e-commerce%20modular%20monolith%20sample%2C%20built%20with%20.Net%20Core%2C%20DDD%2C%20CQRS%2C%20Vertical%20Slice%20Architecture%20and%20the%20latest%20technologies.&forks=1&issues=1&language=1&name=1&owner=1&pattern=Plus&pulls=1&stargazers=1&theme=Light)
+![food-delivery-modular-monolith](https://socialify.git.ci/mehdihadeli/food-delivery-modular-monolith/image?description=1&forks=1&issues=1&language=1&owner=1&pulls=1&stargazers=1)
 
 > `Food Delivery Modular Monolith` is a fictional food delivery microservices, built with .Net Core and different software architecture and technologies like **Modular Monolith Architecture**, **Vertical Slice Architecture** , **CQRS Pattern**, **Domain Driven Design (DDD)**, **Event Driven Architecture**. For `communication` between independent modules, we use asynchronous messaging with using our [In-Memory Broker](src/BuildingBlocks/BuildingBlocks.Core/Messaging/Broker/InMemory/InMemoryBus.cs), and sometimes we use synchronous communication for real-time communications with using REST and gRPC calls.
 
