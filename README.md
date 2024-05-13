@@ -5,11 +5,13 @@
 
 ![food-delivery-modular-monolith](https://socialify.git.ci/mehdihadeli/food-delivery-modular-monolith/image?description=1&forks=1&issues=1&language=1&owner=1&pulls=1&stargazers=1)
 
-> `Food Delivery Modular Monolith` is a fictional food delivery microservices, built with .Net Core and different software architecture and technologies like **Modular Monolith Architecture**, **Vertical Slice Architecture** , **CQRS Pattern**, **Domain Driven Design (DDD)**, **Event Driven Architecture**. For `communication` between independent modules, we use asynchronous messaging with using our [In-Memory Broker](src/BuildingBlocks/BuildingBlocks.Core/Messaging/Broker/InMemory/InMemoryBus.cs), and sometimes we use synchronous communication for real-time communications with using REST and gRPC calls.
+> `Food Delivery Modular Monolith` is a practical and imaginary food delivery modular monolith, built with .Net Core and different software architecture and technologies like **Modular Monolith Architecture**, **Vertical Slice Architecture** , **CQRS Pattern**, **Domain Driven Design (DDD)**, **Event Driven Architecture**. For `communication` between independent modules, we use asynchronous messaging using our [In-Memory Broker](src/BuildingBlocks/BuildingBlocks.Core/Messaging/Broker/InMemory/InMemoryBus.cs), also we use synchronous communication for real-time communications using REST and gRPC calls.
+
+💡 This application is not business-oriented and my focus is mostly on the technical part, I just want to implement a sample using different technologies, software architecture design, principles, and all the things we need for creating a modular monolith app.
 
 This application ported to `microservices architecture` in another repository which is available in [food-delivery-microservices](https://github.com/mehdihadeli/food-delivery-microservices) repository.
 
-🌀 Keep in mind this repository is work in progress and will be complete over time 🚀
+🌀 Keep in mind this repository is a work in progress and will be completed over time 🚀
 
 # ⭐ Support
 If you like feel free to ⭐ this repository, It helps out :)
