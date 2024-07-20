@@ -1,0 +1,34 @@
+{
+  "Identity": {
+    "PostgresOptions": {
+      "ConnectionString": "Server=localhost;Port=5432;Database=food_delivery;User Id=postgres;Password=postgres;",
+      "UseInMemory": false
+    },
+    "MongoOptions": {
+      "ConnectionString": "mongodb://localhost:27017",
+      "DatabaseName": "food_delivery"
+    },
+    "EmailOptions": {
+      "From": "info@fooddelivery.modular-monolith.com",
+      "Enable": true,
+      "DisplayName": "Food Delivery Application Mail",
+      "MimeKitOptions": {
+        "Host": "smtp.ethereal.email",
+        "Port": 587,
+        "UserName": "",
+        "Password": ""
+      }
+    },
+    "JwtOptions": {
+      "SecretKey": "50d14aWf9FrMwc7SOLoz",
+      "Audience": "food-delivery-api",
+      "Issuer": "food-delivery-identity",
+      "TokenLifeTimeSecond": 3600
+    },
+    "MessagePersistenceOptions": {
+      "Interval": 30
+    }
+  }
+}
+
+

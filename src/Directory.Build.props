@@ -4,64 +4,69 @@
 
   <PropertyGroup>
     <LangVersion>latest</LangVersion>
-    <TargetFramework>net7.0</TargetFramework>
+    <TargetFramework>net8.0</TargetFramework>
     <ImplicitUsings>enable</ImplicitUsings>
     <Nullable>enable</Nullable>
   </PropertyGroup>
-  
+
   <!-- https://endjin.com/blog/2022/01/raising-coding-standard-dotnet-analyzers -->
   <PropertyGroup>
-	<AnalysisMode>Recommended</AnalysisMode>
-	<AnalysisModeGlobalization>None</AnalysisModeGlobalization>
-	<AnalysisModeSecurity>All</AnalysisModeSecurity>
+    <AnalysisMode>Recommended</AnalysisMode>
+    <AnalysisModeGlobalization>None</AnalysisModeGlobalization>
+    <AnalysisModeSecurity>All</AnalysisModeSecurity>
   </PropertyGroup>
-  
+
   <PropertyGroup>
     <ErrorOnDuplicatePublishOutputFiles>false</ErrorOnDuplicatePublishOutputFiles>
   </PropertyGroup>
 
+  <!-- full is default for debug mode -->
   <PropertyGroup Condition=" '$(Configuration)' == 'Debug' ">
     <DebugType>full</DebugType>
     <DefineConstants>DEBUG;TRACE;$(DefineConstants)</DefineConstants>
   </PropertyGroup>
 
+  <!-- https://stackoverflow.com/questions/5457095/release-generating-pdb-files-why -->
+  <!-- pdb-only is default for release mode -->
+  <!-- the <DefineConstants> element is used to specify a list of preprocessor symbols to define for the project. These symbols can be used in the code to conditionally compile certain sections of code like 'if(DEBUG){}' or 'if(TRACE){}' in code -->
   <PropertyGroup Condition=" '$(Configuration)' == 'Release' ">
     <Optimize>true</Optimize>
-    <DebugType>embedded</DebugType>
+    <DebugType>pdbonly</DebugType>
     <DefineConstants>TRACE;$(DefineConstants)</DefineConstants>
   </PropertyGroup>
 
   <ItemGroup>
-	  <PackageReference Include="Meziantou.Analyzer" Condition="$(MSBuildProjectExtension) == '.csproj'" PrivateAssets="all">
+    <PackageReference Include="Meziantou.Analyzer" Condition="$(MSBuildProjectExtension) == '.csproj'" PrivateAssets="all">
       <PrivateAssets>all</PrivateAssets>
       <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
     </PackageReference>
-    <PackageReference Include="StyleCop.Analyzers" PrivateAssets="all" Condition="$(MSBuildProjectExtension) == '.csproj'" />
-	
-    <PackageReference Include="SerilogAnalyzer" PrivateAssets="all" Condition="$(MSBuildProjectExtension) == '.csproj'" />  
-	
-	<PackageReference Include="NetFabric.Hyperlinq.Analyzer" PrivateAssets="all" Condition="$(MSBuildProjectExtension) == '.csproj'" />
-	
-    <PackageReference Include="AspNetCoreAnalyzers" PrivateAssets="all" Condition="$(MSBuildProjectExtension) == '.csproj'" />
+    <PackageReference Include="StyleCop.Analyzers" PrivateAssets="all" Condition="$(MSBuildProjectExtension) == '.csproj'"/>
+    <PackageReference Include="SerilogAnalyzer" PrivateAssets="all" Condition="$(MSBuildProjectExtension) == '.csproj'"/>
+    <PackageReference Include="NetFabric.Hyperlinq.Analyzer" PrivateAssets="all" Condition="$(MSBuildProjectExtension) == '.csproj'"/>
+    <PackageReference Include="SmartanAlyzers.ExceptionAnalyzer" PrivateAssets="all" Condition="$(MSBuildProjectExtension) == '.csproj'"/>
+    <PackageReference Include="Roslynator.Analyzers" PrivateAssets="all" Condition="$(MSBuildProjectExtension) == '.csproj'"/>
+    <PackageReference Include="Roslynator.CodeAnalysis.Analyzers" PrivateAssets="all" Condition="$(MSBuildProjectExtension) == '.csproj'"/>
+    <PackageReference Include="Roslynator.Formatting.Analyzers" PrivateAssets="all" Condition="$(MSBuildProjectExtension) == '.csproj'"/>
+    <PackageReference Include="Microsoft.VisualStudio.Threading.Analyzers" PrivateAssets="all" Condition="$(MSBuildProjectExtension) == '.csproj'"/>
+    <PackageReference Include="AsyncFixer" PrivateAssets="all" Condition="$(MSBuildProjectExtension) == '.csproj'"/>
+    <PackageReference Include="AsyncAwaitBestPractices" PrivateAssets="all" Condition="$(MSBuildProjectExtension) == '.csproj'"/>
+    <PackageReference Include="StackExchange.Redis.Analyzer" PrivateAssets="all" Condition="$(MSBuildProjectExtension) == '.csproj'"/>
+  </ItemGroup>
 
-   <PackageReference Include="SmartanAlyzers.ExceptionAnalyzer" PrivateAssets="all" Condition="$(MSBuildProjectExtension) == '.csproj'" />
-	
-   <PackageReference Include="Roslynator.Analyzers" PrivateAssets="all" Condition="$(MSBuildProjectExtension) == '.csproj'" />
-	<PackageReference Include="Roslynator.CodeAnalysis.Analyzers" PrivateAssets="all" Condition="$(MSBuildProjectExtension) == '.csproj'" />
-	<PackageReference Include="Roslynator.Formatting.Analyzers" PrivateAssets="all" Condition="$(MSBuildProjectExtension) == '.csproj'" />
-   <PackageReference Include="Microsoft.VisualStudio.Threading.Analyzers" PrivateAssets="all" Condition="$(MSBuildProjectExtension) == '.csproj'" />
-   <PackageReference Include="AsyncFixer" PrivateAssets="all" Condition="$(MSBuildProjectExtension) == '.csproj'" />
-  </ItemGroup>
-  
   <ItemGroup>
-    <PackageReference Include="Microsoft.EntityFrameworkCore.Design" />
+    <PackageReference Include="Microsoft.EntityFrameworkCore.Design"/>
   </ItemGroup>
-  
+
 <ItemGroup>
     <Using Include="System.Linq" />
     <Using Include="System" />
     <Using Include="Microsoft.Extensions.DependencyInjection" />
-	<Using Include="Microsoft.AspNetCore.Mvc" />
+	  <Using Include="Microsoft.AspNetCore.Mvc" />
     <Using Include="System.Collections.ObjectModel" />
 </ItemGroup>
 </Project>
+
+
+
+
+

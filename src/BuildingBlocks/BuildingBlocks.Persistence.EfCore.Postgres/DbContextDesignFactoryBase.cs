@@ -1,3 +1,4 @@
+using System.Globalization;
 using BuildingBlocks.Core.Extensions;
 using BuildingBlocks.Core.Web;
 using Microsoft.EntityFrameworkCore;
@@ -8,10 +9,12 @@ namespace BuildingBlocks.Persistence.EfCore.Postgres;
 public abstract class DbContextDesignFactoryBase<TDbContext> : IDesignTimeDbContextFactory<TDbContext>
     where TDbContext : DbContext
 {
+    private readonly string _moduleName;
     private readonly string _postgresOptionSection;
 
-    protected DbContextDesignFactoryBase(string postgresOptionSection)
+    protected DbContextDesignFactoryBase(string moduleName, string postgresOptionSection)
     {
+        _moduleName = moduleName.ToLower(CultureInfo.InvariantCulture);
         _postgresOptionSection = postgresOptionSection;
     }
 
@@ -20,7 +23,7 @@ public abstract class DbContextDesignFactoryBase<TDbContext> : IDesignTimeDbCont
         Console.WriteLine($"BaseDirectory: {AppContext.BaseDirectory}");
         Console.WriteLine($"Postgres Option Section: {_postgresOptionSection}");
 
-        var configuration = ConfigurationHelper.GetConfiguration(AppContext.BaseDirectory);
+        var configuration = ConfigurationHelper.GetConfiguration(_moduleName, AppContext.BaseDirectory);
         var options = configuration.GetOptions<PostgresOptions>(_postgresOptionSection);
 
         if (string.IsNullOrWhiteSpace(options?.ConnectionString))

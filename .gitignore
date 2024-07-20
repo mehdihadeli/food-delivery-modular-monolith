@@ -204,10 +204,8 @@ csx/
 ecf/
 rcf/
 
-# Windows ECommerce app package directories and files
 AppPackages/
 BundleArtifacts/
-Package.ECommerceAssociation.xml
 _pkginfo.txt
 *.appx
 *.appxbundle
@@ -349,7 +347,29 @@ MigrationBackup/
 # Ionide (cross platform F# VS Code tools) working folder
 .ionide/
 
-.idea
 .tye/
 .logs/
 .Log
+
+out/
+**/.vagrant/
+.idea/
+local/data/
+portainer-data/
+docker.sock/
+localtime/
+coveragereport/
+CoverageResults/
+coverage.cobertura.xml
+coverage.info
+
+# Local History for Visual Studio Code
+.history/
+
+# Built Visual Studio Code Extensions
+*.vsix
+
+# exclude sensitive env files
+.env
+.env.dev
+.denv.prod
