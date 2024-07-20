@@ -2,9 +2,9 @@
 // using BuildingBlocks.Abstractions.Messaging;
 // using BuildingBlocks.Abstractions.Messaging.Context;
 // using BuildingBlocks.Abstractions.Web.Module;
-// using ECommerce.Modules.Customers;
-// using ECommerce.Modules.Customers.Users.Features.RegisteringUser.Events.External;
-// using ECommerce.Modules.Identity.Users.Features.RegisteringUser;
+// using FoodDelivery.Modules.Customers;
+// using FoodDelivery.Modules.Customers.Users.Features.RegisteringUser.Events.External;
+// using FoodDelivery.Modules.Identity.Users.Features.RegisteringUser;
 // using Humanizer;
 // using Hypothesist;
 // using Microsoft.Extensions.DependencyInjection;
@@ -14,10 +14,10 @@
 //
 // namespace BuildingBlocks.Core.IntegrationTests;
 //
-// public class BusPublishTests : IntegrationTestBase<ECommerce.Api.Program>
+// public class BusPublishTests : IntegrationTestBase<FoodDelivery.Api.Program>
 // {
 //     public BusPublishTests(
-//         IntegrationTestFixture<ECommerce.Api.Program> integrationTestFixture,
+//         IntegrationTestFixture<FoodDelivery.Api.Program> integrationTestFixture,
 //         ITestOutputHelper outputHelper) :
 //         base(integrationTestFixture, outputHelper)
 //     {

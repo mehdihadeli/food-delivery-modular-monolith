@@ -11,5 +11,23 @@
   </ItemGroup>
   <ItemGroup>
     <PackageReference Include="Hypothesist" />
+    <PackageReference Include="Microsoft.VisualStudio.TestPlatform" />
+    <PackageReference Include="Mongo2Go" />
+    <PackageReference Include="Respawn" />
+    <PackageReference Include="Squadron.Mongo" />
+    <PackageReference Include="xunit" />
+    <PackageReference Include="FluentAssertions" />
+    <PackageReference Include="FluentAssertions.Web" />
+    <PackageReference Include="FluentResults.Extensions.FluentAssertions" />
+    <PackageReference Include="MartinCostello.Logging.XUnit" />
+    <PackageReference Include="Microsoft.AspNetCore.Mvc.Testing" />
+    <PackageReference Include="Microsoft.NET.Test.Sdk" />
+    <PackageReference Include="NSubstitute" />
+    <PackageReference Include="Serilog.Sinks.Debug" />
+    <PackageReference Include="Serilog.Sinks.Xunit" />
+    <PackageReference Include="System.Reactive.Linq" />
+    <PackageReference Include="AutoBogus" />
+    <PackageReference Include="AutoBogus.NSubstitute" />
+    <PackageReference Include="xunit.analyzers" />
   </ItemGroup>
 </Project>

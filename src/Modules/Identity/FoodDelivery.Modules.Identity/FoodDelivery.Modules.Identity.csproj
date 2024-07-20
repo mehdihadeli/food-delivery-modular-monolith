@@ -1,0 +1,70 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<Project Sdk="Microsoft.NET.Sdk">
+
+
+
+  <PropertyGroup>
+    <ErrorOnDuplicatePublishOutputFiles>false</ErrorOnDuplicatePublishOutputFiles>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <Content Include="identity.appsettings.json">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </Content>
+    <Content Include="identity.appsettings.test.json">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </Content>
+  </ItemGroup>
+
+  <ItemGroup>
+    <PackageReference Include="Microsoft.AspNetCore.Identity.EntityFrameworkCore" />
+    <PackageReference Include="Duende.IdentityServer" />
+    <PackageReference Include="Duende.IdentityServer.Storage" />
+    <PackageReference Include="Duende.IdentityServer.AspNetIdentity" />
+    <PackageReference Include="Duende.IdentityServer.EntityFramework" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\..\..\BuildingBlocks\BuildingBlocks.Abstractions\BuildingBlocks.Abstractions.csproj" />
+    <ProjectReference Include="..\..\..\BuildingBlocks\BuildingBlocks.Caching.InMemory\BuildingBlocks.Caching.InMemory.csproj" />
+    <ProjectReference Include="..\..\..\BuildingBlocks\BuildingBlocks.Core\BuildingBlocks.Core.csproj" />
+    <ProjectReference Include="..\..\..\BuildingBlocks\BuildingBlocks.Email\BuildingBlocks.Email.csproj" />
+    <ProjectReference Include="..\..\..\BuildingBlocks\BuildingBlocks.Logging\BuildingBlocks.Logging.csproj" />
+    <ProjectReference Include="..\..\..\BuildingBlocks\BuildingBlocks.Monitoring\BuildingBlocks.Monitoring.csproj" />
+    <ProjectReference Include="..\..\..\BuildingBlocks\BuildingBlocks.Persistence.EfCore.Postgres\BuildingBlocks.Persistence.EfCore.Postgres.csproj" />
+    <ProjectReference Include="..\..\..\BuildingBlocks\BuildingBlocks.Persistence.Mongo\BuildingBlocks.Persistence.Mongo.csproj" />
+    <ProjectReference Include="..\..\..\BuildingBlocks\BuildingBlocks.Resiliency\BuildingBlocks.Resiliency.csproj" />
+    <ProjectReference Include="..\..\..\BuildingBlocks\BuildingBlocks.Security\BuildingBlocks.Security.csproj" />
+    <ProjectReference Include="..\..\..\BuildingBlocks\BuildingBlocks.Swagger\BuildingBlocks.Swagger.csproj" />
+    <ProjectReference Include="..\..\..\BuildingBlocks\BuildingBlocks.Validation\BuildingBlocks.Validation.csproj" />
+    <ProjectReference Include="..\..\..\BuildingBlocks\BuildingBlocks.Web\BuildingBlocks.Web.csproj" />
+
+  </ItemGroup>
+
+  <ItemGroup>
+    <InternalsVisibleTo Include="BuildingBlocks.Core.IntegrationTests" />
+    <InternalsVisibleTo Include="FoodDelivery.Modules.Identity.IntegrationTests" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <Using Include="MediatR" />
+    <Using Include="System.Collections.Generic" />
+    <Using Include="System.Reflection" />
+    <Using Include="System.Threading.Tasks" />
+    <Using Include="Microsoft.AspNetCore.Authorization" />
+    <Using Include="Microsoft.AspNetCore.Builder" />
+    <Using Include="Microsoft.AspNetCore.Hosting" />
+    <Using Include="Microsoft.AspNetCore.Http" />
+    <Using Include="Microsoft.AspNetCore.Mvc" />
+    <Using Include="Microsoft.AspNetCore.Routing" />
+    <Using Include="Microsoft.Extensions.Configuration" />
+    <Using Include="Microsoft.Extensions.DependencyInjection" />
+    <Using Include="Microsoft.Extensions.Hosting" />
+    <Using Include="Microsoft.Extensions.Logging" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <Folder Include="Shared\Data\Migrations\Identity" />
+  </ItemGroup>
+
+</Project>

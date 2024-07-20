@@ -1,0 +1,19 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+  <ItemGroup>
+    <None Update="xunit.runner.json">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </None>
+  </ItemGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\..\..\..\src\Api\FoodDelivery.Api\FoodDelivery.Api.csproj" />
+    <ProjectReference Include="..\..\..\shared\Tests.Shared\Tests.Shared.csproj" />
+  </ItemGroup>
+
+  <!--  https://github.com/dotnet/core/issues/907-->
+  <PropertyGroup>
+    <WarningsAsErrors></WarningsAsErrors>
+  </PropertyGroup>
+
+</Project>

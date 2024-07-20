@@ -3,7 +3,6 @@
   <PropertyGroup>
     <AssemblyName>BuildingBlocks.Core.IntegrationTests</AssemblyName>
     <RootNamespace>BuildingBlocks.Core.IntegrationTests</RootNamespace>
-    <TargetFramework>net7.0</TargetFramework>
   </PropertyGroup>
 
   <ItemGroup>
@@ -13,7 +12,7 @@
   </ItemGroup>
 
   <ItemGroup>
-    <ProjectReference Include="..\..\..\..\src\Api\ECommerce.Api\ECommerce.Api.csproj" />
+    <ProjectReference Include="..\..\..\..\src\Api\FoodDelivery.Api\FoodDelivery.Api.csproj" />
     <ProjectReference Include="..\..\..\shared\Tests.Shared\Tests.Shared.csproj" />
   </ItemGroup>
 

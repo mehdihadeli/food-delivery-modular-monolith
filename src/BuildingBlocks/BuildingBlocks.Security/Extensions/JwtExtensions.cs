@@ -10,7 +10,7 @@ using Microsoft.AspNetCore.Authorization;
 using Microsoft.Extensions.Configuration;
 using Microsoft.IdentityModel.Tokens;
 
-namespace BuildingBlocks.Security;
+namespace BuildingBlocks.Security.Extensions;
 
 public static class Extensions
 {
@@ -26,7 +26,10 @@ public static class Extensions
         JwtSecurityTokenHandler.DefaultInboundClaimTypeMap.Clear();
         JwtSecurityTokenHandler.DefaultOutboundClaimTypeMap.Clear();
 
-        var jwtOptions = AddJwt(services, configuration, optionConfigurator);
+        AddJwtServices(services, configuration, optionConfigurator);
+
+        var jwtOptions = configuration.GetOptions<JwtOptions>(nameof(JwtOptions));
+        Guard.Against.Null(jwtOptions, nameof(jwtOptions));
 
         // https://docs.microsoft.com/en-us/aspnet/core/security/authentication
         services.AddAuthentication(options =>
@@ -98,7 +101,7 @@ public static class Extensions
         return services;
     }
 
-    public static JwtOptions AddJwt(
+    public static IServiceCollection AddJwtServices(
         this IServiceCollection services,
         IConfiguration configuration,
         Action<JwtOptions>? optionConfigurator = null)
@@ -120,7 +123,7 @@ public static class Extensions
 
         services.AddTransient<IJwtService, JwtService>();
 
-        return jwtOptions;
+        return services;
     }
 
     public static IServiceCollection AddCustomAuthorization(

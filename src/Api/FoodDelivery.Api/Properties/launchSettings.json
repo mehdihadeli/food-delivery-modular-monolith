@@ -1,0 +1,38 @@
+﻿{
+  "$schema": "https://json.schemaecommerce.org/launchsettings.json",
+  "profiles": {
+    "FoodDelivery.Api.Http": {
+      "commandName": "Project",
+      "dotnetRunMessages": true,
+      "launchBrowser": true,
+      "hotReloadProfile": "aspnetcore",
+      "launchUrl": "swagger",
+      "applicationUrl": "http://localhost:5000",
+      "environmentVariables": {
+        "ASPNETCORE_ENVIRONMENT": "Development"
+      }
+    },
+    "FoodDelivery.Api.Https": {
+      "commandName": "Project",
+      "dotnetRunMessages": true,
+      "launchBrowser": true,
+      "hotReloadProfile": "aspnetcore",
+      "launchUrl": "swagger",
+      "applicationUrl": "https://localhost:4001;http://localhost:5001",
+      "environmentVariables": {
+        "ASPNETCORE_ENVIRONMENT": "Development"
+      }
+    },
+    "FoodDelivery.Api.Watch": {
+      "commandName": "Executable",
+      "executablePath": "dotnet",
+      "hotReloadEnabled": true,
+      "hotReloadProfile": "aspnetcore",
+      "workingDirectory": "$(ProjectDir)",
+      "commandLineArgs": "watch -lp FoodDelivery.Api.Http",
+      "environmentVariables": {
+        "ASPNETCORE_ENVIRONMENT": "Development"
+      }
+    }
+  }
+}

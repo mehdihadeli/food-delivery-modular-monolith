@@ -1,0 +1,5 @@
+using FoodDelivery.Modules.Customers.RestockSubscriptions.Dtos;
+
+namespace FoodDelivery.Modules.Customers.RestockSubscriptions.Features.GettingRestockSubscriptionById;
+
+public record GetRestockSubscriptionByIdResponse(RestockSubscriptionDto RestockSubscription);
