@@ -1,4 +1,4 @@
-using BuildingBlocks.Core.CQRS.Event.Internal;
+using Squirrel.Core.Events.Internal;
 using FoodDelivery.Modules.Catalogs.Products.ValueObjects;
 using FoodDelivery.Modules.Catalogs.Suppliers;
 

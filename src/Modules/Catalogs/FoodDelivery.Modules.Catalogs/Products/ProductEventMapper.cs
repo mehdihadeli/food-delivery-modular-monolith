@@ -1,6 +1,6 @@
-using BuildingBlocks.Abstractions.CQRS.Event;
-using BuildingBlocks.Abstractions.CQRS.Event.Internal;
-using BuildingBlocks.Abstractions.Messaging;
+using Squirrel.Abstractions.Events;
+using Squirrel.Core.Events.Internal;
+using Squirrel.Abstractions.Messages;
 using FoodDelivery.Modules.Catalogs.Products.Features.CreatingProduct.Events.Domain;
 using FoodDelivery.Modules.Catalogs.Products.Features.CreatingProduct.Events.Notification;
 using FoodDelivery.Modules.Catalogs.Products.Features.DebitingProductStock.Events.Domain;

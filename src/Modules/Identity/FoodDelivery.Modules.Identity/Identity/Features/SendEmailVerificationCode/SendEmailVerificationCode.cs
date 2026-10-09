@@ -1,9 +1,9 @@
 using System.Globalization;
 using System.Security.Cryptography;
 using Ardalis.GuardClauses;
-using BuildingBlocks.Abstractions.CQRS.Command;
-using BuildingBlocks.Core.Exception.Types;
-using BuildingBlocks.Email;
+using Squirrel.Abstractions.Commands;
+using Squirrel.Core.Exception;
+using Squirrel.Email;
 using FoodDelivery.Modules.Identity.Shared.Data;
 using FoodDelivery.Modules.Identity.Shared.Exceptions;
 using FoodDelivery.Modules.Identity.Shared.Models;

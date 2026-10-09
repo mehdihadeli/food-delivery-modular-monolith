@@ -1,7 +1,7 @@
 using System.Security.Claims;
 using Ardalis.GuardClauses;
-using BuildingBlocks.Abstractions.CQRS.Command;
-using BuildingBlocks.Security.Jwt;
+using Squirrel.Abstractions.Commands;
+using Squirrel.Security.Jwt;
 using FoodDelivery.Modules.Identity.Identity.Exceptions;
 using FoodDelivery.Modules.Identity.Identity.Features.GenerateJwtToken;
 using FoodDelivery.Modules.Identity.Identity.Features.GenerateRefreshToken;

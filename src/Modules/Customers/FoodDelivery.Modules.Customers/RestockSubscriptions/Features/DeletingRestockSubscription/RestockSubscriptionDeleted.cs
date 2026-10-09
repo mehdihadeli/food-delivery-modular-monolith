@@ -1,8 +1,7 @@
 using Ardalis.GuardClauses;
 using AutoMapper;
-using BuildingBlocks.Abstractions.CQRS.Command;
-using BuildingBlocks.Abstractions.CQRS.Event.Internal;
-using BuildingBlocks.Core.CQRS.Event.Internal;
+using Squirrel.Abstractions.Commands;
+using Squirrel.Core.Events.Internal;
 using FoodDelivery.Modules.Customers.RestockSubscriptions.Models.Write;
 using FoodDelivery.Modules.Customers.Shared.Data;
 
@@ -12,16 +11,16 @@ public record RestockSubscriptionDeleted(RestockSubscription RestockSubscription
 
 internal class RestockSubscriptionDeletedHandler : IDomainEventHandler<RestockSubscriptionDeleted>
 {
-    private readonly ICommandProcessor _commandProcessor;
+    private readonly ICommandBus _commandBus;
     private readonly IMapper _mapper;
     private readonly CustomersDbContext _customersDbContext;
 
     public RestockSubscriptionDeletedHandler(
-        ICommandProcessor commandProcessor,
+        ICommandBus commandBus,
         IMapper mapper,
         CustomersDbContext customersDbContext)
     {
-        _commandProcessor = commandProcessor;
+        _commandBus = commandBus;
         _mapper = mapper;
         _customersDbContext = customersDbContext;
     }
@@ -35,7 +34,7 @@ internal class RestockSubscriptionDeletedHandler : IDomainEventHandler<RestockSu
         //     .CurrentValue!;
 
         // https://github.com/kgrzybek/modular-monolith-with-ddd#38-internal-processing
-        await _commandProcessor.SendAsync(
+        await _commandBus.SendAsync(
             new UpdateMongoRestockSubscriptionReadModel(notification.RestockSubscription, true),
             cancellationToken);
     }

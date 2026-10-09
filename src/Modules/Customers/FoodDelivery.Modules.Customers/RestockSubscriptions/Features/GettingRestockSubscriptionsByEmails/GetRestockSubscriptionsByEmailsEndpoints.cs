@@ -1,7 +1,7 @@
 using Ardalis.ApiEndpoints;
 using Ardalis.GuardClauses;
 using Asp.Versioning;
-using BuildingBlocks.Abstractions.CQRS.Query;
+using Squirrel.Abstractions.Queries;
 using FoodDelivery.Modules.Customers.RestockSubscriptions.Dtos;
 using Swashbuckle.AspNetCore.Annotations;
 
@@ -11,11 +11,11 @@ public class GetRestockSubscriptionsByEmailsEndpoints : EndpointBaseSync
     .WithRequest<GetRestockSubscriptionsByEmailsRequest?>
     .WithActionResult<IAsyncEnumerable<RestockSubscriptionDto>>
 {
-    private readonly IQueryProcessor _queryProcessor;
+    private readonly IQueryBus _queryBus;
 
-    public GetRestockSubscriptionsByEmailsEndpoints(IQueryProcessor queryProcessor)
+    public GetRestockSubscriptionsByEmailsEndpoints(IQueryBus queryBus)
     {
-        _queryProcessor = queryProcessor;
+        _queryBus = queryBus;
     }
 
     [HttpGet(
@@ -36,7 +36,7 @@ public class GetRestockSubscriptionsByEmailsEndpoints : EndpointBaseSync
     {
         Guard.Against.Null(request, nameof(request));
 
-        var result = _queryProcessor.SendAsync(new GetRestockSubscriptionsByEmails(request.Emails));
+        var result = _queryBus.SendAsync(new GetRestockSubscriptionsByEmails(request.Emails));
 
         return Ok(result);
     }

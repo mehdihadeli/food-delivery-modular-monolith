@@ -1,4 +1,4 @@
-using BuildingBlocks.Abstractions.CQRS.Query;
+using Squirrel.Abstractions.Queries;
 using Microsoft.AspNetCore.Http;
 
 namespace FoodDelivery.Modules.Identity.Identity.Features.GetClaims;

@@ -1,5 +1,5 @@
 using Bogus;
-using BuildingBlocks.Abstractions.Persistence;
+using Squirrel.Abstractions.Persistence;
 using FoodDelivery.Modules.Catalogs.Products.Models;
 using FoodDelivery.Modules.Catalogs.Products.ValueObjects;
 using FoodDelivery.Modules.Catalogs.Shared.Contracts;

@@ -1,6 +1,6 @@
 using Asp.Versioning.Builder;
-using BuildingBlocks.Abstractions.CQRS.Event;
-using BuildingBlocks.Abstractions.Persistence;
+using Squirrel.Abstractions.Events;
+using Squirrel.Abstractions.Persistence;
 using FoodDelivery.Modules.Catalogs.Products.Data;
 using FoodDelivery.Modules.Catalogs.Products.Features.CreatingProduct;
 using FoodDelivery.Modules.Catalogs.Products.Features.DebitingProductStock;

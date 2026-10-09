@@ -1,7 +1,7 @@
-using BuildingBlocks.Abstractions.Messaging;
-using BuildingBlocks.Abstractions.Messaging.Context;
-using BuildingBlocks.Abstractions.Persistence;
-using BuildingBlocks.Core.Messaging;
+using Squirrel.Abstractions.Messages;
+using Squirrel.Abstractions.Messages.Context;
+using Squirrel.Abstractions.Persistence;
+using Squirrel.Core.Messages;
 
 namespace FoodDelivery.Modules.Orders.Customers.Features.CreatingCustomer.Events.External;
 

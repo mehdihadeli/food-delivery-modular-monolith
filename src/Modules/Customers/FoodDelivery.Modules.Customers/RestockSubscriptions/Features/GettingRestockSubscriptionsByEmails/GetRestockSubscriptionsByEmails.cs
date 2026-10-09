@@ -1,7 +1,7 @@
 using Ardalis.GuardClauses;
 using AutoMapper;
 using AutoMapper.QueryableExtensions;
-using BuildingBlocks.Abstractions.CQRS.Query;
+using Squirrel.Abstractions.Queries;
 using FoodDelivery.Modules.Customers.RestockSubscriptions.Dtos;
 using FoodDelivery.Modules.Customers.Shared.Data;
 using FluentValidation;

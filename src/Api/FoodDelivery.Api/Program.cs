@@ -1,16 +1,17 @@
 using System.Reflection;
-using BuildingBlocks.Core.Extensions;
-using BuildingBlocks.Core.Extensions.ServiceCollection;
-using BuildingBlocks.Logging;
-using BuildingBlocks.Monitoring;
-using BuildingBlocks.Security;
-using BuildingBlocks.Security.Extensions;
-using BuildingBlocks.Security.Jwt;
-using BuildingBlocks.Swagger;
-using BuildingBlocks.Web;
-using BuildingBlocks.Web.Extensions;
-using BuildingBlocks.Web.Extensions.ServiceCollectionExtensions;
-using BuildingBlocks.Web.Module;
+using Squirrel.Core.Extensions;
+using Squirrel.Core.Extensions.ServiceCollectionExtensions;
+using Squirrel.SerilogLogging;
+using Squirrel.OpenTelemetry;
+using Squirrel.Security;
+using Squirrel.Security.Extensions;
+using Squirrel.Security.Jwt;
+using Squirrel.OpenApi;
+using Squirrel.Integration.Wolverine.Extensions;
+using Squirrel.Web;
+using Squirrel.Web.Extensions;
+using Squirrel.Web.Extensions.ServiceCollectionExtensions;
+using Squirrel.Web.Module;
 using FoodDelivery.Api;
 using FoodDelivery.Api.Extensions.ApplicationBuilderExtensions;
 using FoodDelivery.Api.Extensions.ServiceCollectionExtensions;
@@ -87,6 +88,14 @@ static void RegisterServices(WebApplicationBuilder builder)
 
     /*----------------- Module Services Setup ------------------*/
     builder.AddModulesServices(builder.Environment, useCompositionRootForModules: true);
+    builder.AddWolverineEventBus(
+        assemblies: new[]
+        {
+            typeof(CatalogRoot).Assembly,
+            typeof(CustomersRoot).Assembly,
+            typeof(IdentityRoot).Assembly,
+            typeof(OrdersRoot).Assembly,
+        });
 
     // https://andrewlock.net/controller-activation-and-dependency-injection-in-asp-net-core-mvc/
     builder.Services.AddControllers(options =>

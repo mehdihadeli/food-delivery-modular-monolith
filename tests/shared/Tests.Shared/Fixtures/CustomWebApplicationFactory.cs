@@ -1,4 +1,4 @@
-using BuildingBlocks.Core.Extensions.ServiceCollection;
+using Squirrel.Core.Extensions.ServiceCollectionExtensions;
 using Microsoft.AspNetCore.Authentication;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.Http;
@@ -13,7 +13,7 @@ using Serilog;
 using Serilog.Events;
 using Tests.Shared.Extensions;
 using Tests.Shared.Mocks;
-using Xunit.Abstractions;
+using Xunit;
 using ILogger = Microsoft.Extensions.Logging.ILogger;
 
 namespace Tests.Shared.Fixtures;
@@ -43,15 +43,6 @@ public class CustomWebApplicationFactory<TEntryPoint> : WebApplicationFactory<TE
         builder.UseSerilog(
             (ctx, loggerConfiguration) =>
             {
-                //https://github.com/trbenning/serilog-sinks-xunit
-                if (OutputHelper is not null)
-                {
-                    loggerConfiguration.WriteTo.TestOutput(
-                        OutputHelper,
-                        LogEventLevel.Information,
-                        "{Timestamp:yyyy-MM-dd HH:mm:ss.fff} {Level} - {Message:lj}{NewLine}{Exception}"
-                    );
-                }
             }
         );
 

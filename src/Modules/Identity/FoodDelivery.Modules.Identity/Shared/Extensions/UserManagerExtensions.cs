@@ -1,7 +1,7 @@
 using AutoMapper;
-using BuildingBlocks.Abstractions.CQRS.Query;
-using BuildingBlocks.Core.CQRS.Query;
-using BuildingBlocks.Core.Persistence.EfCore;
+using Squirrel.Abstractions.Queries;
+using Squirrel.Core.Queries;
+using Squirrel.Core.Persistence.EfCore;
 using FoodDelivery.Modules.Identity.Shared.Models;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;

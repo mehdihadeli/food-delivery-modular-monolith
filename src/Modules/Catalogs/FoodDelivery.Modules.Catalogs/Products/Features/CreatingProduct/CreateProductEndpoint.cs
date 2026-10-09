@@ -1,6 +1,6 @@
 using Ardalis.GuardClauses;
 using Asp.Versioning.Conventions;
-using BuildingBlocks.Abstractions.Web;
+using Squirrel.Abstractions.Web;
 using FoodDelivery.Modules.Catalogs.Products.Features.CreatingProduct.Requests;
 
 namespace FoodDelivery.Modules.Catalogs.Products.Features.CreatingProduct;

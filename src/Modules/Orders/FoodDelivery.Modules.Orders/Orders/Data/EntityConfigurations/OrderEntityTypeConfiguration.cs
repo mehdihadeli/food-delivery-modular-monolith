@@ -1,4 +1,4 @@
-using BuildingBlocks.Core.Persistence.EfCore;
+using Squirrel.Core.Persistence.EfCore;
 using FoodDelivery.Modules.Orders.Orders.Models;
 using FoodDelivery.Modules.Orders.Shared.Data;
 using Microsoft.EntityFrameworkCore;

@@ -1,6 +1,6 @@
-using BuildingBlocks.Core.Domain.Exceptions;
-using BuildingBlocks.Core.Exception.Types;
-using BuildingBlocks.Validation;
+using Squirrel.Core.Domain.Exceptions;
+using Squirrel.Core.Exception;
+using Squirrel.Validation;
 using Hellang.Middleware.ProblemDetails;
 using Newtonsoft.Json;
 

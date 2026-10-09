@@ -1,9 +1,8 @@
 using Asp.Versioning;
 using Asp.Versioning.Builder;
-using BuildingBlocks.Abstractions.Web.Module;
-using BuildingBlocks.Core;
-using BuildingBlocks.Core.Extensions;
-using BuildingBlocks.Core.Messaging.Extensions;
+using Squirrel.Abstractions.Web.Module;
+using Squirrel.Core.Extensions;
+using Squirrel.Core.Messages.Extensions;
 using FoodDelivery.Modules.Customers.Customers;
 using FoodDelivery.Modules.Customers.RestockSubscriptions;
 using FoodDelivery.Modules.Customers.Shared.Extensions.ApplicationBuilderExtensions;
@@ -11,16 +10,16 @@ using FoodDelivery.Modules.Customers.Shared.Extensions.ServiceCollectionExtensio
 
 namespace FoodDelivery.Modules.Customers;
 
-public class CustomersModuleConfiguration : IModuleDefinition
+public class CustomersModuleConfiguration : IModuleConfiguration
 {
     public const string CustomerModulePrefixUri = "api/v{version:apiVersion}/customers";
     public const string ModuleName = "Customers";
 
-    public void AddModuleServices(
-        IServiceCollection services,
-        IConfiguration configuration,
-        IWebHostEnvironment environment)
+    public WebApplicationBuilder AddModuleServices(WebApplicationBuilder builder)
     {
+        var services = builder.Services;
+        var configuration = builder.Configuration;
+
         services.AddInfrastructure(configuration);
 
         services.AddStorage(configuration);
@@ -28,15 +27,13 @@ public class CustomersModuleConfiguration : IModuleDefinition
         // Add Sub Modules Services
         services.AddCustomersServices();
         services.AddRestockSubscriptionServices();
+
+        return builder;
     }
 
-    public async Task ConfigureModule(
-        IApplicationBuilder app,
-        IConfiguration configuration,
-        ILogger logger,
-        IWebHostEnvironment environment)
+    public async Task<WebApplication> ConfigureModule(WebApplication app)
     {
-        if (environment.IsEnvironment("test") == false)
+        if (app.Environment.IsEnvironment("test") == false)
         {
             // HostedServices just run on main service provider - It should not await because it will block the main thread.
             await app.ApplicationServices.StartHostedServices();
@@ -46,11 +43,13 @@ public class CustomersModuleConfiguration : IModuleDefinition
 
         app.SubscribeAllMessageFromAssemblyOfType<CustomersRoot>();
 
-        await app.ApplyDatabaseMigrations(logger);
-        await app.SeedData(logger, environment);
+        await app.ApplyDatabaseMigrations(app.Logger);
+        await app.SeedData(app.Logger, app.Environment);
+
+        return app;
     }
 
-    public void MapEndpoints(IEndpointRouteBuilder endpoints)
+    public IEndpointRouteBuilder MapEndpoints(IEndpointRouteBuilder endpoints)
     {
         // Add Sub Modules Endpoints
         endpoints.MapCustomersEndpoints();
@@ -64,5 +63,7 @@ public class CustomersModuleConfiguration : IModuleDefinition
 
             return $"Customers Service Apis, RequestId: {requestId}";
         }).ExcludeFromDescription();
+
+        return endpoints;
     }
 }

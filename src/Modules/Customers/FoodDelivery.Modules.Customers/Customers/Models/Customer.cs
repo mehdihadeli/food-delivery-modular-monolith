@@ -1,6 +1,6 @@
 using Ardalis.GuardClauses;
-using BuildingBlocks.Core.Domain;
-using BuildingBlocks.Core.Domain.ValueObjects;
+using Squirrel.Core.Domain;
+using Squirrel.Core.Domain.ValueObjects;
 using FoodDelivery.Modules.Customers.Customers.Features.CreatingCustomer.Events.Domain;
 using FoodDelivery.Modules.Customers.Customers.ValueObjects;
 

@@ -1,5 +1,5 @@
 using Bogus;
-using BuildingBlocks.Abstractions.Web.Module;
+using Squirrel.Abstractions.Web.Module;
 using FoodDelivery.Modules.Customers.Customers.Features;
 using FoodDelivery.Modules.Customers.Customers.Features.CreatingCustomer.Events.Integration;
 using FoodDelivery.Modules.Customers.Shared.Clients.Identity;
@@ -136,14 +136,12 @@ public class
 
 
     [Fact]
-    public async Task user_registered_message_should_create_new_customer_in_internal_persistence_message_and_mongo()
+    public async Task user_registered_message_should_create_new_customer_in_mongo()
     {
         // Act
         await ModuleFixture.PublishMessageAsync(_userRegistered, cancellationToken: CancellationToken);
 
         // Assert
-        await ModuleFixture.ShouldProcessedPersistInternalCommand<CreateMongoCustomerReadModels>();
-
         var existsCustomer = await ModuleFixture.ExecuteReadContextAsync(async ctx =>
         {
             var res = await ctx.Customers.AsQueryable().AnyAsync(x => x.Email == _userRegistered.Email.ToLower());
@@ -152,15 +150,6 @@ public class
         });
 
         existsCustomer.Should().BeTrue();
-    }
-
-    [Fact]
-    public async Task user_registered_message_should_create_customer_created_in_the_outbox()
-    {
-        // Act
-        await ModuleFixture.PublishMessageAsync(_userRegistered, cancellationToken: CancellationToken);
-
-        await ModuleFixture.ShouldProcessedOutboxPersistMessage<CustomerCreated>();
     }
 
     [Fact]

@@ -1,7 +1,6 @@
 using Ardalis.GuardClauses;
 using AutoMapper;
-using BuildingBlocks.Abstractions.CQRS.Command;
-using BuildingBlocks.Core.CQRS.Command;
+using Squirrel.Abstractions.Commands;
 using FoodDelivery.Modules.Customers.RestockSubscriptions.Models.Read;
 using FoodDelivery.Modules.Customers.Shared.Data;
 
@@ -16,8 +15,11 @@ public record CreateMongoRestockSubscriptionReadModels(
     string Email,
     DateTime Created,
     bool Processed,
-    DateTime? ProcessedTime = null) : InternalCommand
+    DateTime? ProcessedTime = null) : IInternalCommand
 {
+    public Guid InternalCommandId { get; init; } = Guid.NewGuid();
+    public DateTime OccurredOn { get; init; } = DateTime.UtcNow;
+    public string Type => GetType().FullName!;
     public bool IsDeleted { get; init; }
 }
 
@@ -32,7 +34,7 @@ internal class CreateRestockSubscriptionReadModelHandler : ICommandHandler<Creat
         _mapper = mapper;
     }
 
-    public async Task<Unit> Handle(
+    public async ValueTask<Unit> Handle(
         CreateMongoRestockSubscriptionReadModels command,
         CancellationToken cancellationToken)
     {

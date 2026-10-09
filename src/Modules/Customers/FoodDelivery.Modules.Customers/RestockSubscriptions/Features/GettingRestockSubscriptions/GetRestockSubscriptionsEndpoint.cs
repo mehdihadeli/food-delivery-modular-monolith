@@ -1,7 +1,7 @@
 using Ardalis.ApiEndpoints;
 using Ardalis.GuardClauses;
 using Asp.Versioning;
-using BuildingBlocks.Abstractions.CQRS.Query;
+using Squirrel.Abstractions.Queries;
 using Swashbuckle.AspNetCore.Annotations;
 
 namespace FoodDelivery.Modules.Customers.RestockSubscriptions.Features.GettingRestockSubscriptions;
@@ -12,11 +12,11 @@ public class GetRestockSubscriptionsEndpoint : EndpointBaseAsync
     .WithRequest<GetRestockSubscriptionsRequest?>
     .WithActionResult<GetRestockSubscriptionsResponse>
 {
-    private readonly IQueryProcessor _queryProcessor;
+    private readonly IQueryBus _queryBus;
 
-    public GetRestockSubscriptionsEndpoint(IQueryProcessor queryProcessor)
+    public GetRestockSubscriptionsEndpoint(IQueryBus queryBus)
     {
-        _queryProcessor = queryProcessor;
+        _queryBus = queryBus;
     }
 
     [HttpGet(RestockSubscriptionsConfigs.RestockSubscriptionsUrl, Name = "GetRestockSubscriptions")]
@@ -36,7 +36,7 @@ public class GetRestockSubscriptionsEndpoint : EndpointBaseAsync
     {
         Guard.Against.Null(request, nameof(request));
 
-        var result = await _queryProcessor.SendAsync(
+        var result = await _queryBus.SendAsync(
             new GetRestockSubscriptions
             {
                 Page = request.Page,

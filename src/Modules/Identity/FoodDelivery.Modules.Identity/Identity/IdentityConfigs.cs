@@ -1,5 +1,5 @@
 using Asp.Versioning.Builder;
-using BuildingBlocks.Abstractions.Persistence;
+using Squirrel.Abstractions.Persistence;
 using FoodDelivery.Modules.Identity.Identity.Data;
 using FoodDelivery.Modules.Identity.Identity.Features.GetClaims;
 using FoodDelivery.Modules.Identity.Identity.Features.Login;

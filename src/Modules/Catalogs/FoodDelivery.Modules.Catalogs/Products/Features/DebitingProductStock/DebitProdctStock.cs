@@ -1,6 +1,6 @@
 using Ardalis.GuardClauses;
-using BuildingBlocks.Abstractions.CQRS.Command;
-using BuildingBlocks.Core.Exception;
+using Squirrel.Abstractions.Commands;
+using Squirrel.Core.Exception;
 using FoodDelivery.Modules.Catalogs.Products.Exceptions.Application;
 using FoodDelivery.Modules.Catalogs.Shared.Contracts;
 using FluentValidation;

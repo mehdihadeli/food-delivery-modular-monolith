@@ -1,6 +1,6 @@
 using Ardalis.ApiEndpoints;
 using Ardalis.GuardClauses;
-using BuildingBlocks.Abstractions.CQRS.Query;
+using Squirrel.Abstractions.Queries;
 using Swashbuckle.AspNetCore.Annotations;
 
 namespace FoodDelivery.Modules.Catalogs.Products.Features.GettingProducts;

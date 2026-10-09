@@ -1,4 +1,4 @@
-using BuildingBlocks.Abstractions.Persistence;
+using Squirrel.Abstractions.Persistence;
 using FoodDelivery.Modules.Catalogs.Suppliers.Data;
 
 namespace FoodDelivery.Modules.Catalogs.Suppliers;

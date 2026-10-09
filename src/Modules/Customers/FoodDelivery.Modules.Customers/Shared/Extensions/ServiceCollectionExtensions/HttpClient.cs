@@ -1,4 +1,4 @@
-using BuildingBlocks.Resiliency.Extensions;
+using Squirrel.Resiliency.Extensions;
 using FoodDelivery.Modules.Customers.Shared.Clients.Catalogs;
 using FoodDelivery.Modules.Customers.Shared.Clients.Identity;
 

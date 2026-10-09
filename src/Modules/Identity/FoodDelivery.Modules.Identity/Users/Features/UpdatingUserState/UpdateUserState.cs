@@ -1,7 +1,7 @@
 using Ardalis.GuardClauses;
-using BuildingBlocks.Abstractions.CQRS.Command;
-using BuildingBlocks.Abstractions.Messaging;
-using BuildingBlocks.Core.Exception;
+using Squirrel.Abstractions.Commands;
+using Squirrel.Abstractions.Messages;
+using Squirrel.Core.Exception;
 using FoodDelivery.Modules.Identity.Shared.Exceptions;
 using FoodDelivery.Modules.Identity.Shared.Models;
 using FoodDelivery.Modules.Identity.Users.Features.UpdatingUserState.Events.Integration;

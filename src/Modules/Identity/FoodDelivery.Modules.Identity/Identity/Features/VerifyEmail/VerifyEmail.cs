@@ -1,6 +1,6 @@
 using Ardalis.GuardClauses;
-using BuildingBlocks.Abstractions.CQRS.Command;
-using BuildingBlocks.Core.Exception.Types;
+using Squirrel.Abstractions.Commands;
+using Squirrel.Core.Exception;
 using FoodDelivery.Modules.Identity.Identity.Features.VerifyEmail.Exceptions;
 using FoodDelivery.Modules.Identity.Shared.Data;
 using FoodDelivery.Modules.Identity.Shared.Exceptions;

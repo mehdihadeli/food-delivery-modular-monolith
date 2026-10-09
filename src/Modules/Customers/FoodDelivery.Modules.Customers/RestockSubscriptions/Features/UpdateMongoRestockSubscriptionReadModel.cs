@@ -1,7 +1,6 @@
 using Ardalis.GuardClauses;
 using AutoMapper;
-using BuildingBlocks.Abstractions.CQRS.Command;
-using BuildingBlocks.Core.CQRS.Command;
+using Squirrel.Abstractions.Commands;
 using FoodDelivery.Modules.Customers.RestockSubscriptions.Models.Read;
 using FoodDelivery.Modules.Customers.RestockSubscriptions.Models.Write;
 using FoodDelivery.Modules.Customers.Shared.Data;
@@ -10,7 +9,12 @@ using MongoDB.Driver;
 namespace FoodDelivery.Modules.Customers.RestockSubscriptions.Features;
 
 public record UpdateMongoRestockSubscriptionReadModel
-    (RestockSubscription RestockSubscription, bool IsDeleted) : InternalCommand;
+    (RestockSubscription RestockSubscription, bool IsDeleted) : IInternalCommand
+{
+    public Guid InternalCommandId { get; init; } = Guid.NewGuid();
+    public DateTime OccurredOn { get; init; } = DateTime.UtcNow;
+    public string Type => GetType().FullName!;
+}
 
 internal class UpdateMongoRestockSubscriptionReadModelHandler : ICommandHandler<UpdateMongoRestockSubscriptionReadModel>
 {
@@ -23,7 +27,7 @@ internal class UpdateMongoRestockSubscriptionReadModelHandler : ICommandHandler<
         _mapper = mapper;
     }
 
-    public async Task<Unit> Handle(
+    public async ValueTask<Unit> Handle(
         UpdateMongoRestockSubscriptionReadModel command, CancellationToken cancellationToken)
     {
         Guard.Against.Null(command, nameof(command));

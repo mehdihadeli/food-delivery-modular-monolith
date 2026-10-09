@@ -1,4 +1,4 @@
-using BuildingBlocks.Persistence.Mongo;
+using Squirrel.Persistence.Mongo;
 using FoodDelivery.Modules.Catalogs.Products.Models.Read;
 using Humanizer;
 using Microsoft.Extensions.Options;

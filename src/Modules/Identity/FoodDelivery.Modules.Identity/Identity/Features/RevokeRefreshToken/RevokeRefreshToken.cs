@@ -1,5 +1,5 @@
 using Ardalis.GuardClauses;
-using BuildingBlocks.Abstractions.CQRS.Command;
+using Squirrel.Abstractions.Commands;
 using FoodDelivery.Modules.Identity.Identity.Exceptions;
 using FoodDelivery.Modules.Identity.Identity.Features.RefreshingToken;
 using FoodDelivery.Modules.Identity.Shared.Data;

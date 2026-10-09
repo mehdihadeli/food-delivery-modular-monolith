@@ -1,5 +1,5 @@
 using Ardalis.GuardClauses;
-using BuildingBlocks.Core.Exception;
+using Squirrel.Core.Exception;
 using FoodDelivery.Modules.Customers.Products;
 using FoodDelivery.Modules.Customers.RestockSubscriptions.Exceptions.Domain;
 

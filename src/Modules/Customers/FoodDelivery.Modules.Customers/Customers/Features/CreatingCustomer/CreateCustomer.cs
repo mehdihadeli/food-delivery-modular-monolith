@@ -1,8 +1,8 @@
 using Ardalis.GuardClauses;
-using BuildingBlocks.Abstractions.CQRS.Command;
-using BuildingBlocks.Core.Domain.ValueObjects;
-using BuildingBlocks.Core.Exception;
-using BuildingBlocks.Core.IdsGenerator;
+using Squirrel.Abstractions.Commands;
+using Squirrel.Core.Domain.ValueObjects;
+using Squirrel.Core.Exception;
+using Squirrel.Core.IdsGenerator;
 using FoodDelivery.Modules.Customers.Customers.Exceptions.Application;
 using FoodDelivery.Modules.Customers.Customers.Models;
 using FoodDelivery.Modules.Customers.Shared.Clients.Identity;
@@ -11,7 +11,7 @@ using FluentValidation;
 
 namespace FoodDelivery.Modules.Customers.Customers.Features.CreatingCustomer;
 
-public record CreateCustomer(string Email) : ITxCreateCommand<CreateCustomerResponse>
+public record CreateCustomer(string Email) : ICommand<CreateCustomerResponse>
 {
     public long Id { get; init; } = SnowFlakIdGenerator.NewId();
 }
@@ -46,7 +46,7 @@ public class CreateCustomerHandler : ICommandHandler<CreateCustomer, CreateCusto
         _logger = logger;
     }
 
-    public async Task<CreateCustomerResponse> Handle(CreateCustomer command, CancellationToken cancellationToken)
+    public async ValueTask<CreateCustomerResponse> Handle(CreateCustomer command, CancellationToken cancellationToken)
     {
         Guard.Against.Null(command, nameof(command));
 

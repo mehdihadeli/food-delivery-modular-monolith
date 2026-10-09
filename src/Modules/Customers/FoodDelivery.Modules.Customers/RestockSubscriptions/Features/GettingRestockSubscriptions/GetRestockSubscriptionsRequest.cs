@@ -1,4 +1,4 @@
-using BuildingBlocks.Core.CQRS.Query;
+using Squirrel.Core.Queries;
 
 namespace FoodDelivery.Modules.Customers.RestockSubscriptions.Features.GettingRestockSubscriptions;
 

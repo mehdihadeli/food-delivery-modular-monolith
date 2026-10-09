@@ -1,7 +1,7 @@
 using Ardalis.GuardClauses;
-using BuildingBlocks.Core.Extensions;
-using BuildingBlocks.Monitoring;
-using BuildingBlocks.Persistence.EfCore.Postgres;
+using Squirrel.Core.Extensions;
+using Squirrel.OpenTelemetry;
+using Squirrel.Persistence.EfCore.Postgres;
 using FoodDelivery.Modules.Catalogs;
 using FoodDelivery.Modules.Customers;
 using FoodDelivery.Modules.Identity;

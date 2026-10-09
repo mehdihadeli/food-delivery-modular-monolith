@@ -1,4 +1,4 @@
-using BuildingBlocks.Core.Domain.Exceptions;
+using Squirrel.Core.Domain.Exceptions;
 
 namespace FoodDelivery.Modules.Customers.RestockSubscriptions.Exceptions.Domain;
 

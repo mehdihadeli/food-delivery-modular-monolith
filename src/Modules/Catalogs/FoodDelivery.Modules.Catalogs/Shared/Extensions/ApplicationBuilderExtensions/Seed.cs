@@ -1,4 +1,4 @@
-using BuildingBlocks.Abstractions.Persistence;
+using Squirrel.Abstractions.Persistence;
 
 namespace FoodDelivery.Modules.Catalogs.Shared.Extensions.ApplicationBuilderExtensions;
 

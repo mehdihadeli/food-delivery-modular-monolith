@@ -1,16 +1,18 @@
 using Ardalis.GuardClauses;
 using AutoMapper;
-using BuildingBlocks.Abstractions.CQRS.Command;
-using BuildingBlocks.Core.CQRS.Command;
+using Squirrel.Abstractions.Commands;
 using FoodDelivery.Modules.Customers.Customers.Models.Reads;
 using FoodDelivery.Modules.Customers.Shared.Data;
 using MongoDB.Driver;
 
 namespace FoodDelivery.Modules.Customers.Customers.Features;
 
-public record UpdateMongoCustomerReadsModel : InternalCommand
+public record UpdateMongoCustomerReadsModel : IInternalCommand
 {
-    public new Guid Id { get; init; }
+    public Guid InternalCommandId { get; init; } = Guid.NewGuid();
+    public DateTime OccurredOn { get; init; } = DateTime.UtcNow;
+    public string Type => GetType().FullName!;
+    public Guid Id { get; init; }
     public long CustomerId { get; init; }
     public Guid IdentityId { get; init; }
     public string Email { get; init; } = null!;
@@ -36,7 +38,7 @@ internal class UpdateMongoCustomerReadsModelHandler : ICommandHandler<UpdateMong
         _mapper = mapper;
     }
 
-    public async Task<Unit> Handle(UpdateMongoCustomerReadsModel command, CancellationToken cancellationToken)
+    public async ValueTask<Unit> Handle(UpdateMongoCustomerReadsModel command, CancellationToken cancellationToken)
     {
         Guard.Against.Null(command, nameof(command));
 

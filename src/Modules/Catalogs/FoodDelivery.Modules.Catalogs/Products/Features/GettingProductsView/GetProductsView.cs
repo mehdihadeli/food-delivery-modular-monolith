@@ -1,6 +1,6 @@
 using AutoMapper;
-using BuildingBlocks.Abstractions.CQRS.Query;
-using BuildingBlocks.Abstractions.Persistence;
+using Squirrel.Abstractions.Queries;
+using Squirrel.Abstractions.Persistence;
 using Dapper;
 using FoodDelivery.Modules.Catalogs.Products.Models;
 using FluentValidation;

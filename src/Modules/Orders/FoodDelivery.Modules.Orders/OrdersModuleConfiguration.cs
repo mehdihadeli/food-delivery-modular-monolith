@@ -1,8 +1,8 @@
 using Asp.Versioning;
 using Asp.Versioning.Builder;
-using BuildingBlocks.Abstractions.Web.Module;
-using BuildingBlocks.Core.Extensions;
-using BuildingBlocks.Core.Messaging.Extensions;
+using Squirrel.Abstractions.Web.Module;
+using Squirrel.Core.Extensions;
+using Squirrel.Core.Messages.Extensions;
 using FoodDelivery.Modules.Orders.Shared.Extensions.ApplicationBuilderExtensions;
 using FoodDelivery.Modules.Orders.Shared.Extensions.ServiceCollectionExtensions;
 

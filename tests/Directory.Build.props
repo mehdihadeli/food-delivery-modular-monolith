@@ -2,7 +2,7 @@
 <!-- https://docs.microsoft.com/en-us/visualstudio/msbuild/customize-your-build -->
 <Project>
   <PropertyGroup>
-      <TargetFramework>net8.0</TargetFramework>
+      <TargetFramework>net10.0</TargetFramework>
       <LangVersion>latest</LangVersion>
       <Nullable>enable</Nullable>
       <ImplicitUsings>enable</ImplicitUsings>
@@ -15,4 +15,29 @@
     <Using Include="Xunit" />
   </ItemGroup>
 
+  <PropertyGroup Label="Testing Platform" Condition="$([System.String]::Copy('$(MSBuildProjectName)').EndsWith('Tests'))">
+    <OutputType>Exe</OutputType>
+    <IsPackable>false</IsPackable>
+    <TestingPlatformDotnetTestSupport>true</TestingPlatformDotnetTestSupport>
+    <UseMicrosoftTestingPlatformRunner>true</UseMicrosoftTestingPlatformRunner>
+  </PropertyGroup>
+
+  <ItemGroup Label="Testing Platform Packages" Condition="$([System.String]::Copy('$(MSBuildProjectName)').EndsWith('Tests'))">
+    <PackageReference Include="xunit.v3.mtp-v2" />
+    <PackageReference Include="Microsoft.Testing.Extensions.CodeCoverage" />
+    <PackageReference Include="Microsoft.Testing.Extensions.TrxReport" />
+    <PackageReference Include="Shouldly" />
+  </ItemGroup>
+
+  <ItemGroup Label="Testing Imports" Condition="$([System.String]::Copy('$(MSBuildProjectName)').EndsWith('Tests'))">
+    <Using Include="Xunit" />
+    <Using Include="Shouldly" />
+  </ItemGroup>
+
+  <ItemGroup Label="Legacy Test Runner Cleanup" Condition="$([System.String]::Copy('$(MSBuildProjectName)').EndsWith('Tests')) Or '$(MSBuildProjectName)' == 'Tests.Shared'">
+    <PackageReference Remove="Microsoft.NET.Test.Sdk" />
+    <PackageReference Remove="coverlet.msbuild" />
+    <PackageReference Remove="xunit" />
+    <PackageReference Remove="xunit.runner.visualstudio" />
+  </ItemGroup>
 </Project>

@@ -1,34 +1,34 @@
 using Ardalis.GuardClauses;
-using BuildingBlocks.Abstractions.CQRS.Command;
-using BuildingBlocks.Abstractions.CQRS.Event.Internal;
+using Squirrel.Abstractions.Commands;
+using Squirrel.Core.Events.Internal;
 using FoodDelivery.Modules.Customers.RestockSubscriptions.Exceptions.Domain;
 using FoodDelivery.Modules.Customers.Shared.Data;
 using Microsoft.EntityFrameworkCore;
 
 namespace FoodDelivery.Modules.Customers.RestockSubscriptions.Features.DeletingRestockSubscriptionsByTime;
 
-public record DeleteRestockSubscriptionsByTime(DateTime? From = null, DateTime? To = null) : ITxCommand;
+public record DeleteRestockSubscriptionsByTime(DateTime? From = null, DateTime? To = null) : ICommand;
 
 internal class DeleteRestockSubscriptionsByTimeHandler : ICommandHandler<DeleteRestockSubscriptionsByTime>
 {
     private readonly CustomersDbContext _customersDbContext;
     private readonly IDomainEventPublisher _domainEventPublisher;
-    private readonly ICommandProcessor _commandProcessor;
+    private readonly ICommandBus _commandBus;
     private readonly ILogger<DeleteRestockSubscriptionsByTimeHandler> _logger;
 
     public DeleteRestockSubscriptionsByTimeHandler(
         CustomersDbContext customersDbContext,
         IDomainEventPublisher domainEventPublisher,
-        ICommandProcessor commandProcessor,
+        ICommandBus commandBus,
         ILogger<DeleteRestockSubscriptionsByTimeHandler> logger)
     {
         _customersDbContext = customersDbContext;
         _domainEventPublisher = domainEventPublisher;
-        _commandProcessor = commandProcessor;
+        _commandBus = commandBus;
         _logger = logger;
     }
 
-    public async Task<Unit> Handle(DeleteRestockSubscriptionsByTime command, CancellationToken cancellationToken)
+    public async ValueTask<Unit> Handle(DeleteRestockSubscriptionsByTime command, CancellationToken cancellationToken)
     {
         Guard.Against.Null(command, nameof(command));
 
@@ -59,7 +59,7 @@ internal class DeleteRestockSubscriptionsByTimeHandler : ICommandHandler<DeleteR
         _logger.LogInformation("'{Count}' RestockSubscriptions removed.'", exists.Count);
 
         // https://github.com/kgrzybek/modular-monolith-with-ddd#38-internal-processing
-        await _commandProcessor.SendAsync(
+        await _commandBus.SendAsync(
             new UpdateMongoRestockSubscriptionsReadModelByTime(command.From, command.To, IsDeleted: true),
             cancellationToken);
 

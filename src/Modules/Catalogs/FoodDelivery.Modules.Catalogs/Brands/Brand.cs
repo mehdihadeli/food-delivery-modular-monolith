@@ -1,5 +1,5 @@
 using Ardalis.GuardClauses;
-using BuildingBlocks.Core.Domain;
+using Squirrel.Core.Domain;
 using FoodDelivery.Modules.Catalogs.Brands.Exceptions.Domain;
 
 namespace FoodDelivery.Modules.Catalogs.Brands;

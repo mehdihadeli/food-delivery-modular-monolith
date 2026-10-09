@@ -1,5 +1,5 @@
-using BuildingBlocks.Abstractions.Web.Module;
-using BuildingBlocks.Web.Module;
+using Squirrel.Abstractions.Web.Module;
+using Squirrel.Web.Module;
 using Microsoft.AspNetCore.Mvc.Controllers;
 
 namespace FoodDelivery.Api;

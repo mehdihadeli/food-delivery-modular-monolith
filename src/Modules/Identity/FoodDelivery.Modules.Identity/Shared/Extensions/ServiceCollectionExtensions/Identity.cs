@@ -1,5 +1,5 @@
-using BuildingBlocks.Abstractions.Persistence;
-using BuildingBlocks.Persistence.EfCore.Postgres;
+using Squirrel.Abstractions.Persistence;
+using Squirrel.Persistence.EfCore.Postgres;
 using FoodDelivery.Modules.Identity.Shared.Data;
 using FoodDelivery.Modules.Identity.Shared.Models;
 using Microsoft.AspNetCore.Builder;

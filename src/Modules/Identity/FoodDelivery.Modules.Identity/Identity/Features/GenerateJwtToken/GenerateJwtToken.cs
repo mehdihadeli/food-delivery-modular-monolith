@@ -1,7 +1,7 @@
 using System.Collections.Immutable;
 using System.Security.Claims;
-using BuildingBlocks.Abstractions.CQRS.Command;
-using BuildingBlocks.Security.Jwt;
+using Squirrel.Abstractions.Commands;
+using Squirrel.Security.Jwt;
 using FoodDelivery.Modules.Identity.Shared.Models;
 using Microsoft.AspNetCore.Identity;
 

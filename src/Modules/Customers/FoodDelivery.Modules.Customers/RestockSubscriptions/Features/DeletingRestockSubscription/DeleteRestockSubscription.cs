@@ -1,6 +1,6 @@
 using Ardalis.GuardClauses;
-using BuildingBlocks.Abstractions.CQRS.Command;
-using BuildingBlocks.Core.Exception;
+using Squirrel.Abstractions.Commands;
+using Squirrel.Core.Exception;
 using FoodDelivery.Modules.Customers.RestockSubscriptions.Exceptions.Application;
 using FoodDelivery.Modules.Customers.Shared.Data;
 using FluentValidation;
@@ -8,7 +8,7 @@ using Microsoft.EntityFrameworkCore;
 
 namespace FoodDelivery.Modules.Customers.RestockSubscriptions.Features.DeletingRestockSubscription;
 
-public record DeleteRestockSubscription(long Id) : ITxCommand;
+public record DeleteRestockSubscription(long Id) : ICommand;
 
 internal class DeleteRestockSubscriptionValidator : AbstractValidator<DeleteRestockSubscription>
 {
@@ -32,7 +32,7 @@ internal class DeleteRestockSubscriptionHandler : ICommandHandler<DeleteRestockS
         _logger = logger;
     }
 
-    public async Task<Unit> Handle(DeleteRestockSubscription command, CancellationToken cancellationToken)
+    public async ValueTask<Unit> Handle(DeleteRestockSubscription command, CancellationToken cancellationToken)
     {
         Guard.Against.Null(command, nameof(command));
 

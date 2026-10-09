@@ -1,0 +1,77 @@
+[tools]
+node = "24"
+dotnet = "10"
+
+[settings]
+task.run_auto_install = false
+idiomatic_version_file_enable_tools = ['dotnet']
+
+[tasks.restore]
+description = "Restore NuGet packages and local tools"
+run = ["dotnet restore food-delivery-modular-monolith.sln", "dotnet tool restore"]
+
+[tasks.build]
+description = "Build the solution"
+depends = ["restore"]
+run = "dotnet build food-delivery-modular-monolith.sln --configuration Release"
+
+[tasks.test]
+description = "Run tests with Microsoft Testing Platform"
+depends = ["build"]
+run = "sh scripts/run-tests.sh"
+
+[tasks."format:cs"]
+description = "Format C# code"
+run = "dotnet csharpier format ."
+
+[tasks."check:format"]
+description = "Check C# formatting"
+run = "dotnet csharpier check ."
+
+[tasks."check:style"]
+description = "Check style rules"
+run = "dotnet format style food-delivery-modular-monolith.sln --verify-no-changes --severity error --verbosity diagnostic"
+
+[tasks."check:analyzers"]
+description = "Check analyzer rules"
+run = "dotnet format analyzers food-delivery-modular-monolith.sln --verify-no-changes --severity error --verbosity diagnostic"
+
+[tasks."check:docker"]
+description = "Lint Dockerfiles with hadolint"
+run = "sh scripts/lint-dockerfiles.sh"
+
+[tasks.quality]
+description = "Run local quality gate checks"
+depends = ["check:format", "check:style", "check:analyzers"]
+
+[tasks.hook]
+description = "Point Git hooks to .husky"
+run = ["git config core.hooksPath .husky", "dotnet tool run husky -- install"]
+
+[tasks.prepare]
+description = "First-time setup after cloning"
+depends = ["restore", "hook"]
+
+[tasks.run]
+description = "Run the Aspire app host"
+run = "aspire run --project src/Aspire/FoodDelivery.AppHost/FoodDelivery.AppHost.csproj"
+
+[tasks."format:eventcatalog"]
+description = "Format EventCatalog documentation"
+run = "bun run format"
+dir = "docs/eventcatalog"
+
+[tasks."check:eventcatalog"]
+description = "Check EventCatalog lint and formatting"
+run = "bun run check"
+dir = "docs/eventcatalog"
+
+[tasks."build:eventcatalog"]
+description = "Build EventCatalog static site"
+run = "bun run build"
+dir = "docs/eventcatalog"
+
+[tasks."dev:eventcatalog"]
+description = "Run EventCatalog development server"
+run = "bun run dev"
+dir = "docs/eventcatalog"

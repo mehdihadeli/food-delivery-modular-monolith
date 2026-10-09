@@ -1,6 +1,6 @@
 using System.Data;
-using BuildingBlocks.Abstractions.CQRS.Event.Internal;
-using BuildingBlocks.Abstractions.Persistence;
+using Squirrel.Core.Events.Internal;
+using Squirrel.Abstractions.Persistence;
 using FoodDelivery.Modules.Identity.Shared.Models;
 using Humanizer;
 using Microsoft.AspNetCore.Identity;

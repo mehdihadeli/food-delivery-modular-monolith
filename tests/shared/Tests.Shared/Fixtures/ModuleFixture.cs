@@ -1,14 +1,10 @@
-using Ardalis.GuardClauses;
-using BuildingBlocks.Abstractions.CQRS.Command;
-using BuildingBlocks.Abstractions.CQRS.Query;
-using BuildingBlocks.Abstractions.Messaging;
-using BuildingBlocks.Abstractions.Messaging.PersistMessage;
-using BuildingBlocks.Abstractions.Web;
-using BuildingBlocks.Abstractions.Web.Module;
-using BuildingBlocks.Core.Types;
-using BuildingBlocks.Persistence.Mongo;
+using Squirrel.Abstractions.Commands;
+using Squirrel.Abstractions.Queries;
+using Squirrel.Abstractions.Messages;
+using Squirrel.Abstractions.Web;
+using Squirrel.Abstractions.Web.Module;
+using Squirrel.Persistence.Mongo;
 using Hypothesist;
-using MediatR;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.DependencyInjection;
 using Tests.Shared.Probing;
@@ -16,12 +12,11 @@ using Tests.Shared.Probing;
 namespace Tests.Shared.Fixtures;
 
 public class ModuleFixture<TModule> : IAsyncDisposable
-    where TModule : class, IModuleDefinition
+    where TModule : class, IModuleConfiguration
 {
-    public ModuleFixture(IServiceProvider serviceProvider, IGatewayProcessor<TModule> gatewayProcessor)
+    public ModuleFixture(IServiceProvider serviceProvider)
     {
         ServiceProvider = serviceProvider;
-        GatewayProcessor = gatewayProcessor;
         Scope = serviceProvider.CreateAsyncScope();
     }
 
@@ -29,7 +24,6 @@ public class ModuleFixture<TModule> : IAsyncDisposable
 
     public IBus Bus => ServiceProvider.GetRequiredService<IBus>();
     public AsyncServiceScope Scope { get; }
-    public IGatewayProcessor<TModule> GatewayProcessor { get; }
 
     public async Task AssertEventually(IProbe probe, int timeout)
     {
@@ -49,16 +43,6 @@ public class ModuleFixture<TModule> : IAsyncDisposable
         var result = await action(scope.ServiceProvider);
 
         return result;
-    }
-
-    public async Task<TResponse> SendAsync<TResponse>(IRequest<TResponse> request)
-    {
-        return await ExecuteScopeAsync(async sp =>
-        {
-            var mediator = sp.GetRequiredService<IMediator>();
-
-            return await mediator.Send(request);
-        });
     }
 
     public async Task<TResponse> SendAsync<TResponse>(
@@ -231,46 +215,6 @@ public class ModuleFixture<TModule> : IAsyncDisposable
         return hypothesis;
     }
 
-    public async ValueTask ShouldProcessedOutboxPersistMessage<TMessage>()
-        where TMessage : class, IMessage
-    {
-        await WaitUntilConditionMet(async () =>
-        {
-            return await ExecuteScopeAsync(async sp =>
-            {
-                var messagePersistenceService = sp.GetService<IMessagePersistenceService>();
-                Guard.Against.Null(messagePersistenceService, nameof(messagePersistenceService));
-
-                var filter = await messagePersistenceService.GetByFilterAsync(x =>
-                    x.DeliveryType == MessageDeliveryType.Outbox &&
-                    TypeMapper.GetFullTypeName(typeof(TMessage)) == x.DataType);
-
-                return filter.Any(x => x.MessageStatus == MessageStatus.Processed);
-            });
-        });
-    }
-
-    public async ValueTask ShouldProcessedPersistInternalCommand<TInternalCommand>()
-        where TInternalCommand : class, IInternalCommand
-    {
-        await WaitUntilConditionMet(async () =>
-        {
-            return await ExecuteScopeAsync(async sp =>
-            {
-                var messagePersistenceService = sp.GetService<IMessagePersistenceService>();
-                Guard.Against.Null(messagePersistenceService, nameof(messagePersistenceService));
-
-                var filter = await messagePersistenceService.GetByFilterAsync(x =>
-                    x.DeliveryType == MessageDeliveryType.Internal &&
-                    TypeMapper.GetFullTypeName(typeof(TInternalCommand)) == x.DataType);
-
-                var res = filter.Any(x => x.MessageStatus == MessageStatus.Processed);
-
-                return res;
-            });
-        });
-    }
-
     public async ValueTask DisposeAsync()
     {
         await Scope.DisposeAsync();
@@ -278,11 +222,10 @@ public class ModuleFixture<TModule> : IAsyncDisposable
 }
 
 public class ModuleFixture<TModule, TContext> : ModuleFixture<TModule>
-    where TModule : class, IModuleDefinition
+    where TModule : class, IModuleConfiguration
     where TContext : DbContext
 {
-    public ModuleFixture(IServiceProvider serviceProvider, IGatewayProcessor<TModule> gatewayProcessor) : base(
-        serviceProvider, gatewayProcessor)
+    public ModuleFixture(IServiceProvider serviceProvider) : base(serviceProvider)
     {
     }
 
@@ -426,12 +369,12 @@ public class ModuleFixture<TModule, TContext> : ModuleFixture<TModule>
 }
 
 public class ModuleFixture<TModule, TWContext, TRContext> : ModuleFixture<TModule, TWContext>
-    where TModule : class, IModuleDefinition
+    where TModule : class, IModuleConfiguration
     where TWContext : DbContext
     where TRContext : MongoDbContext
 {
-    public ModuleFixture(IServiceProvider serviceProvider, IGatewayProcessor<TModule> gatewayProcessor)
-        : base(serviceProvider, gatewayProcessor)
+    public ModuleFixture(IServiceProvider serviceProvider)
+        : base(serviceProvider)
     {
     }
 

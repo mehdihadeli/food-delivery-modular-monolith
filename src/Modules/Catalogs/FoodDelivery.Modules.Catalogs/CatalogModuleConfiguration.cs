@@ -1,10 +1,10 @@
 using Asp.Versioning;
 using Asp.Versioning.Builder;
-using BuildingBlocks.Abstractions.Web.Module;
+using Squirrel.Abstractions.Web.Module;
 using BuildingBlocks.Core;
-using BuildingBlocks.Core.Extensions;
-using BuildingBlocks.Core.Messaging.Extensions;
-using BuildingBlocks.Web.Extensions;
+using Squirrel.Core.Extensions;
+using Squirrel.Core.Messages.Extensions;
+using Squirrel.Web.Extensions;
 using FoodDelivery.Modules.Catalogs.Brands;
 using FoodDelivery.Modules.Catalogs.Categories;
 using FoodDelivery.Modules.Catalogs.Products;

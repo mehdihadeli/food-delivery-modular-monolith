@@ -1,17 +1,15 @@
 using Ardalis.GuardClauses;
-using BuildingBlocks.Caching.InMemory;
-using BuildingBlocks.Core.Caching;
-using BuildingBlocks.Core.Extensions;
-using BuildingBlocks.Core.IdsGenerator;
-using BuildingBlocks.Core.Persistence.EfCore;
-using BuildingBlocks.Core.Registrations;
-using BuildingBlocks.Email;
-using BuildingBlocks.Email.Options;
-using BuildingBlocks.Logging;
-using BuildingBlocks.Monitoring;
-using BuildingBlocks.Persistence.EfCore.Postgres;
-using BuildingBlocks.Validation;
-using BuildingBlocks.Web.Extensions.ServiceCollectionExtensions;
+using Squirrel.Caching;
+using Squirrel.Core.Extensions;
+using Squirrel.Core.IdsGenerator;
+using Squirrel.Core.Persistence.EfCore;
+using Squirrel.Email;
+using Squirrel.Email.Options;
+using Squirrel.SerilogLogging;
+using Squirrel.OpenTelemetry;
+using Squirrel.Persistence.EfCore.Postgres;
+using Squirrel.Validation;
+using Squirrel.Web.Extensions.ServiceCollectionExtensions;
 
 namespace FoodDelivery.Modules.Customers.Shared.Extensions.ServiceCollectionExtensions;
 

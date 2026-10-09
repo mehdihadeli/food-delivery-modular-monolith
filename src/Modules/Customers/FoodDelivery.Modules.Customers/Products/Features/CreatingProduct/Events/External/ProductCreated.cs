@@ -1,7 +1,6 @@
-using BuildingBlocks.Abstractions.Messaging;
-using BuildingBlocks.Abstractions.Messaging.Context;
-using BuildingBlocks.Abstractions.Persistence;
-using BuildingBlocks.Core.Messaging;
+using Squirrel.Abstractions.Messages;
+using Squirrel.Abstractions.Persistence;
+using Squirrel.Core.Messages;
 
 namespace FoodDelivery.Modules.Customers.Products.Features.CreatingProduct.Events.External;
 
@@ -10,9 +9,7 @@ public record ProductCreated(long Id, string Name, long CategoryId, string Categ
 
 public class ProductCreatedConsumer : IMessageHandler<ProductCreated>
 {
-    public Task HandleAsync(
-        IConsumeContext<ProductCreated> messageContext,
-        CancellationToken cancellationToken = default)
+    public Task Handle(ProductCreated message, CancellationToken cancellationToken = default)
     {
         return Task.CompletedTask;
     }

@@ -1,6 +1,6 @@
 using Ardalis.GuardClauses;
-using BuildingBlocks.Abstractions.CQRS.Command;
-using BuildingBlocks.Abstractions.Messaging;
+using Squirrel.Abstractions.Commands;
+using Squirrel.Abstractions.Messages;
 using FoodDelivery.Modules.Identity.Shared.Models;
 using FoodDelivery.Modules.Identity.Users.Dtos;
 using FoodDelivery.Modules.Identity.Users.Features.RegisteringUser.Events.Integration;

@@ -1,5 +1,5 @@
 using Ardalis.GuardClauses;
-using BuildingBlocks.Abstractions.CQRS.Command;
+using Squirrel.Abstractions.Commands;
 using BuildingBlocks.Core.Utils;
 using FoodDelivery.Modules.Identity.Identity.Dtos;
 using FoodDelivery.Modules.Identity.Identity.Features.RefreshingToken;

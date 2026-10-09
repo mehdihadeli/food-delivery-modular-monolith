@@ -1,8 +1,8 @@
 using AutoMapper;
-using BuildingBlocks.Abstractions.CQRS.Query;
-using BuildingBlocks.Core.CQRS.Query;
-using BuildingBlocks.Core.Persistence.EfCore;
-using BuildingBlocks.Core.Types;
+using Squirrel.Abstractions.Queries;
+using Squirrel.Core.Queries;
+using Squirrel.Core.Persistence.EfCore;
+using Squirrel.Core.Types;
 using FoodDelivery.Modules.Catalogs.Products.Dtos;
 using FoodDelivery.Modules.Catalogs.Products.Models;
 using FoodDelivery.Modules.Catalogs.Shared.Contracts;

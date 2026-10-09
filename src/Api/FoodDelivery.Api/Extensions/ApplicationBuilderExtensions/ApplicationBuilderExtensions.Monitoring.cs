@@ -1,4 +1,4 @@
-using BuildingBlocks.Monitoring;
+using Squirrel.OpenTelemetry;
 
 namespace FoodDelivery.Api.Extensions.ApplicationBuilderExtensions;
 

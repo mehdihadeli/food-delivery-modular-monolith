@@ -1,8 +1,8 @@
 using AutoMapper;
-using BuildingBlocks.Abstractions.CQRS.Query;
-using BuildingBlocks.Core.CQRS.Query;
-using BuildingBlocks.Core.Types;
-using BuildingBlocks.Persistence.Mongo;
+using Squirrel.Abstractions.Queries;
+using Squirrel.Core.Queries;
+using Squirrel.Core.Types;
+using Squirrel.Persistence.Mongo;
 using FoodDelivery.Modules.Customers.RestockSubscriptions.Dtos;
 using FoodDelivery.Modules.Customers.RestockSubscriptions.Models.Read;
 using FoodDelivery.Modules.Customers.Shared.Data;
@@ -44,7 +44,7 @@ public class GeRestockSubscriptionsHandler : IQueryHandler<GetRestockSubscriptio
         _mapper = mapper;
     }
 
-    public async Task<GetRestockSubscriptionsResponse> Handle(
+    public async ValueTask<GetRestockSubscriptionsResponse> Handle(
         GetRestockSubscriptions query,
         CancellationToken cancellationToken)
     {

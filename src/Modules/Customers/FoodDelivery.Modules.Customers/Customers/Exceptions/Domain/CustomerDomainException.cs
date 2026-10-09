@@ -1,5 +1,5 @@
 using System.Net;
-using BuildingBlocks.Core.Domain.Exceptions;
+using Squirrel.Core.Domain.Exceptions;
 
 namespace FoodDelivery.Modules.Customers.Customers.Exceptions.Domain;
 

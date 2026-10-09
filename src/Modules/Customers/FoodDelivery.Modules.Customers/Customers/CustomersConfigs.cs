@@ -1,6 +1,6 @@
 using Asp.Versioning.Builder;
-using BuildingBlocks.Abstractions.Persistence;
-using BuildingBlocks.Abstractions.Web.Module;
+using Squirrel.Abstractions.Persistence;
+using Squirrel.Abstractions.Web.Module;
 using FoodDelivery.Modules.Customers.Customers.Data;
 
 namespace FoodDelivery.Modules.Customers.Customers;
@@ -13,7 +13,7 @@ internal static class CustomersConfigs
 
     internal static IServiceCollection AddCustomersServices(this IServiceCollection services)
     {
-        services.AddScoped<IDataSeeder, CustomersDataSeeder>();
+        services.AddScoped<IDataSeeder<CustomersDbContext>, CustomersDataSeeder>();
 
         return services;
     }

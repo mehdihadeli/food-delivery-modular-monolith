@@ -1,7 +1,7 @@
 using Ardalis.GuardClauses;
-using BuildingBlocks.Core.CQRS.Event.Internal;
-using BuildingBlocks.Core.Domain;
-using BuildingBlocks.Core.Exception;
+using Squirrel.Core.Events.Internal;
+using Squirrel.Core.Domain;
+using Squirrel.Core.Exception;
 using FoodDelivery.Modules.Catalogs.Brands;
 using FoodDelivery.Modules.Catalogs.Categories;
 using FoodDelivery.Modules.Catalogs.Products.Exceptions.Domain;

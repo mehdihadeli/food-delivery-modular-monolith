@@ -1,5 +1,5 @@
-using BuildingBlocks.Abstractions.CQRS.Event;
-using BuildingBlocks.Core.Messaging;
+using Squirrel.Abstractions.Events;
+using Squirrel.Core.Messages;
 
 namespace FoodDelivery.Modules.Catalogs.Suppliers.Features.SupplierCreated.Events.External;
 

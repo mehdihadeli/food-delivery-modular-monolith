@@ -1,5 +1,5 @@
-using BuildingBlocks.Core.Domain.ValueObjects;
-using BuildingBlocks.Core.Persistence.EfCore;
+using Squirrel.Core.Domain.ValueObjects;
+using Squirrel.Core.Persistence.EfCore;
 using FoodDelivery.Modules.Customers.Customers.Models;
 using FoodDelivery.Modules.Customers.RestockSubscriptions.Models.Write;
 using FoodDelivery.Modules.Customers.Shared.Data;

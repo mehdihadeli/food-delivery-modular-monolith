@@ -1,4 +1,4 @@
-using BuildingBlocks.Persistence.Mongo;
+using Squirrel.Persistence.Mongo;
 using FoodDelivery.Modules.Customers.Customers.Models.Reads;
 using FoodDelivery.Modules.Customers.RestockSubscriptions.Models.Read;
 using Humanizer;

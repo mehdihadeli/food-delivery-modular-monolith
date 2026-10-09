@@ -1,7 +1,7 @@
 using Ardalis.GuardClauses;
 using AutoMapper;
-using BuildingBlocks.Abstractions.CQRS.Query;
-using BuildingBlocks.Core.Exception;
+using Squirrel.Abstractions.Queries;
+using Squirrel.Core.Exception;
 using FoodDelivery.Modules.Customers.RestockSubscriptions.Dtos;
 using FoodDelivery.Modules.Customers.RestockSubscriptions.Exceptions.Application;
 using FoodDelivery.Modules.Customers.Shared.Data;
@@ -34,7 +34,7 @@ internal class GetRestockSubscriptionByIdHandler
         _mapper = mapper;
     }
 
-    public async Task<GetRestockSubscriptionByIdResponse> Handle(
+    public async ValueTask<GetRestockSubscriptionByIdResponse> Handle(
         GetRestockSubscriptionById query,
         CancellationToken cancellationToken)
     {

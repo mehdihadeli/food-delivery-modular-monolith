@@ -1,7 +1,7 @@
 using Ardalis.GuardClauses;
 using AutoMapper;
-using BuildingBlocks.Abstractions.CQRS.Command;
-using BuildingBlocks.Core.Exception;
+using Squirrel.Abstractions.Commands;
+using Squirrel.Core.Exception;
 using BuildingBlocks.Core.IdsGenerator;
 using FoodDelivery.Modules.Catalogs.Brands.Exceptions.Application;
 using FoodDelivery.Modules.Catalogs.Categories.Exceptions.Domain;

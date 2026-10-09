@@ -1,6 +1,6 @@
 using Ardalis.GuardClauses;
-using BuildingBlocks.Abstractions.CQRS.Event.Internal;
-using BuildingBlocks.Core.CQRS.Event.Internal;
+using Squirrel.Core.Events.Internal;
+using Squirrel.Core.Events.Internal;
 using FoodDelivery.Modules.Catalogs.Brands;
 using FoodDelivery.Modules.Catalogs.Shared.Contracts;
 using FoodDelivery.Modules.Catalogs.Shared.Extensions;

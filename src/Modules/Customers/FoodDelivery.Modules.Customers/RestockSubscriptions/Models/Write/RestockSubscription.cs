@@ -1,8 +1,8 @@
 using Ardalis.GuardClauses;
-using BuildingBlocks.Abstractions.Domain;
-using BuildingBlocks.Core.Domain;
-using BuildingBlocks.Core.Domain.ValueObjects;
-using BuildingBlocks.Core.Exception;
+using Squirrel.Abstractions.Domain;
+using Squirrel.Core.Domain;
+using Squirrel.Core.Domain.ValueObjects;
+using Squirrel.Core.Exception;
 using FoodDelivery.Modules.Customers.Customers.ValueObjects;
 using FoodDelivery.Modules.Customers.RestockSubscriptions.Exceptions.Domain;
 using FoodDelivery.Modules.Customers.RestockSubscriptions.Features.CreatingRestockSubscription.Events.Domain;

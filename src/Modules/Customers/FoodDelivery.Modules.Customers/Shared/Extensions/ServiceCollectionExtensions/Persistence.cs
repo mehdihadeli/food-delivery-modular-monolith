@@ -1,6 +1,6 @@
-using BuildingBlocks.Abstractions.Persistence;
-using BuildingBlocks.Persistence.EfCore.Postgres;
-using BuildingBlocks.Persistence.Mongo;
+using Squirrel.Abstractions.Persistence;
+using Squirrel.Persistence.EfCore.Postgres;
+using Squirrel.Persistence.Mongo;
 using FoodDelivery.Modules.Customers.Shared.Contracts;
 using FoodDelivery.Modules.Customers.Shared.Data;
 using Microsoft.EntityFrameworkCore;

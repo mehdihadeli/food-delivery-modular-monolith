@@ -1,6 +1,6 @@
 using System.Net.Http.Json;
 using Ardalis.GuardClauses;
-using BuildingBlocks.Core.Exception;
+using Squirrel.Core.Exception;
 using FoodDelivery.Modules.Customers.Shared.Clients.Identity.Dtos;
 using Microsoft.Extensions.Options;
 

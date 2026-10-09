@@ -1,5 +1,5 @@
 using System.Reflection;
-using BuildingBlocks.Core.Persistence.EfCore;
+using Squirrel.Core.Persistence.EfCore;
 using FoodDelivery.Modules.Orders.Orders.Models;
 using FoodDelivery.Modules.Orders.Shared.Contracts;
 using Microsoft.EntityFrameworkCore;

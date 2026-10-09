@@ -1,13 +1,11 @@
 using System.Net.Http.Headers;
-using BuildingBlocks.Abstractions.Messaging.PersistMessage;
-using BuildingBlocks.Abstractions.Persistence;
-using BuildingBlocks.Abstractions.Web;
-using BuildingBlocks.Abstractions.Web.Module;
-using BuildingBlocks.Core.Extensions;
-using BuildingBlocks.Core.Extensions.ServiceCollection;
-using BuildingBlocks.Persistence.EfCore.Postgres;
-using BuildingBlocks.Persistence.Mongo;
-using BuildingBlocks.Web.Module;
+using Squirrel.Abstractions.Persistence;
+using Squirrel.Abstractions.Web;
+using Squirrel.Abstractions.Web.Module;
+using Squirrel.Core.Extensions;
+using Squirrel.Core.Extensions.ServiceCollectionExtensions;
+using Squirrel.Persistence.EfCore.Postgres;
+using Squirrel.Persistence.Mongo;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.DependencyInjection.Extensions;
@@ -19,14 +17,14 @@ using Respawn;
 using Respawn.Graph;
 using Tests.Shared.Mocks;
 using Tests.Shared.Mocks.Builders;
-using Xunit.Abstractions;
+using Xunit;
 
 namespace Tests.Shared.Fixtures;
 
 public class ModuleTestBase<TEntryPoint, TModule> :
     IClassFixture<IntegrationTestFixture<TEntryPoint>>,
     IAsyncLifetime
-    where TModule : class, IModuleDefinition
+    where TModule : class, IModuleConfiguration
     where TEntryPoint : class
 {
     private readonly IntegrationTestFixture<TEntryPoint> _integrationTestFixture;
@@ -37,15 +35,12 @@ public class ModuleTestBase<TEntryPoint, TModule> :
     {
         _integrationTestFixture = integrationTestFixture;
         integrationTestFixture.RegisterTestServices(RegisterTestsServices);
-        ModuleHook.ModuleServicesConfigured += RegisterModulesTestsServices;
         integrationTestFixture.SetOutputHelper(outputHelper);
 
         Logger = integrationTestFixture.ServiceProvider
             .GetRequiredService<ILogger<IntegrationTestFixture<TEntryPoint>>>();
 
-        ModuleFixture = new ModuleFixture<TModule>(
-            CompositionRootRegistry.GetByModule<TModule>()!.ServiceProvider,
-            integrationTestFixture.ServiceProvider.GetRequiredService<IGatewayProcessor<TModule>>());
+        ModuleFixture = new ModuleFixture<TModule>(integrationTestFixture.ServiceProvider);
 
         Scope = ModuleFixture.Scope;
 
@@ -105,34 +100,21 @@ public class ModuleTestBase<TEntryPoint, TModule> :
     {
         var user = _integrationTestFixture.CreateAdminUserMock();
         services.ReplaceScoped(_ => user);
+        services.Replace(new ServiceDescriptor(typeof(IHttpClientFactory),
+            new DelegateHttpClientFactory(_ => GuestClient)));
     }
 
-    protected virtual void RegisterModulesTestsServices(IServiceCollection services, IModuleDefinition module)
-    {
-        if (module.GetType().IsAssignableTo(typeof(IModuleDefinition)))
-        {
-            services.Replace(new ServiceDescriptor(typeof(IHttpClientFactory),
-                new DelegateHttpClientFactory(_ => GuestClient)));
-        }
-    }
-
-    public async Task InitializeAsync()
+    public async ValueTask InitializeAsync()
     {
         CancellationToken.ThrowIfCancellationRequested();
 
         await ResetState();
         await SeedData();
 
-        await ModuleFixture.ExecuteScopeAsync(async sp =>
-        {
-            var messagePersistenceRepository = sp.GetRequiredService<IMessagePersistenceRepository>();
-            await messagePersistenceRepository.CleanupMessages();
-        });
-
         await ModuleFixture.ServiceProvider.StartHostedServices(CancellationToken);
     }
 
-    public async Task DisposeAsync()
+    public async ValueTask DisposeAsync()
     {
         await ModuleFixture.ServiceProvider.StopHostedServices(CancellationToken);
         CancellationTokenSource.Cancel();
@@ -181,16 +163,14 @@ public class ModuleTestBase<TEntryPoint, TModule> :
 }
 
 public class ModuleTestBase<TEntryPoint, TModule, TWContext> : ModuleTestBase<TEntryPoint, TModule>
-    where TModule : class, IModuleDefinition
+    where TModule : class, IModuleConfiguration
     where TWContext : DbContext
     where TEntryPoint : class
 {
     public ModuleTestBase(IntegrationTestFixture<TEntryPoint> integrationTestFixture, ITestOutputHelper outputHelper)
         : base(integrationTestFixture, outputHelper)
     {
-        ModuleFixture = new ModuleFixture<TModule, TWContext>(
-            CompositionRootRegistry.GetByModule<TModule>()!.ServiceProvider,
-            integrationTestFixture.ServiceProvider.GetRequiredService<IGatewayProcessor<TModule>>());
+        ModuleFixture = new ModuleFixture<TModule, TWContext>(integrationTestFixture.ServiceProvider);
     }
 
     public new ModuleFixture<TModule, TWContext> ModuleFixture { get; }
@@ -198,7 +178,7 @@ public class ModuleTestBase<TEntryPoint, TModule, TWContext> : ModuleTestBase<TE
 
 public class
     ModuleTestBase<TEntryPoint, TModule, TWContext, TRContext> : ModuleTestBase<TEntryPoint, TModule, TWContext>
-    where TModule : class, IModuleDefinition
+    where TModule : class, IModuleConfiguration
     where TWContext : DbContext
     where TRContext : MongoDbContext
     where TEntryPoint : class
@@ -206,9 +186,7 @@ public class
     public ModuleTestBase(IntegrationTestFixture<TEntryPoint> integrationTestFixture, ITestOutputHelper outputHelper)
         : base(integrationTestFixture, outputHelper)
     {
-        ModuleFixture = new ModuleFixture<TModule, TWContext, TRContext>(
-            CompositionRootRegistry.GetByModule<TModule>()!.ServiceProvider,
-            integrationTestFixture.ServiceProvider.GetRequiredService<IGatewayProcessor<TModule>>());
+        ModuleFixture = new ModuleFixture<TModule, TWContext, TRContext>(integrationTestFixture.ServiceProvider);
     }
 
     public new ModuleFixture<TModule, TWContext, TRContext> ModuleFixture { get; }

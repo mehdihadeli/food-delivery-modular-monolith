@@ -1,5 +1,5 @@
 using AutoMapper;
-using BuildingBlocks.Core.Domain.ValueObjects;
+using Squirrel.Core.Domain.ValueObjects;
 using FoodDelivery.Modules.Customers.Customers.Dtos;
 using FoodDelivery.Modules.Customers.Customers.Features;
 using FoodDelivery.Modules.Customers.Customers.Models;

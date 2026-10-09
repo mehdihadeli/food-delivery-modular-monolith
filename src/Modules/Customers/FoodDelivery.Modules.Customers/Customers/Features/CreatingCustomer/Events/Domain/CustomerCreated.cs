@@ -1,8 +1,7 @@
 using Ardalis.GuardClauses;
 using AutoMapper;
-using BuildingBlocks.Abstractions.CQRS.Command;
-using BuildingBlocks.Abstractions.CQRS.Event.Internal;
-using BuildingBlocks.Core.CQRS.Event.Internal;
+using Squirrel.Abstractions.Commands;
+using Squirrel.Core.Events.Internal;
 using FoodDelivery.Modules.Customers.Customers.Models;
 
 namespace FoodDelivery.Modules.Customers.Customers.Features.CreatingCustomer.Events.Domain;
@@ -11,12 +10,12 @@ public record CustomerCreated(Customer Customer) : DomainEvent;
 
 internal class CustomerCreatedHandler : IDomainEventHandler<CustomerCreated>
 {
-    private readonly ICommandProcessor _commandProcessor;
+    private readonly ICommandBus _commandBus;
     private readonly IMapper _mapper;
 
-    public CustomerCreatedHandler(ICommandProcessor commandProcessor, IMapper mapper)
+    public CustomerCreatedHandler(ICommandBus commandBus, IMapper mapper)
     {
-        _commandProcessor = commandProcessor;
+        _commandBus = commandBus;
         _mapper = mapper;
     }
 
@@ -28,6 +27,6 @@ internal class CustomerCreatedHandler : IDomainEventHandler<CustomerCreated>
 
         // https://github.com/kgrzybek/modular-monolith-with-ddd#38-internal-processing
         // Schedule multiple read sides to execute here
-        return _commandProcessor.ScheduleAsync(new IInternalCommand[] { mongoReadCommand }, cancellationToken);
+        return _commandBus.ScheduleAsync(new IInternalCommand[] { mongoReadCommand }, cancellationToken);
     }
 }

@@ -1,7 +1,7 @@
 using Ardalis.GuardClauses;
 using AutoMapper;
-using BuildingBlocks.Abstractions.CQRS.Query;
-using BuildingBlocks.Core.Exception;
+using Squirrel.Abstractions.Queries;
+using Squirrel.Core.Exception;
 using FoodDelivery.Modules.Catalogs.Products.Dtos;
 using FoodDelivery.Modules.Catalogs.Products.Exceptions.Application;
 using FoodDelivery.Modules.Catalogs.Shared.Contracts;

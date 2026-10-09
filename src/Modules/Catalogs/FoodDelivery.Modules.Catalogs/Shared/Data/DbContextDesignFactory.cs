@@ -1,4 +1,4 @@
-using BuildingBlocks.Persistence.EfCore.Postgres;
+using Squirrel.Persistence.EfCore.Postgres;
 
 namespace FoodDelivery.Modules.Catalogs.Shared.Data;
 

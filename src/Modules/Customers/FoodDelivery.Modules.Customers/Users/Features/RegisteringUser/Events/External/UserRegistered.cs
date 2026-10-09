@@ -1,8 +1,7 @@
-using BuildingBlocks.Abstractions.CQRS.Command;
-using BuildingBlocks.Abstractions.Messaging;
-using BuildingBlocks.Abstractions.Messaging.Context;
-using BuildingBlocks.Abstractions.Persistence;
-using BuildingBlocks.Core.Messaging;
+using Squirrel.Abstractions.Commands;
+using Squirrel.Abstractions.Messages;
+using Squirrel.Abstractions.Persistence;
+using Squirrel.Core.Messages;
 using FoodDelivery.Modules.Customers.Customers.Features.CreatingCustomer;
 
 namespace FoodDelivery.Modules.Customers.Users.Features.RegisteringUser.Events.External;
@@ -17,21 +16,20 @@ public record UserRegistered(
 
 public class UserRegisteredConsumer : IMessageHandler<UserRegistered>
 {
-    private readonly ICommandProcessor _commandProcessor;
+    private readonly ICommandBus _commandBus;
 
-    public UserRegisteredConsumer(ICommandProcessor commandProcessor)
+    public UserRegisteredConsumer(ICommandBus commandBus)
     {
-        _commandProcessor = commandProcessor;
+        _commandBus = commandBus;
     }
 
-    public async Task HandleAsync(
-        IConsumeContext<UserRegistered> messageContext,
+    public async Task Handle(
+        UserRegistered userRegistered,
         CancellationToken cancellationToken = default)
     {
-        var userRegistered = messageContext.Message;
         if (userRegistered.Roles is null || !userRegistered.Roles.Contains(CustomersConstants.Role.User))
             return;
 
-        await _commandProcessor.SendAsync(new CreateCustomer(userRegistered.Email), cancellationToken);
+        await _commandBus.SendAsync(new CreateCustomer(userRegistered.Email), cancellationToken);
     }
 }

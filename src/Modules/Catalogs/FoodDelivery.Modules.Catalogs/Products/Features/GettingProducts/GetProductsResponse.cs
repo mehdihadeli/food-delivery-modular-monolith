@@ -1,4 +1,4 @@
-using BuildingBlocks.Core.CQRS.Query;
+using Squirrel.Core.Queries;
 using FoodDelivery.Modules.Catalogs.Products.Dtos;
 
 namespace FoodDelivery.Modules.Catalogs.Products.Features.GettingProducts;

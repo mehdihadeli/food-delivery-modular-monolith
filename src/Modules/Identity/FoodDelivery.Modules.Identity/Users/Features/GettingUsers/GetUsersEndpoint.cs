@@ -1,7 +1,7 @@
 using Ardalis.ApiEndpoints;
 using Ardalis.GuardClauses;
 using Asp.Versioning;
-using BuildingBlocks.Abstractions.CQRS.Query;
+using Squirrel.Abstractions.Queries;
 using Swashbuckle.AspNetCore.Annotations;
 
 namespace FoodDelivery.Modules.Identity.Users.Features.GettingUsers;

@@ -1,9 +1,9 @@
 using Ardalis.GuardClauses;
-using BuildingBlocks.Abstractions.CQRS.Command;
-using BuildingBlocks.Abstractions.CQRS.Query;
-using BuildingBlocks.Abstractions.Persistence;
-using BuildingBlocks.Core.Exception;
-using BuildingBlocks.Security.Jwt;
+using Squirrel.Abstractions.Commands;
+using Squirrel.Abstractions.Queries;
+using Squirrel.Abstractions.Persistence;
+using Squirrel.Core.Exception;
+using Squirrel.Security.Jwt;
 using FoodDelivery.Modules.Identity.Identity.Exceptions;
 using FoodDelivery.Modules.Identity.Identity.Features.GenerateJwtToken;
 using FoodDelivery.Modules.Identity.Identity.Features.GenerateRefreshToken;
