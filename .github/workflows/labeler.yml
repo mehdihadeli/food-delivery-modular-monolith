@@ -1,0 +1,18 @@
+name: Auto Labeler
+
+on:
+  # Required for labeling pull requests from forks.
+  pull_request_target:
+    types: [opened, reopened, synchronize]
+
+jobs:
+  auto-labeler:
+    name: Auto Labeler
+    runs-on: ubuntu-latest
+    permissions:
+      pull-requests: write
+      contents: read
+
+    steps:
+      - name: Apply Release Drafter labels
+        uses: release-drafter/release-drafter/autolabeler@v7

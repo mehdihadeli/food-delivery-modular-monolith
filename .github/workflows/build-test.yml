@@ -1,27 +1,148 @@
-name: Build-Test
+name: Build, test, and publish
 
 on:
   push:
-    branches: [ main, develop ]
+    branches: [main]
+    tags: ["v*"]
   pull_request:
-    branches: [ main, develop ]
+    branches: [main]
+
+permissions:
+  contents: read
+
+env:
+  DOTNET_VERSION: "10.0.x"
+  SOLUTION: food-delivery-modular-monolith.sln
+  API_DOCKERFILE: src/Api/FoodDelivery.Api/Dockerfile
 
 jobs:
-  build:
-    runs-on: ubuntu-22.04
+  build-test:
+    name: Build and test
+    runs-on: ubuntu-latest
+
     steps:
-    - uses: actions/checkout@v2
-    
-    - name: Setup .NET
-      uses: actions/setup-dotnet@v1
-      with:
-        dotnet-version: 7.0.x
-        include-prerelease: true
-    - name: Restore dependencies
-      run: dotnet restore
-    - name: Build
-      run: dotnet build --no-restore -c Release
-    - name: Test
-      run: dotnet test -c Release --collect:"XPlat Code Coverage" --no-build --verbosity normal /p:CollectCoverage=true /p:CoverletOutputFormat=opencover --blame-hang --blame-hang-timeout 2m
-    - name: Codecov
-      uses: codecov/codecov-action@v2
+      - name: Check out repository
+        uses: actions/checkout@v5
+        with:
+          # The Squirrel building blocks live in a git submodule.
+          submodules: recursive
+          fetch-depth: 0
+
+      - name: Set up .NET
+        uses: actions/setup-dotnet@v5
+        with:
+          dotnet-version: ${{ env.DOTNET_VERSION }}
+
+      - name: Restore local tools
+        run: dotnet tool restore
+
+      - name: Restore
+        run: dotnet restore ${{ env.SOLUTION }}
+
+      - name: Build
+        run: dotnet build ${{ env.SOLUTION }} --configuration Release --no-restore
+
+      - name: Test
+        run: dotnet test --solution ${{ env.SOLUTION }} --configuration Release --no-build
+
+  calculate-version:
+    name: Calculate release version
+    if: github.ref == 'refs/heads/main' || startsWith(github.ref, 'refs/tags/v')
+    needs: build-test
+    runs-on: ubuntu-latest
+    outputs:
+      version: ${{ steps.version.outputs.version }}
+      docker_tag: ${{ steps.version.outputs.docker_tag }}
+      environment: ${{ steps.version.outputs.environment }}
+      commit: ${{ steps.version.outputs.commit }}
+
+    steps:
+      - name: Check out repository
+        uses: actions/checkout@v5
+        with:
+          submodules: recursive
+          fetch-depth: 0
+
+      - name: Set up .NET
+        uses: actions/setup-dotnet@v5
+        with:
+          dotnet-version: ${{ env.DOTNET_VERSION }}
+
+      - name: Install nbgv CLI
+        run: dotnet tool install --tool-path "$RUNNER_TEMP/nbgv" nbgv --version 3.10.94
+
+      - name: Calculate version
+        id: version
+        shell: bash
+        run: NBGV="$RUNNER_TEMP/nbgv/nbgv" ./scripts/calculate-version.sh
+
+  docker:
+    name: Build and push API image
+    needs:
+      - build-test
+      - calculate-version
+    if: startsWith(github.ref, 'refs/tags/v') || (github.ref == 'refs/heads/main' && needs['calculate-version'].outputs.environment != 'none')
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      packages: write
+
+    steps:
+      - name: Check out repository
+        uses: actions/checkout@v5
+        with:
+          submodules: recursive
+          fetch-depth: 0
+
+      - name: Set up Docker Buildx
+        uses: docker/setup-buildx-action@v3
+
+      - name: Log in to GitHub Container Registry
+        uses: docker/login-action@v3
+        with:
+          registry: ghcr.io
+          username: ${{ github.actor }}
+          password: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Docker metadata
+        id: meta
+        uses: docker/metadata-action@v5
+        with:
+          images: ghcr.io/${{ github.repository }}
+          flavor: |
+            latest=false
+          tags: |
+            type=raw,value=${{ needs['calculate-version'].outputs.docker_tag }}
+            type=raw,value=latest,enable=${{ needs['calculate-version'].outputs.environment == 'production' }}
+            type=ref,event=branch
+            type=sha,format=short
+
+      - name: Build and push
+        uses: docker/build-push-action@v6
+        with:
+          context: .
+          file: ${{ env.API_DOCKERFILE }}
+          push: true
+          tags: ${{ steps.meta.outputs.tags }}
+          labels: ${{ steps.meta.outputs.labels }}
+
+  release-drafter:
+    name: Update release draft
+    needs: calculate-version
+    if: github.ref == 'refs/heads/main' || startsWith(github.ref, 'refs/tags/v')
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+
+    steps:
+      - name: Update matching Release Drafter draft
+        uses: release-drafter/release-drafter@v7
+        with:
+          config-name: release-drafter.yml
+          version: ${{ needs['calculate-version'].outputs.version }}
+          name: v${{ needs['calculate-version'].outputs.version }}
+          tag: ${{ startsWith(github.ref, 'refs/tags/v') && github.ref_name || format('v{0}', needs['calculate-version'].outputs.version) }}
+          publish: ${{ startsWith(github.ref, 'refs/tags/v') && needs['calculate-version'].outputs.environment == 'production' }}
+          prerelease: ${{ needs['calculate-version'].outputs.environment != 'production' }}
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
