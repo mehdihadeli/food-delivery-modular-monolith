@@ -1,5 +1,5 @@
 using Ardalis.GuardClauses;
-using BuildingBlocks.Abstractions.Domain;
+using Squirrel.Abstractions.Domain;
 
 namespace FoodDelivery.Modules.Orders.Orders.ValueObjects;
 

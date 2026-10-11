@@ -1,4 +1,3 @@
-using BuildingBlocks.Resiliency.Extensions;
 using FoodDelivery.Modules.Customers.Shared.Clients.Catalogs;
 using FoodDelivery.Modules.Customers.Shared.Clients.Identity;
 
@@ -19,8 +18,8 @@ public static partial class ServiceCollectionExtensions
                     $"{CustomersModuleConfiguration.ModuleName}:{nameof(CatalogsApiClientOptions)}"))
             .ValidateDataAnnotations();
 
-        services.AddHttpApiClient<ICatalogApiClient, CatalogApiClient>();
-        services.AddHttpApiClient<IIdentityApiClient, IdentityApiClient>();
+        services.AddHttpClient<ICatalogApiClient, CatalogApiClient>();
+        services.AddHttpClient<IIdentityApiClient, IdentityApiClient>();
 
         return services;
     }

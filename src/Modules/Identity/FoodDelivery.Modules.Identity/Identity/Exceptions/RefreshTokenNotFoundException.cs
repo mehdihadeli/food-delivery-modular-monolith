@@ -1,4 +1,4 @@
-using BuildingBlocks.Core.Exception.Types;
+using Squirrel.Core.Exception;
 using FoodDelivery.Modules.Identity.Shared.Models;
 
 namespace FoodDelivery.Modules.Identity.Identity.Exceptions;

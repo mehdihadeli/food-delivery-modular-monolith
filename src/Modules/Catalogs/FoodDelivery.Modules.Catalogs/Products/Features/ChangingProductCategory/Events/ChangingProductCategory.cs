@@ -1,6 +1,6 @@
 using Ardalis.GuardClauses;
-using BuildingBlocks.Abstractions.CQRS.Event.Internal;
-using BuildingBlocks.Core.CQRS.Event.Internal;
+using Squirrel.Core.Events.Internal;
+using Squirrel.Core.Events.Internal;
 using FoodDelivery.Modules.Catalogs.Categories;
 using FoodDelivery.Modules.Catalogs.Shared.Contracts;
 using FoodDelivery.Modules.Catalogs.Shared.Extensions;
@@ -19,7 +19,7 @@ internal class ChangingProductCategoryValidationHandler :
         _catalogDbContext = catalogDbContext;
     }
 
-    public async Task Handle(ChangingProductCategory notification, CancellationToken cancellationToken)
+    public async ValueTask Handle(ChangingProductCategory notification, CancellationToken cancellationToken)
     {
         Guard.Against.Null(notification, nameof(notification));
         Guard.Against.NegativeOrZero(notification.CategoryId, nameof(notification.CategoryId));

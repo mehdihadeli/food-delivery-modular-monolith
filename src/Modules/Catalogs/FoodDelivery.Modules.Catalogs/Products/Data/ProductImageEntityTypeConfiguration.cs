@@ -14,7 +14,7 @@ public class ProductImageEntityTypeConfiguration : IEntityTypeConfiguration<Prod
         builder.HasKey(c => c.Id);
         builder.HasIndex(x => x.Id).IsUnique();
         builder.Property(x => x.Id)
-            .HasConversion(x => x.Value, id => id)
+            .HasConversion(x => x.Value, id => Squirrel.Abstractions.Domain.EntityId.Of(id))
             .ValueGeneratedNever();
     }
 }

@@ -24,3 +24,17 @@
 **/out/
 LICENSE
 README.md
+
+# Content that is not needed to build the API image
+.devcontainer
+.github
+.husky
+.migration
+.testagent
+.vscode
+_httpclients
+assets
+docs
+tests
+src/BuildingBlocks/docs
+src/BuildingBlocks/tests

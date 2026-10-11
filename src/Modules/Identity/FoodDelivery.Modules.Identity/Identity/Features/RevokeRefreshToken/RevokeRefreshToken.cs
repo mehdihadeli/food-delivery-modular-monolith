@@ -1,9 +1,8 @@
 using Ardalis.GuardClauses;
-using BuildingBlocks.Abstractions.CQRS.Command;
+using Squirrel.Abstractions.Commands;
 using FoodDelivery.Modules.Identity.Identity.Exceptions;
 using FoodDelivery.Modules.Identity.Identity.Features.RefreshingToken;
 using FoodDelivery.Modules.Identity.Shared.Data;
-using MediatR;
 using Microsoft.EntityFrameworkCore;
 
 namespace FoodDelivery.Modules.Identity.Identity.Features.RevokeRefreshToken;
@@ -19,7 +18,7 @@ internal class RevokeRefreshTokenHandler : ICommandHandler<RevokeRefreshToken>
         _context = context;
     }
 
-    public async Task<Unit> Handle(
+    public async ValueTask<Unit> Handle(
         RevokeRefreshToken request,
         CancellationToken cancellationToken)
     {

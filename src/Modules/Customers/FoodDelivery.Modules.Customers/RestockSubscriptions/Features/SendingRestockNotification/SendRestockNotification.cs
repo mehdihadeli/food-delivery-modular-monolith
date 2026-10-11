@@ -1,10 +1,9 @@
 using Ardalis.GuardClauses;
-using BuildingBlocks.Abstractions.CQRS.Command;
-using BuildingBlocks.Abstractions.Persistence;
-using BuildingBlocks.Core.CQRS.Command;
-using BuildingBlocks.Core.Exception;
-using BuildingBlocks.Email;
-using BuildingBlocks.Email.Options;
+using Squirrel.Abstractions.Commands;
+using Squirrel.Abstractions.Persistence;
+using Squirrel.Core.Exception;
+using Squirrel.Email;
+using Squirrel.Email.Options;
 using FoodDelivery.Modules.Customers.RestockSubscriptions.Exceptions.Domain;
 using FoodDelivery.Modules.Customers.Shared.Data;
 using FluentValidation;
@@ -13,7 +12,12 @@ using Microsoft.Extensions.Options;
 
 namespace FoodDelivery.Modules.Customers.RestockSubscriptions.Features.SendingRestockNotification;
 
-public record SendRestockNotification(long RestockSubscriptionId, int CurrentStock) : InternalCommand, ITxRequest;
+public record SendRestockNotification(long RestockSubscriptionId, int CurrentStock) : IInternalCommand, ITxRequest
+{
+    public Guid InternalCommandId { get; init; } = Guid.NewGuid();
+    public DateTime OccurredOn { get; init; } = DateTime.UtcNow;
+    public string Type => GetType().FullName!;
+}
 
 internal class SendRestockNotificationValidator : AbstractValidator<SendRestockNotification>
 {
@@ -46,9 +50,9 @@ internal class SendRestockNotificationHandler : ICommandHandler<SendRestockNotif
         _logger = logger;
     }
 
-    public async Task<Unit> Handle(SendRestockNotification command, CancellationToken cancellationToken)
+    public async ValueTask<Unit> Handle(SendRestockNotification command, CancellationToken cancellationToken)
     {
-        Guard.Against.Null(command, new RestockSubscriptionDomainException("Command cannot be null"));
+        Guard.Against.Null(command, exceptionCreator: () => new RestockSubscriptionDomainException("Command cannot be null"));
 
         var restockSubscription =
             await _customersDbContext.RestockSubscriptions

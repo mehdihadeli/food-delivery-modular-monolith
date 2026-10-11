@@ -1,5 +1,5 @@
 using Ardalis.GuardClauses;
-using BuildingBlocks.Core.Exception;
+using Squirrel.Core.Exception;
 using FoodDelivery.Modules.Customers.Products;
 using FoodDelivery.Modules.Customers.RestockSubscriptions.Exceptions.Domain;
 
@@ -17,8 +17,8 @@ public record ProductInformation
         {
             Name = Guard.Against.NullOrWhiteSpace(
                 name,
-                new RestockSubscriptionDomainException("Product name can't be null.")),
-            Id = Guard.Against.Null(id, new RestockSubscriptionDomainException("Product Id can't be  null.")),
+                exceptionCreator: () => new RestockSubscriptionDomainException("Product name can't be null.")),
+            Id = Guard.Against.Null(id, exceptionCreator: () => new RestockSubscriptionDomainException("Product Id can't be  null.")),
         };
     }
 }

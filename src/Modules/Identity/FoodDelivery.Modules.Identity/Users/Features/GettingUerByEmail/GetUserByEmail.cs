@@ -1,6 +1,6 @@
 using Ardalis.GuardClauses;
 using AutoMapper;
-using BuildingBlocks.Abstractions.CQRS.Query;
+using Squirrel.Abstractions.Queries;
 using FoodDelivery.Modules.Identity.Shared.Extensions;
 using FoodDelivery.Modules.Identity.Shared.Models;
 using FoodDelivery.Modules.Identity.Users.Dtos;
@@ -15,7 +15,8 @@ internal class GetUserByIdValidator : AbstractValidator<GetUserByEmail>
 {
     public GetUserByIdValidator()
     {
-        CascadeMode = CascadeMode.Stop;
+        RuleLevelCascadeMode = CascadeMode.Stop;
+        ClassLevelCascadeMode = CascadeMode.Stop;
 
         RuleFor(x => x.Email)
             .NotEmpty()
@@ -35,7 +36,7 @@ internal class GetUserByEmailHandler : IQueryHandler<GetUserByEmail, GetUserByEm
         _mapper = Guard.Against.Null(mapper, nameof(mapper));
     }
 
-    public async Task<GetUserByEmailResponse> Handle(GetUserByEmail query, CancellationToken cancellationToken)
+    public async ValueTask<GetUserByEmailResponse> Handle(GetUserByEmail query, CancellationToken cancellationToken)
     {
         Guard.Against.Null(query, nameof(query));
 

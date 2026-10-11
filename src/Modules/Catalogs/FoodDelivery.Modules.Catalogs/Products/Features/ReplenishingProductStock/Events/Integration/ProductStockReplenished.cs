@@ -1,4 +1,4 @@
-using BuildingBlocks.Core.Messaging;
+using Squirrel.Core.Messages;
 
 namespace FoodDelivery.Modules.Catalogs.Products.Features.ReplenishingProductStock.Events.Integration;
 

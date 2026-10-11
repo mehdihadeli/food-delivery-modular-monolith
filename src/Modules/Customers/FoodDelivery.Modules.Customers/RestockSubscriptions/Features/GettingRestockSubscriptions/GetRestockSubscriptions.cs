@@ -1,20 +1,22 @@
 using AutoMapper;
-using BuildingBlocks.Abstractions.CQRS.Query;
-using BuildingBlocks.Core.CQRS.Query;
-using BuildingBlocks.Core.Types;
-using BuildingBlocks.Persistence.Mongo;
+using AutoMapper.QueryableExtensions;
+using Squirrel.Abstractions.Queries;
+using Squirrel.Core.Queries;
+using Squirrel.Core.Types;
+using Squirrel.Core.Extensions;
 using FoodDelivery.Modules.Customers.RestockSubscriptions.Dtos;
 using FoodDelivery.Modules.Customers.RestockSubscriptions.Models.Read;
 using FoodDelivery.Modules.Customers.Shared.Data;
 using FluentValidation;
 using MongoDB.Driver;
 using MongoDB.Driver.Linq;
+using Sieve.Services;
 
 namespace FoodDelivery.Modules.Customers.RestockSubscriptions.Features.GettingRestockSubscriptions;
 
-public record GetRestockSubscriptions : ListQuery<GetRestockSubscriptionsResponse>
+public record GetRestockSubscriptions : PageQuery<GetRestockSubscriptionsResponse>
 {
-    public IList<string> Emails { get; init; } = null!;
+    public IList<string> Emails { get; init; } = new List<string>();
     public DateTime? From { get; init; }
     public DateTime? To { get; init; }
 }
@@ -23,9 +25,10 @@ internal class GetRestockSubscriptionsValidator : AbstractValidator<GetRestockSu
 {
     public GetRestockSubscriptionsValidator()
     {
-        CascadeMode = CascadeMode.Stop;
+        RuleLevelCascadeMode = CascadeMode.Stop;
+        ClassLevelCascadeMode = CascadeMode.Stop;
 
-        RuleFor(x => x.Page)
+        RuleFor(x => x.PageNumber)
             .GreaterThanOrEqualTo(1).WithMessage("Page should at least greater than or equal to 1.");
 
         RuleFor(x => x.PageSize)
@@ -37,19 +40,20 @@ public class GeRestockSubscriptionsHandler : IQueryHandler<GetRestockSubscriptio
 {
     private readonly CustomersReadDbContext _customersReadDbContext;
     private readonly IMapper _mapper;
+    private readonly ISieveProcessor _sieveProcessor;
 
-    public GeRestockSubscriptionsHandler(CustomersReadDbContext customersReadDbContext, IMapper mapper)
+    public GeRestockSubscriptionsHandler(CustomersReadDbContext customersReadDbContext, IMapper mapper, ISieveProcessor sieveProcessor)
     {
         _customersReadDbContext = customersReadDbContext;
         _mapper = mapper;
+        _sieveProcessor = sieveProcessor;
     }
 
-    public async Task<GetRestockSubscriptionsResponse> Handle(
+    public async ValueTask<GetRestockSubscriptionsResponse> Handle(
         GetRestockSubscriptions query,
         CancellationToken cancellationToken)
     {
         var filtering = _customersReadDbContext.RestockSubscriptions.AsQueryable()
-            .ApplyFilter(query.Filters)
             .Where(x => x.IsDeleted == false)
             .Where(e => query.Emails.Any() == false || query.Emails.Contains(e.Email))
             .Where(x => (query.From == null && query.To == null) || (query.From == null && x.Created <= query.To) ||
@@ -58,10 +62,11 @@ public class GeRestockSubscriptionsHandler : IQueryHandler<GetRestockSubscriptio
             .OrderByDescending(x => x.Created);
 
         var restockSubscriptions =
-            await filtering.ApplyPagingAsync<RestockSubscriptionReadModel, RestockSubscriptionDto>(
-                _mapper.ConfigurationProvider,
-                query.Page,
-                query.PageSize,
+            await filtering.ApplyPagingAsync<RestockSubscriptionReadModel, RestockSubscriptionDto, DateTime>(
+                query,
+                _sieveProcessor,
+                source => source.ProjectTo<RestockSubscriptionDto>(_mapper.ConfigurationProvider),
+                subscription => subscription.Created,
                 cancellationToken: cancellationToken);
 
         return new GetRestockSubscriptionsResponse(restockSubscriptions);

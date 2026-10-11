@@ -1,16 +1,16 @@
-using BuildingBlocks.Abstractions.CQRS.Command;
+using Squirrel.Abstractions.Commands;
 
 namespace FoodDelivery.Modules.Catalogs.Products.Features.ChangingProductSupplier;
 
-internal record ChangeProductSupplier : ITxCommand<ChangeProductSupplierResponse>;
+public record ChangeProductSupplier : ITxCommand<ChangeProductSupplierResponse>;
 
 internal class ChangeProductSupplierCommandHandler :
     ICommandHandler<ChangeProductSupplier, ChangeProductSupplierResponse>
 {
-    public Task<ChangeProductSupplierResponse> Handle(
+    public ValueTask<ChangeProductSupplierResponse> Handle(
         ChangeProductSupplier request,
         CancellationToken cancellationToken)
     {
-        return Task.FromResult<ChangeProductSupplierResponse>(null!);
+        return ValueTask.FromResult<ChangeProductSupplierResponse>(null!);
     }
 }

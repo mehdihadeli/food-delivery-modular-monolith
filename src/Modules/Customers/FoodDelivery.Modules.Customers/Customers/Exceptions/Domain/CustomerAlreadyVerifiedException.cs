@@ -1,4 +1,4 @@
-using BuildingBlocks.Core.Exception.Types;
+using Squirrel.Core.Exception;
 
 namespace FoodDelivery.Modules.Customers.Customers.Exceptions.Domain;
 

@@ -7,7 +7,6 @@
   <MicrosoftConfigurationVersion>7.0.0</MicrosoftConfigurationVersion>
   <MicrosoftDependencyInjectionVersion>7.0.0</MicrosoftDependencyInjectionVersion>
   <MicrosoftLoggingVersion>7.0.0</MicrosoftLoggingVersion>
-  <MassTransitVersion>8.0.0</MassTransitVersion>
 </PropertyGroup>
 
 </Project>

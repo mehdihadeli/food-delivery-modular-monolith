@@ -1,7 +1,7 @@
 using Ardalis.GuardClauses;
 using AutoMapper;
-using BuildingBlocks.Abstractions.CQRS.Query;
-using BuildingBlocks.Core.Exception;
+using Squirrel.Abstractions.Queries;
+using Squirrel.Core.Exception;
 using FoodDelivery.Modules.Catalogs.Products.Dtos;
 using FoodDelivery.Modules.Catalogs.Products.Exceptions.Application;
 using FoodDelivery.Modules.Catalogs.Shared.Contracts;
@@ -16,7 +16,8 @@ internal class GetProductByIdValidator : AbstractValidator<GetProductById>
 {
     public GetProductByIdValidator()
     {
-        CascadeMode = CascadeMode.Stop;
+        RuleLevelCascadeMode = CascadeMode.Stop;
+        ClassLevelCascadeMode = CascadeMode.Stop;
 
         RuleFor(x => x.Id).GreaterThan(0);
     }
@@ -33,12 +34,13 @@ public class GetProductByIdHandler : IQueryHandler<GetProductById, GetProductByI
         _mapper = mapper;
     }
 
-    public async Task<GetProductByIdResponse> Handle(GetProductById query, CancellationToken cancellationToken)
+    public async ValueTask<GetProductByIdResponse> Handle(GetProductById query, CancellationToken cancellationToken)
     {
         Guard.Against.Null(query, nameof(query));
 
         var product = await _catalogDbContext.FindProductByIdAsync(query.Id);
-        Guard.Against.NotFound(product, new ProductNotFoundException(query.Id));
+        if (product is null)
+            throw new ProductNotFoundException(query.Id);
 
         var productsDto = _mapper.Map<ProductDto>(product);
 

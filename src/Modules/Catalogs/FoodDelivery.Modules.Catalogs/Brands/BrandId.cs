@@ -1,4 +1,4 @@
-using BuildingBlocks.Abstractions.Domain;
+using Squirrel.Abstractions.Domain;
 
 namespace FoodDelivery.Modules.Catalogs.Brands;
 

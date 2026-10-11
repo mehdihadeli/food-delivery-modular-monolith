@@ -1,6 +1,7 @@
 using Asp.Versioning.Builder;
-using BuildingBlocks.Abstractions.CQRS.Event;
-using BuildingBlocks.Abstractions.Persistence;
+using Squirrel.Abstractions.Events;
+using Squirrel.Abstractions.Persistence;
+using FoodDelivery.Modules.Catalogs.Shared.Data;
 using FoodDelivery.Modules.Catalogs.Products.Data;
 using FoodDelivery.Modules.Catalogs.Products.Features.CreatingProduct;
 using FoodDelivery.Modules.Catalogs.Products.Features.DebitingProductStock;
@@ -18,7 +19,7 @@ internal static class ProductsConfigs
 
     internal static IServiceCollection AddProductsServices(this IServiceCollection services)
     {
-        services.AddScoped<IDataSeeder, ProductDataSeeder>();
+        services.AddScoped<IDataSeeder<CatalogDbContext>, ProductDataSeeder>();
         services.AddSingleton<IEventMapper, ProductEventMapper>();
 
         return services;

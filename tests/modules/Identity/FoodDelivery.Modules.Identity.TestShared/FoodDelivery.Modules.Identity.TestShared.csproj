@@ -1,0 +1,9 @@
+<Project Sdk="Microsoft.NET.Sdk">
+  <PropertyGroup>
+    <IsPackable>false</IsPackable>
+  </PropertyGroup>
+  <ItemGroup>
+    <ProjectReference Include="..\..\..\..\src\Modules\Identity\FoodDelivery.Modules.Identity\FoodDelivery.Modules.Identity.csproj" />
+    <ProjectReference Include="..\..\..\shared\Tests.Shared\Tests.Shared.csproj" />
+  </ItemGroup>
+</Project>

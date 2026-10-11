@@ -1,4 +1,4 @@
-using BuildingBlocks.Abstractions.CQRS.Command;
+using Squirrel.Abstractions.Commands;
 
 namespace FoodDelivery.Modules.Identity.Identity.Features.ResetPassword;
 

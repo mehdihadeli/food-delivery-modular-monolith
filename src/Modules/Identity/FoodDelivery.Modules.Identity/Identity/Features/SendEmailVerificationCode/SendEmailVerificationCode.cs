@@ -1,9 +1,9 @@
 using System.Globalization;
 using System.Security.Cryptography;
 using Ardalis.GuardClauses;
-using BuildingBlocks.Abstractions.CQRS.Command;
-using BuildingBlocks.Core.Exception.Types;
-using BuildingBlocks.Email;
+using Squirrel.Abstractions.Commands;
+using Squirrel.Core.Exception;
+using Squirrel.Email;
 using FoodDelivery.Modules.Identity.Shared.Data;
 using FoodDelivery.Modules.Identity.Shared.Exceptions;
 using FoodDelivery.Modules.Identity.Shared.Models;
@@ -33,7 +33,7 @@ internal class SendEmailVerificationCodeHandler : ICommandHandler<SendEmailVerif
         _logger = logger;
     }
 
-    public async Task<Unit> Handle(SendEmailVerificationCode request, CancellationToken cancellationToken)
+    public async ValueTask<Unit> Handle(SendEmailVerificationCode request, CancellationToken cancellationToken)
     {
         Guard.Against.Null(request, nameof(SendEmailVerificationCode));
 

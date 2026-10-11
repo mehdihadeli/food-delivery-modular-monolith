@@ -1,10 +1,11 @@
-using BuildingBlocks.Abstractions.Persistence;
+using Squirrel.Abstractions.Persistence;
+using FoodDelivery.Modules.Identity.Shared.Data;
 using FoodDelivery.Modules.Identity.Shared.Models;
 using Microsoft.AspNetCore.Identity;
 
 namespace FoodDelivery.Modules.Identity.Identity.Data;
 
-public class IdentityDataSeeder : IDataSeeder
+public class IdentityDataSeeder : IDataSeeder<IdentityContext>
 {
     private readonly RoleManager<ApplicationRole> _roleManager;
     private readonly UserManager<ApplicationUser> _userManager;
@@ -15,7 +16,7 @@ public class IdentityDataSeeder : IDataSeeder
         _roleManager = roleManager;
     }
 
-    public async Task SeedAllAsync()
+    public async Task SeedAsync(IdentityContext context)
     {
         await SeedRoles();
         await SeedUsers();

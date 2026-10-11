@@ -1,8 +1,7 @@
 using Ardalis.GuardClauses;
-using BuildingBlocks.Abstractions.CQRS.Command;
-using BuildingBlocks.Abstractions.CQRS.Event.Internal;
-using BuildingBlocks.Core.CQRS.Event.Internal;
-using BuildingBlocks.Core.Exception;
+using Squirrel.Abstractions.Commands;
+using Squirrel.Core.Events.Internal;
+using Squirrel.Core.Exception;
 using FoodDelivery.Modules.Customers.Customers.Exceptions.Application;
 using FoodDelivery.Modules.Customers.RestockSubscriptions.Models.Write;
 using FoodDelivery.Modules.Customers.Shared.Data;
@@ -31,30 +30,29 @@ public record RestockSubscriptionCreated(RestockSubscription RestockSubscription
 
 internal class RestockSubscriptionCreatedHandler : IDomainEventHandler<RestockSubscriptionCreated>
 {
-    private readonly ICommandProcessor _commandProcessor;
+    private readonly ICommandBus _commandBus;
     private readonly CustomersDbContext _customersDbContext;
 
-    public RestockSubscriptionCreatedHandler(ICommandProcessor commandProcessor, CustomersDbContext customersDbContext)
+    public RestockSubscriptionCreatedHandler(ICommandBus commandBus, CustomersDbContext customersDbContext)
     {
-        _commandProcessor = commandProcessor;
+        _commandBus = commandBus;
         _customersDbContext = customersDbContext;
     }
 
-    public async Task Handle(RestockSubscriptionCreated notification, CancellationToken cancellationToken)
+    public async ValueTask Handle(RestockSubscriptionCreated notification, CancellationToken cancellationToken)
     {
         Guard.Against.Null(notification, nameof(notification));
 
         var customer = await _customersDbContext.FindCustomerByIdAsync(notification.RestockSubscription.CustomerId);
 
-        Guard.Against.NotFound(
-            customer,
-            new CustomerNotFoundException(notification.RestockSubscription.CustomerId));
+        if (customer is null)
+            throw new CustomerNotFoundException(notification.RestockSubscription.CustomerId);
 
         var mongoReadCommand =
             notification.ToCreateMongoRestockSubscriptionReadModels(customer!.Id, customer.Name.FullName);
 
         // https://github.com/kgrzybek/modular-monolith-with-ddd#38-internal-processing
         // Schedule multiple read sides to execute here
-        await _commandProcessor.ScheduleAsync(new IInternalCommand[] { mongoReadCommand }, cancellationToken);
+        await _commandBus.ScheduleAsync(new IInternalCommand[] { mongoReadCommand }, cancellationToken);
     }
 }

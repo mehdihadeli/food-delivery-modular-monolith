@@ -1,8 +1,8 @@
 using Ardalis.GuardClauses;
-using BuildingBlocks.Abstractions.Domain;
-using BuildingBlocks.Core.Domain;
-using BuildingBlocks.Core.Domain.ValueObjects;
-using BuildingBlocks.Core.Exception;
+using Squirrel.Abstractions.Domain;
+using Squirrel.Core.Domain;
+using Squirrel.Core.Domain.ValueObjects;
+using Squirrel.Core.Exception;
 using FoodDelivery.Modules.Customers.Customers.ValueObjects;
 using FoodDelivery.Modules.Customers.RestockSubscriptions.Exceptions.Domain;
 using FoodDelivery.Modules.Customers.RestockSubscriptions.Features.CreatingRestockSubscription.Events.Domain;
@@ -26,11 +26,11 @@ public class RestockSubscription : Aggregate<RestockSubscriptionId>, IHaveSoftDe
         ProductInformation productInformation,
         Email email)
     {
-        Guard.Against.Null(id, new RestockSubscriptionDomainException("Id cannot be null"));
-        Guard.Against.Null(customerId, new RestockSubscriptionDomainException("CustomerId cannot be null"));
+        Guard.Against.Null(id, exceptionCreator: () => new RestockSubscriptionDomainException("Id cannot be null"));
+        Guard.Against.Null(customerId, exceptionCreator: () => new RestockSubscriptionDomainException("CustomerId cannot be null"));
         Guard.Against.Null(
             productInformation,
-            new RestockSubscriptionDomainException("ProductInformation cannot be null"));
+            exceptionCreator: () => new RestockSubscriptionDomainException("ProductInformation cannot be null"));
 
         var restockSubscription = new RestockSubscription
         {
@@ -46,7 +46,7 @@ public class RestockSubscription : Aggregate<RestockSubscriptionId>, IHaveSoftDe
 
     public void ChangeEmail(Email email)
     {
-        Email = Guard.Against.Null(email, new RestockSubscriptionDomainException("Email can't be null."));
+        Email = Guard.Against.Null(email, exceptionCreator: () => new RestockSubscriptionDomainException("Email can't be null."));
     }
 
     public void Delete()

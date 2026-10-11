@@ -3,17 +3,22 @@
 <Project>
 
   <PropertyGroup>
+    <SquirrelSourceRoot Condition="'$(SquirrelSourceRoot)' == ''">$(MSBuildThisFileDirectory)BuildingBlocks</SquirrelSourceRoot>
     <LangVersion>latest</LangVersion>
-    <TargetFramework>net8.0</TargetFramework>
+    <TargetFramework>net10.0</TargetFramework>
     <ImplicitUsings>enable</ImplicitUsings>
     <Nullable>enable</Nullable>
   </PropertyGroup>
 
   <!-- https://endjin.com/blog/2022/01/raising-coding-standard-dotnet-analyzers -->
   <PropertyGroup>
-    <AnalysisMode>Recommended</AnalysisMode>
+    <AnalysisLevel>latest-All</AnalysisLevel>
+    <AnalysisMode>All</AnalysisMode>
     <AnalysisModeGlobalization>None</AnalysisModeGlobalization>
     <AnalysisModeSecurity>All</AnalysisModeSecurity>
+    <RunAnalyzersDuringBuild>true</RunAnalyzersDuringBuild>
+    <EnforceCodeStyleInBuild>true</EnforceCodeStyleInBuild>
+    <CodeAnalysisTreatWarningsAsErrors>false</CodeAnalysisTreatWarningsAsErrors>
   </PropertyGroup>
 
   <PropertyGroup>

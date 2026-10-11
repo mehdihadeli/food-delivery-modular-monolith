@@ -1,6 +1,9 @@
-using BuildingBlocks.Abstractions.Persistence;
-using BuildingBlocks.Persistence.EfCore.Postgres;
-using BuildingBlocks.Persistence.Mongo;
+using Squirrel.Abstractions.Persistence;
+using Squirrel.Abstractions.Events;
+using Squirrel.Persistence.EfCore.Postgres;
+using Squirrel.Persistence.Mongo;
+using Squirrel.Persistence.Mongo.Extensions;
+using MongoDB.Driver;
 using FoodDelivery.Modules.Catalogs.Shared.Contracts;
 using FoodDelivery.Modules.Catalogs.Shared.Data;
 using Microsoft.EntityFrameworkCore;
@@ -11,21 +14,14 @@ public static partial class ServiceCollectionExtensions
 {
     public static WebApplicationBuilder AddStorage(this WebApplicationBuilder builder, IConfiguration configuration)
     {
-        AddStorage(builder.Services, configuration);
-
+        AddPostgresWriteStorage(builder, configuration);
+        AddMongoReadStorage(builder, configuration);
         return builder;
     }
 
-    public static IServiceCollection AddStorage(this IServiceCollection services, IConfiguration configuration)
+    private static void AddPostgresWriteStorage(WebApplicationBuilder builder, IConfiguration configuration)
     {
-        AddPostgresWriteStorage(services, configuration);
-        AddMongoReadStorage(services, configuration);
-
-        return services;
-    }
-
-    private static void AddPostgresWriteStorage(IServiceCollection services, IConfiguration configuration)
-    {
+        var services = builder.Services;
         if (configuration.GetValue<bool>(
                 $"{CatalogModuleConfiguration.ModuleName}:{nameof(PostgresOptions)}:UseInMemory"))
         {
@@ -33,21 +29,24 @@ public static partial class ServiceCollectionExtensions
                 options.UseInMemoryDatabase("FoodDelivery.Modules.Catalogs"));
 
             services.AddScoped<IDbFacadeResolver>(provider => provider.GetService<CatalogDbContext>()!);
+            services.AddScoped<IDomainEventContext>(provider => provider.GetRequiredService<CatalogDbContext>());
         }
         else
         {
-            services.AddPostgresDbContext<CatalogDbContext>(
-                configuration,
-                $"{CatalogModuleConfiguration.ModuleName}:{nameof(PostgresOptions)}");
+            builder.Configuration["ConnectionStrings:CatalogsWrite"] =
+                configuration[$"{CatalogModuleConfiguration.ModuleName}:{nameof(PostgresOptions)}:ConnectionString"];
+            builder.AddPostgresDbContext<CatalogDbContext>("CatalogsWrite");
         }
 
         services.AddScoped<ICatalogDbContext>(provider => provider.GetRequiredService<CatalogDbContext>());
     }
 
-    private static void AddMongoReadStorage(IServiceCollection services, IConfiguration configuration)
+    private static void AddMongoReadStorage(WebApplicationBuilder builder, IConfiguration configuration)
     {
-        services.AddMongoDbContext<CatalogReadDbContext>(
-            configuration,
-            $"{CatalogModuleConfiguration.ModuleName}:{nameof(MongoOptions)}");
+        var mongoSection = configuration.GetSection($"{CatalogModuleConfiguration.ModuleName}:{nameof(MongoOptions)}");
+        var mongoUrl = new MongoUrlBuilder(mongoSection["ConnectionString"]);
+        mongoUrl.DatabaseName ??= mongoSection["DatabaseName"];
+        builder.Configuration["ConnectionStrings:CatalogsRead"] = mongoUrl.ToString();
+        builder.AddMongoDbContext<CatalogReadDbContext>("CatalogsRead");
     }
 }

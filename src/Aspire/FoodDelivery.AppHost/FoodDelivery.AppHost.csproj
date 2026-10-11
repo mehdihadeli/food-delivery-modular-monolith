@@ -1,0 +1,20 @@
+<Project Sdk="Microsoft.NET.Sdk">
+  <Sdk Name="Aspire.AppHost.Sdk" Version="9.4" />
+
+  <PropertyGroup>
+    <OutputType>Exe</OutputType>
+    <UserSecretsId>food-delivery-modular-monolith-apphost</UserSecretsId>
+    <NoWarn>ASPIREINTERACTION001</NoWarn>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <PackageReference Include="Aspire.Hosting.AppHost" />
+    <PackageReference Include="Aspire.Hosting.PostgreSQL" />
+    <PackageReference Include="Aspire.Hosting.MongoDB" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\..\Api\FoodDelivery.Api\FoodDelivery.Api.csproj" />
+    <ProjectReference Include="..\..\BuildingBlocks\src\Squirrel.AspireIntegrations\Squirrel.AspireIntegrations.csproj" IsAspireProjectResource="false" />
+  </ItemGroup>
+</Project>

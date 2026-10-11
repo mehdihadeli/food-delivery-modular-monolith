@@ -1,6 +1,6 @@
-using BuildingBlocks.Abstractions.CQRS.Event;
-using BuildingBlocks.Abstractions.CQRS.Event.Internal;
-using BuildingBlocks.Abstractions.Messaging;
+using Squirrel.Abstractions.Events;
+using Squirrel.Core.Events.Internal;
+using Squirrel.Abstractions.Messages;
 using FoodDelivery.Modules.Catalogs.Products.Features.CreatingProduct.Events.Domain;
 using FoodDelivery.Modules.Catalogs.Products.Features.CreatingProduct.Events.Notification;
 using FoodDelivery.Modules.Catalogs.Products.Features.DebitingProductStock.Events.Domain;
@@ -31,7 +31,7 @@ public class ProductEventMapper : IEventMapper
         };
     }
 
-    public IDomainNotificationEvent? MapToDomainNotificationEvent(IDomainEvent domainEvent)
+    public IDomainNotificationEvent<IDomainEvent>? MapToDomainNotificationEvent(IDomainEvent domainEvent)
     {
         return domainEvent switch
         {
@@ -45,7 +45,7 @@ public class ProductEventMapper : IEventMapper
         return domainEvents.Select(MapToIntegrationEvent).ToList().AsReadOnly();
     }
 
-    public IReadOnlyList<IDomainNotificationEvent?> MapToDomainNotificationEvents(
+    public IReadOnlyList<IDomainNotificationEvent<IDomainEvent>?> MapToDomainNotificationEvents(
         IReadOnlyList<IDomainEvent> domainEvents)
     {
         return domainEvents.Select(MapToDomainNotificationEvent).ToList().AsReadOnly();

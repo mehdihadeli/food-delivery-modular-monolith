@@ -1,7 +1,7 @@
 using Ardalis.GuardClauses;
 using AutoMapper;
-using BuildingBlocks.Abstractions.CQRS.Query;
-using BuildingBlocks.Core.Exception;
+using Squirrel.Abstractions.Queries;
+using Squirrel.Core.Exception;
 using FoodDelivery.Modules.Customers.RestockSubscriptions.Dtos;
 using FoodDelivery.Modules.Customers.RestockSubscriptions.Exceptions.Application;
 using FoodDelivery.Modules.Customers.Shared.Data;
@@ -34,7 +34,7 @@ internal class GetRestockSubscriptionByIdHandler
         _mapper = mapper;
     }
 
-    public async Task<GetRestockSubscriptionByIdResponse> Handle(
+    public async ValueTask<GetRestockSubscriptionByIdResponse> Handle(
         GetRestockSubscriptionById query,
         CancellationToken cancellationToken)
     {
@@ -45,7 +45,8 @@ internal class GetRestockSubscriptionByIdHandler
                 .Where(x => x.IsDeleted == false)
                 .SingleOrDefaultAsync(x => x.RestockSubscriptionId == query.Id, cancellationToken: cancellationToken);
 
-        Guard.Against.NotFound(restockSubscription, new RestockSubscriptionNotFoundException(query.Id));
+        if (restockSubscription is null)
+            throw new RestockSubscriptionNotFoundException(query.Id);
 
         var subscriptionDto = _mapper.Map<RestockSubscriptionDto>(restockSubscription);
 

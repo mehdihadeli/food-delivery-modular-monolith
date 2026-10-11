@@ -1,6 +1,6 @@
 using Ardalis.GuardClauses;
-using BuildingBlocks.Abstractions.CQRS.Command;
-using BuildingBlocks.Core.Utils;
+using Squirrel.Abstractions.Commands;
+using Squirrel.Core.Utils;
 using FoodDelivery.Modules.Identity.Identity.Dtos;
 using FoodDelivery.Modules.Identity.Identity.Features.RefreshingToken;
 using FoodDelivery.Modules.Identity.Shared.Data;
@@ -24,7 +24,7 @@ public class
         _context = context;
     }
 
-    public async Task<GenerateRefreshTokenResponse> Handle(
+    public async ValueTask<GenerateRefreshTokenResponse> Handle(
         GenerateRefreshToken request,
         CancellationToken cancellationToken)
     {

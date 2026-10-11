@@ -1,6 +1,6 @@
 using Ardalis.GuardClauses;
-using BuildingBlocks.Abstractions.Domain;
-using BuildingBlocks.Core.Domain;
+using Squirrel.Abstractions.Domain;
+using Squirrel.Core.Domain;
 using FoodDelivery.Modules.Catalogs.Products.ValueObjects;
 
 namespace FoodDelivery.Modules.Catalogs.Products.Models;

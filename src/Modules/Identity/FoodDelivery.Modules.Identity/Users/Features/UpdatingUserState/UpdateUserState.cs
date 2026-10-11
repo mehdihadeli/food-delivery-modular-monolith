@@ -1,24 +1,24 @@
 using Ardalis.GuardClauses;
-using BuildingBlocks.Abstractions.CQRS.Command;
-using BuildingBlocks.Abstractions.Messaging;
-using BuildingBlocks.Core.Exception;
+using Squirrel.Abstractions.Commands;
+using Squirrel.Abstractions.Messages;
+using Squirrel.Core.Exception;
 using FoodDelivery.Modules.Identity.Shared.Exceptions;
 using FoodDelivery.Modules.Identity.Shared.Models;
 using FoodDelivery.Modules.Identity.Users.Features.UpdatingUserState.Events.Integration;
 using FluentValidation;
-using MediatR;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.Extensions.Logging;
 
 namespace FoodDelivery.Modules.Identity.Users.Features.UpdatingUserState;
 
-public record UpdateUserState(Guid UserId, UserState State) : ITxUpdateCommand;
+public record UpdateUserState(Guid UserId, UserState State) : ITxCommand;
 
 internal class UpdateUserStateValidator : AbstractValidator<UpdateUserState>
 {
     public UpdateUserStateValidator()
     {
-        CascadeMode = CascadeMode.Stop;
+        RuleLevelCascadeMode = CascadeMode.Stop;
+        ClassLevelCascadeMode = CascadeMode.Stop;
 
         RuleFor(v => v.State)
             .NotEmpty();
@@ -30,12 +30,12 @@ internal class UpdateUserStateValidator : AbstractValidator<UpdateUserState>
 
 internal class UpdateUserStateHandler : ICommandHandler<UpdateUserState>
 {
-    private readonly IBus _bus;
+    private readonly IExternalEventBus _bus;
     private readonly ILogger<UpdateUserStateHandler> _logger;
     private readonly UserManager<ApplicationUser> _userManager;
 
     public UpdateUserStateHandler(
-        IBus bus,
+        IExternalEventBus bus,
         UserManager<ApplicationUser> userManager,
         ILogger<UpdateUserStateHandler> logger)
     {
@@ -44,10 +44,11 @@ internal class UpdateUserStateHandler : ICommandHandler<UpdateUserState>
         _userManager = Guard.Against.Null(userManager, nameof(userManager));
     }
 
-    public async Task<Unit> Handle(UpdateUserState request, CancellationToken cancellationToken)
+    public async ValueTask<Unit> Handle(UpdateUserState request, CancellationToken cancellationToken)
     {
         var user = await _userManager.FindByIdAsync(request.UserId.ToString());
-        Guard.Against.Null(user, new UserNotFoundException(request.UserId));
+        if (user is null)
+            throw new UserNotFoundException(request.UserId);
 
         var previousState = user.UserState;
         if (previousState == request.State)
@@ -69,7 +70,7 @@ internal class UpdateUserStateHandler : ICommandHandler<UpdateUserState>
             (UserState)(int)previousState,
             (UserState)(int)request.State);
 
-        await _bus.PublishAsync(userStateUpdated, null, cancellationToken);
+        await _bus.PublishAsync(userStateUpdated, cancellationToken: cancellationToken);
 
 
         _logger.LogInformation(

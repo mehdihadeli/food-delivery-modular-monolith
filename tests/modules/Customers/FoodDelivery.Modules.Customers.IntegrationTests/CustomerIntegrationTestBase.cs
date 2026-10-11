@@ -1,14 +1,14 @@
-using FoodDelivery.Api;
 using FoodDelivery.Modules.Customers.Shared.Data;
 using Tests.Shared.Fixtures;
-using Xunit.Abstractions;
+using Tests.Shared.TestBase;
+using Xunit;
 
 namespace FoodDelivery.Modules.Customers.IntegrationTests;
 
-public class CustomerModuleTestIntegrationTestBase : ModuleTestBase<Program, CustomersModuleConfiguration, CustomersDbContext, CustomersReadDbContext>
+[Collection(IntegrationTestCollection.Name)]
+[Trait("Category", "Integration")]
+public abstract class CustomerModuleTestIntegrationTestBase(
+    SharedFixtureWithEfCoreAndMongo<global::Program, CustomersDbContext, CustomersReadDbContext> sharedFixture
+) : IntegrationTestBase<global::Program, CustomersDbContext, CustomersReadDbContext>(sharedFixture)
 {
-    public CustomerModuleTestIntegrationTestBase(IntegrationTestFixture<Program> integrationTestFixture,
-        ITestOutputHelper outputHelper) : base(integrationTestFixture, outputHelper)
-    {
-    }
 }

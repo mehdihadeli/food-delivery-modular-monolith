@@ -1,6 +1,6 @@
-using BuildingBlocks.Abstractions.Messaging;
-using BuildingBlocks.Abstractions.Messaging.Context;
-using BuildingBlocks.Core.Extensions;
+using Squirrel.Abstractions.Messages;
+using Squirrel.Core.Extensions;
+using Squirrel.Core.Types.Extensions;
 using Hypothesist;
 using Microsoft.Extensions.DependencyInjection;
 
@@ -11,12 +11,6 @@ public static class HandlerFactory
     public static IMessageHandler<T> AsMessageHandler<T>(this IHypothesis<T> hypothesis) where T : class, IMessage
     {
         return new SimpleMessageConsumer<T>(hypothesis);
-    }
-
-    public static MessageHandler<T> AsMessageHandlerDelegate<T>(this IHypothesis<T> hypothesis)
-        where T : class, IMessage
-    {
-        return (context, cancellationToken) => hypothesis.Test(context.Message, cancellationToken);
     }
 
     public static IMessageHandler<TMessage> AsMessageHandler<TMessage, TMessageHandler>(
@@ -42,7 +36,7 @@ internal class MessageConsumer<T> : IMessageHandler<T>
         _internalHandler = internalHandler;
     }
 
-    public async Task HandleAsync(IConsumeContext<T> messageContext, CancellationToken cancellationToken = default)
+    public async Task Handle(T message, CancellationToken cancellationToken = default)
     {
         using var scope = _serviceProvider.CreateScope();
         var handler = scope.ServiceProvider.GetService(_internalHandler);
@@ -52,8 +46,8 @@ internal class MessageConsumer<T> : IMessageHandler<T>
             return;
         }
 
-        await handler.InvokeMethodWithoutResultAsync("HandleAsync", messageContext, cancellationToken);
-        await _hypothesis.Test(messageContext.Message);
+        await handler.InvokeMethodWithoutResultAsync("Handle", message, cancellationToken);
+        await _hypothesis.Test(message);
     }
 }
 
@@ -67,8 +61,8 @@ internal class SimpleMessageConsumer<T> : IMessageHandler<T>
         _hypothesis = hypothesis;
     }
 
-    public Task HandleAsync(IConsumeContext<T> messageContext, CancellationToken cancellationToken = default)
+    public Task Handle(T message, CancellationToken cancellationToken = default)
     {
-        return _hypothesis.Test(messageContext.Message);
+        return _hypothesis.Test(message);
     }
 }

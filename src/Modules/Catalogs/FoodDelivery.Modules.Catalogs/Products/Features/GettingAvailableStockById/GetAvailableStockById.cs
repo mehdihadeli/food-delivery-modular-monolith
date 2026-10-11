@@ -1,4 +1,4 @@
-using BuildingBlocks.Abstractions.CQRS.Query;
+using Squirrel.Abstractions.Queries;
 
 namespace FoodDelivery.Modules.Catalogs.Products.Features.GettingAvailableStockById;
 

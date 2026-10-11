@@ -1,7 +1,8 @@
+using System.Runtime.CompilerServices;
 using Ardalis.GuardClauses;
 using AutoMapper;
 using AutoMapper.QueryableExtensions;
-using BuildingBlocks.Abstractions.CQRS.Query;
+using Squirrel.Abstractions.Queries;
 using FoodDelivery.Modules.Customers.RestockSubscriptions.Dtos;
 using FoodDelivery.Modules.Customers.Shared.Data;
 using FluentValidation;
@@ -16,7 +17,8 @@ internal class GetRestockSubscriptionsByEmailsValidator : AbstractValidator<GetR
 {
     public GetRestockSubscriptionsByEmailsValidator()
     {
-        CascadeMode = CascadeMode.Stop;
+        RuleLevelCascadeMode = CascadeMode.Stop;
+        ClassLevelCascadeMode = CascadeMode.Stop;
 
         RuleFor(request => request.Emails)
             .NotNull()
@@ -36,18 +38,24 @@ internal class GetRestockSubscriptionsByEmailsHandler
         _mapper = mapper;
     }
 
-    public IAsyncEnumerable<RestockSubscriptionDto> Handle(
+    public async IAsyncEnumerable<RestockSubscriptionDto> Handle(
         GetRestockSubscriptionsByEmails query,
-        CancellationToken cancellationToken)
+        [EnumeratorCancellation] CancellationToken cancellationToken)
     {
         Guard.Against.Null(query, nameof(query));
 
         var result = _customersReadDbContext.RestockSubscriptions.AsQueryable()
             .Where(x => !x.IsDeleted)
             .Where(x => query.Emails.Contains(x.Email!))
-            .ProjectTo<RestockSubscriptionDto>(_mapper.ConfigurationProvider)
-            .ToAsyncEnumerable();
+            .ProjectTo<RestockSubscriptionDto>(_mapper.ConfigurationProvider);
 
-        return result;
+        using var cursor = await result.ToCursorAsync(cancellationToken);
+        while (await cursor.MoveNextAsync(cancellationToken))
+        {
+            foreach (var subscription in cursor.Current)
+            {
+                yield return subscription;
+            }
+        }
     }
 }

@@ -1,9 +1,9 @@
 using Ardalis.GuardClauses;
 using AutoMapper;
-using BuildingBlocks.Abstractions.CQRS.Command;
-using BuildingBlocks.Core.Domain.ValueObjects;
-using BuildingBlocks.Core.Exception;
-using BuildingBlocks.Core.IdsGenerator;
+using Squirrel.Abstractions.Commands;
+using Squirrel.Core.Domain.ValueObjects;
+using Squirrel.Core.Exception;
+using Squirrel.Core.IdsGenerator;
 using FoodDelivery.Modules.Customers.Customers.Exceptions.Application;
 using FoodDelivery.Modules.Customers.Products.Exceptions;
 using FoodDelivery.Modules.Customers.RestockSubscriptions.Dtos;
@@ -18,7 +18,7 @@ using FluentValidation;
 namespace FoodDelivery.Modules.Customers.RestockSubscriptions.Features.CreatingRestockSubscription;
 
 public record CreateRestockSubscription(long CustomerId, long ProductId, string Email)
-    : ITxCreateCommand<CreateRestockSubscriptionResponse>
+    : ICommand<CreateRestockSubscriptionResponse>
 {
     public long Id { get; init; } = SnowFlakIdGenerator.NewId();
 }
@@ -59,17 +59,19 @@ internal class CreateRestockSubscriptionHandler
         _logger = logger;
     }
 
-    public async Task<CreateRestockSubscriptionResponse> Handle(
+    public async ValueTask<CreateRestockSubscriptionResponse> Handle(
         CreateRestockSubscription request,
         CancellationToken cancellationToken)
     {
         Guard.Against.Null(request, nameof(request));
 
         var existsCustomer = await _customersDbContext.ExistsCustomerByIdAsync(request.CustomerId);
-        Guard.Against.NotExists(existsCustomer, new CustomerNotFoundException(request.CustomerId));
+        if (!existsCustomer)
+            throw new CustomerNotFoundException(request.CustomerId);
 
         var product = (await _catalogApiClient.GetProductByIdAsync(request.ProductId, cancellationToken))?.Product;
-        Guard.Against.NotFound(product, new ProductNotFoundException(request.ProductId));
+        if (product is null)
+            throw new ProductNotFoundException(request.ProductId);
 
         if (product!.AvailableStock > 0)
             throw new ProductHaveStockException(product.Id, product.AvailableStock, product.Name);
@@ -85,7 +87,7 @@ internal class CreateRestockSubscriptionHandler
                 request.Id,
                 request.CustomerId,
                 ProductInformation.Create(product!.Id, product.Name),
-                Email.Create(request.Email));
+                Email.Of(request.Email));
 
         await _customersDbContext.AddAsync(restockSubscription, cancellationToken);
 

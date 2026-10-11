@@ -1,6 +1,6 @@
 using Ardalis.GuardClauses;
-using BuildingBlocks.Abstractions.CQRS.Command;
-using BuildingBlocks.Core.Exception;
+using Squirrel.Abstractions.Commands;
+using Squirrel.Core.Exception;
 using FoodDelivery.Modules.Customers.RestockSubscriptions.Exceptions.Domain;
 using FoodDelivery.Modules.Customers.RestockSubscriptions.Features.SendingRestockNotification;
 using FoodDelivery.Modules.Customers.Shared.Data;
@@ -8,7 +8,7 @@ using FluentValidation;
 
 namespace FoodDelivery.Modules.Customers.RestockSubscriptions.Features.ProcessingRestockNotification;
 
-public record ProcessRestockNotification(long ProductId, int CurrentStock) : ITxCommand;
+public record ProcessRestockNotification(long ProductId, int CurrentStock) : ICommand;
 
 internal class ProcessRestockNotificationValidator : AbstractValidator<ProcessRestockNotification>
 {
@@ -25,22 +25,22 @@ internal class ProcessRestockNotificationValidator : AbstractValidator<ProcessRe
 internal class ProcessRestockNotificationHandler : ICommandHandler<ProcessRestockNotification>
 {
     private readonly CustomersDbContext _customersDbContext;
-    private readonly ICommandProcessor _commandProcessor;
+    private readonly ICommandBus _commandBus;
     private readonly ILogger<ProcessRestockNotificationHandler> _logger;
 
     public ProcessRestockNotificationHandler(
         CustomersDbContext customersDbContext,
-        ICommandProcessor commandProcessor,
+        ICommandBus commandBus,
         ILogger<ProcessRestockNotificationHandler> logger)
     {
         _customersDbContext = customersDbContext;
-        _commandProcessor = commandProcessor;
+        _commandBus = commandBus;
         _logger = logger;
     }
 
-    public async Task<Unit> Handle(ProcessRestockNotification command, CancellationToken cancellationToken)
+    public async ValueTask<Unit> Handle(ProcessRestockNotification command, CancellationToken cancellationToken)
     {
-        Guard.Against.Null(command, new RestockSubscriptionDomainException("Command cannot be null"));
+        Guard.Against.Null(command, exceptionCreator: () => new RestockSubscriptionDomainException("Command cannot be null"));
 
         var subscribedCustomers =
             _customersDbContext.RestockSubscriptions.Where(x =>
@@ -55,7 +55,7 @@ internal class ProcessRestockNotificationHandler : ICommandHandler<ProcessRestoc
 
             // https://github.com/kgrzybek/modular-monolith-with-ddd#38-internal-processing
             // schedule `SendRestockNotification` for running as a internal command after commenting transaction
-            await _commandProcessor.ScheduleAsync(
+            await _commandBus.ScheduleAsync(
                 new SendRestockNotification(restockSubscription.Id, command.CurrentStock),
                 cancellationToken);
         }

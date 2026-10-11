@@ -1,4 +1,4 @@
-using BuildingBlocks.Persistence.Mongo;
+using Squirrel.Persistence.Mongo;
 using FoodDelivery.Modules.Catalogs.Products.Models.Read;
 using Humanizer;
 using Microsoft.Extensions.Options;
@@ -8,7 +8,7 @@ namespace FoodDelivery.Modules.Catalogs.Shared.Data;
 
 public class CatalogReadDbContext : MongoDbContext
 {
-    public CatalogReadDbContext(IOptions<MongoOptions> options) : base(options)
+    public CatalogReadDbContext(IMongoClient mongoClient, IMongoDatabase mongoDatabase) : base(mongoClient, mongoDatabase)
     {
         Products = GetCollection<ProductReadModel>(nameof(Products).Underscore());
     }

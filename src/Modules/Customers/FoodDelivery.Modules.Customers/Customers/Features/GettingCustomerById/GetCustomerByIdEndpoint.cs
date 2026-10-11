@@ -1,7 +1,7 @@
 using Ardalis.GuardClauses;
 using Asp.Versioning.Conventions;
-using BuildingBlocks.Abstractions.Web;
-using BuildingBlocks.Abstractions.Web.MinimalApi;
+using Squirrel.Abstractions.Web;
+using Squirrel.Abstractions.Web.MinimalApi;
 using Swashbuckle.AspNetCore.Annotations;
 
 namespace FoodDelivery.Modules.Customers.Customers.Features.GettingCustomerById;

@@ -1,5 +1,5 @@
 using System.Reflection;
-using BuildingBlocks.Core.Persistence.EfCore;
+using Squirrel.Core.Persistence.EfCore;
 using FoodDelivery.Modules.Orders.Orders.Models;
 using FoodDelivery.Modules.Orders.Shared.Contracts;
 using Microsoft.EntityFrameworkCore;
@@ -10,7 +10,7 @@ public class OrdersDbContext : EfDbContextBase, IOrdersDbContext
 {
     public const string DefaultSchema = "order";
 
-    public OrdersDbContext(DbContextOptions options) : base(options)
+    public OrdersDbContext(DbContextOptions<OrdersDbContext> options) : base(options)
     {
     }
 

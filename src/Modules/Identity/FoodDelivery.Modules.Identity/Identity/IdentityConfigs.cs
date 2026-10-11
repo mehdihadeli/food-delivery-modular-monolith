@@ -1,5 +1,6 @@
 using Asp.Versioning.Builder;
-using BuildingBlocks.Abstractions.Persistence;
+using Squirrel.Abstractions.Persistence;
+using FoodDelivery.Modules.Identity.Shared.Data;
 using FoodDelivery.Modules.Identity.Identity.Data;
 using FoodDelivery.Modules.Identity.Identity.Features.GetClaims;
 using FoodDelivery.Modules.Identity.Identity.Features.Login;
@@ -20,21 +21,22 @@ internal static class IdentityConfigs
     public const string IdentityPrefixUri = $"{IdentityModuleConfiguration.IdentityModulePrefixUri}";
     public static ApiVersionSet VersionSet { get; private set; } = default!;
 
-    internal static IServiceCollection AddIdentityServices(
-        this IServiceCollection services,
+    internal static WebApplicationBuilder AddIdentityServices(
+        this WebApplicationBuilder builder,
         IConfiguration configuration,
         IWebHostEnvironment environment)
     {
-        services.AddCustomIdentity(
+        var services = builder.Services;
+        builder.AddCustomIdentity(
             configuration,
             $"{IdentityModuleConfiguration.ModuleName}:{nameof(IdentityOptions)}");
 
-        services.AddScoped<IDataSeeder, IdentityDataSeeder>();
+        services.AddScoped<IDataSeeder<IdentityContext>, IdentityDataSeeder>();
 
         if (environment.IsEnvironment("test") == false)
             services.AddCustomIdentityServer();
 
-        return services;
+        return builder;
     }
 
     internal static IEndpointRouteBuilder MapIdentityEndpoints(this IEndpointRouteBuilder endpoints)

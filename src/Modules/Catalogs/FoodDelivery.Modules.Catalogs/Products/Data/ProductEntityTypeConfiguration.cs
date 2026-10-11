@@ -1,4 +1,4 @@
-using BuildingBlocks.Core.Persistence.EfCore;
+using Squirrel.Core.Persistence.EfCore;
 using FoodDelivery.Modules.Catalogs.Brands;
 using FoodDelivery.Modules.Catalogs.Categories;
 using FoodDelivery.Modules.Catalogs.Products.Models;

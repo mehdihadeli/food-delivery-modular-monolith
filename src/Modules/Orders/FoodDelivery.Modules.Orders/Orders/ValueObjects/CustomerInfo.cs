@@ -1,4 +1,4 @@
-using BuildingBlocks.Core.Domain;
+using Squirrel.Core.Domain;
 
 namespace FoodDelivery.Modules.Orders.Orders.ValueObjects;
 

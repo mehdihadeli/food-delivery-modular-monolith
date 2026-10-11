@@ -1,50 +1,49 @@
 using Asp.Versioning;
 using Asp.Versioning.Builder;
-using BuildingBlocks.Abstractions.Web.Module;
-using BuildingBlocks.Core.Extensions;
-using BuildingBlocks.Core.Messaging.Extensions;
+using Squirrel.Abstractions.Web.Module;
+using Squirrel.Core.Extensions;
+using Squirrel.Core.Messages.Extensions;
+using Squirrel.Web.Module;
 using FoodDelivery.Modules.Orders.Shared.Extensions.ApplicationBuilderExtensions;
 using FoodDelivery.Modules.Orders.Shared.Extensions.ServiceCollectionExtensions;
 
 namespace FoodDelivery.Modules.Orders;
 
-public class OrdersModuleConfiguration : IModuleDefinition
+public class OrdersModuleConfiguration : IModuleConfiguration
 {
     public const string OrderModulePrefixUri = "api/v{version:apiVersion}/orders";
     public const string ModuleName = "Orders";
     public static ApiVersionSet VersionSet { get; private set; } = default!;
 
-    public void AddModuleServices(
-        IServiceCollection services,
-        IConfiguration configuration,
-        IWebHostEnvironment environment)
+    public WebApplicationBuilder AddModuleServices(WebApplicationBuilder builder)
     {
-        services.AddInfrastructure(configuration);
-
-        services.AddStorage(configuration);
+        builder.AddInfrastructure(builder.Configuration);
+        builder.AddStorage(builder.Configuration);
 
         // Add Sub Modules Services
+        return builder;
     }
 
-    public async Task ConfigureModule(
-        IApplicationBuilder app,
-        IConfiguration configuration,
-        ILogger logger,
-        IWebHostEnvironment environment)
+    public async Task<WebApplication> ConfigureModule(WebApplication app)
     {
-        if (environment.IsEnvironment("test") == false)
+        var moduleProvider = CompositionRootRegistry.GetByModule<OrdersModuleConfiguration>()?.ServiceProvider;
+        if (app.Environment.IsEnvironment("test") == false
+            && moduleProvider is not null
+            && !ReferenceEquals(moduleProvider, app.Services))
         {
-            // HostedServices just run on main service provider - It should not await because it will block the main thread.
-            await app.ApplicationServices.StartHostedServices();
+            foreach (var hostedService in moduleProvider.GetServices<IHostedService>())
+            {
+                await hostedService.StartAsync(app.Lifetime.ApplicationStopping);
+            }
         }
-
-        app.SubscribeAllMessageFromAssemblyOfType<OrdersRoot>();
-
-        await app.ApplyDatabaseMigrations(logger);
-        await app.SeedData(logger, environment);
+        var moduleApp = ((IApplicationBuilder)app).New();
+        moduleApp.ApplicationServices = moduleProvider ?? app.Services;
+        await moduleApp.ApplyDatabaseMigrations(app.Logger);
+        await moduleApp.SeedData(app.Logger, app.Environment);
+        return app;
     }
 
-    public void MapEndpoints(IEndpointRouteBuilder endpoints)
+    public IEndpointRouteBuilder MapEndpoints(IEndpointRouteBuilder endpoints)
     {
         var v1 = new ApiVersion(1, 0);
         var v2 = new ApiVersion(2, 0);
@@ -66,5 +65,6 @@ public class OrdersModuleConfiguration : IModuleDefinition
         }).ExcludeFromDescription();
 
         // Add Sub Modules Endpoints
+        return endpoints;
     }
 }

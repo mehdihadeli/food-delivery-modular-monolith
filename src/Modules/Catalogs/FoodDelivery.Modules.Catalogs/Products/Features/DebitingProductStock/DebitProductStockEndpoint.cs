@@ -1,5 +1,5 @@
 using Asp.Versioning.Conventions;
-using BuildingBlocks.Abstractions.Web;
+using Squirrel.Abstractions.Web;
 using Swashbuckle.AspNetCore.Annotations;
 
 namespace FoodDelivery.Modules.Catalogs.Products.Features.DebitingProductStock;

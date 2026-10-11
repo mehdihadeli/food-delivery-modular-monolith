@@ -1,6 +1,6 @@
 using Ardalis.GuardClauses;
-using BuildingBlocks.Abstractions.CQRS.Command;
-using BuildingBlocks.Core.Exception.Types;
+using Squirrel.Abstractions.Commands;
+using Squirrel.Core.Exception;
 using FoodDelivery.Modules.Identity.Identity.Features.VerifyEmail.Exceptions;
 using FoodDelivery.Modules.Identity.Shared.Data;
 using FoodDelivery.Modules.Identity.Shared.Exceptions;
@@ -29,7 +29,7 @@ internal class VerifyEmailHandler : ICommandHandler<VerifyEmail>
     }
 
 
-    public async Task<Unit> Handle(VerifyEmail request, CancellationToken cancellationToken)
+    public async ValueTask<Unit> Handle(VerifyEmail request, CancellationToken cancellationToken)
     {
         Guard.Against.Null(request, nameof(VerifyEmail));
 

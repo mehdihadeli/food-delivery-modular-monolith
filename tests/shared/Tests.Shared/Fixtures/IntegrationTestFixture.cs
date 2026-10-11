@@ -3,7 +3,7 @@ using Microsoft.AspNetCore.Http;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Tests.Shared.Mocks;
-using Xunit.Abstractions;
+using Xunit;
 
 namespace Tests.Shared.Fixtures;
 
@@ -102,13 +102,14 @@ public class IntegrationTestFixture<TEntryPoint> : IAsyncLifetime
     public void RegisterTestServices(Action<IServiceCollection> services) =>
         _factory.TestRegistrationServices = services;
 
-    public virtual async Task InitializeAsync()
+    public virtual ValueTask InitializeAsync()
     {
+        return ValueTask.CompletedTask;
     }
 
-    public virtual Task DisposeAsync()
+    public virtual ValueTask DisposeAsync()
     {
         _factory.Dispose();
-        return Task.CompletedTask;
+        return ValueTask.CompletedTask;
     }
 }

@@ -1,61 +1,47 @@
-using Ardalis.GuardClauses;
-using BuildingBlocks.Caching.InMemory;
-using BuildingBlocks.Core.Caching;
-using BuildingBlocks.Core.Extensions;
-using BuildingBlocks.Core.IdsGenerator;
-using BuildingBlocks.Core.Persistence.EfCore;
-using BuildingBlocks.Core.Registrations;
-using BuildingBlocks.Email;
-using BuildingBlocks.Email.Options;
-using BuildingBlocks.Logging;
-using BuildingBlocks.Monitoring;
-using BuildingBlocks.Persistence.EfCore.Postgres;
-using BuildingBlocks.Validation;
-using BuildingBlocks.Web.Extensions.ServiceCollectionExtensions;
+using Squirrel.Abstractions.Caching;
+using Squirrel.Caching;
+using Squirrel.Caching.Behaviors;
+using Squirrel.Core.Extensions;
+using Squirrel.Core.Pipelines;
+using Squirrel.Core.Persistence.EfCore;
+using Squirrel.Email;
+using Squirrel.Validation;
+using Squirrel.Validation.Extensions;
 
 namespace FoodDelivery.Modules.Orders.Shared.Extensions.ServiceCollectionExtensions;
 
 public static partial class ServiceCollectionExtensions
 {
-    public static IServiceCollection AddInfrastructure(this IServiceCollection services, IConfiguration configuration)
+    public static WebApplicationBuilder AddInfrastructure(this WebApplicationBuilder builder, IConfiguration configuration)
     {
-        services.AddControllersAsServices();
-
-        SnowFlakIdGenerator.Configure(3);
-
-        services.AddCore(
-            configuration,
-            OrdersModuleConfiguration.ModuleName,
-            Assembly.GetExecutingAssembly());
-
-        services.AddEmailService(configuration, $"{OrdersModuleConfiguration.ModuleName}:{nameof(EmailOptions)}");
-
-        services.AddCqrs(
-            doMoreActions: s =>
-            {
-                s.AddScoped(typeof(IPipelineBehavior<,>), typeof(RequestValidationBehavior<,>))
-                    .AddScoped(typeof(IStreamPipelineBehavior<,>), typeof(StreamRequestValidationBehavior<,>))
-                    .AddScoped(typeof(IStreamPipelineBehavior<,>), typeof(StreamLoggingBehavior<,>))
-                    .AddScoped(typeof(IStreamPipelineBehavior<,>), typeof(StreamCachingBehavior<,>))
-                    .AddScoped(typeof(IPipelineBehavior<,>), typeof(LoggingBehavior<,>))
-                    .AddScoped(typeof(IPipelineBehavior<,>), typeof(CachingBehavior<,>))
-                    .AddScoped(typeof(IPipelineBehavior<,>), typeof(InvalidateCachingBehavior<,>))
-                    .AddScoped(typeof(IPipelineBehavior<,>), typeof(EfTxBehavior<,>));
-            });
-
-        services.AddInMemoryMessagePersistence();
-        services.AddInMemoryCommandScheduler();
-        services.AddInMemoryBroker(configuration);
+        var services = builder.Services;
+        services.AddMediator(options =>
+        {
+            options.ServiceLifetime = ServiceLifetime.Scoped;
+            options.Namespace = "FoodDelivery.Modules.Orders";
+        });
+        builder.AddCoreServices();
+        services.AddScoped(typeof(IPipelineBehavior<,>), typeof(RequestValidationBehavior<,>))
+            .AddScoped(typeof(IStreamPipelineBehavior<,>), typeof(StreamRequestValidationBehavior<,>))
+            .AddScoped(typeof(IStreamPipelineBehavior<,>), typeof(StreamLoggingBehavior<,>))
+            .AddScoped(typeof(IStreamPipelineBehavior<,>), typeof(StreamCachingBehavior<,>))
+            .AddScoped(typeof(IPipelineBehavior<,>), typeof(LoggingBehavior<,>))
+            .AddScoped(typeof(IPipelineBehavior<,>), typeof(CachingBehavior<,>))
+            .AddScoped(typeof(IPipelineBehavior<,>), typeof(InvalidateCachingBehavior<,>))
+            .AddScoped(typeof(IPipelineBehavior<,>), typeof(EfTxBehavior<,>));
+        services.AddControllers().AddControllersAsServices();
+        services.AddEmailService(configuration.GetSection(OrdersModuleConfiguration.ModuleName));
 
         services.AddCustomValidators(Assembly.GetExecutingAssembly());
 
         services.AddAutoMapper(Assembly.GetExecutingAssembly());
 
-        services.AddCustomInMemoryCache(configuration)
-            .AddCachingRequestPolicies(Assembly.GetExecutingAssembly());
+        services.AddOptions<CacheOptions>().Bind(configuration.GetSection(nameof(CacheOptions)));
+        services.AddHybridCache();
+        services.AddSingleton<ICacheService, CacheService>();
 
         services.AddSingleton<ILoggerFactory>(new Serilog.Extensions.Logging.SerilogLoggerFactory());
 
-        return services;
+        return builder;
     }
 }

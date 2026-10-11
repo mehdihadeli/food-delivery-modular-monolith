@@ -1,5 +1,11 @@
 <Project Sdk="Microsoft.NET.Sdk.Web">
   <ItemGroup>
+    <PackageReference Include="WolverineFx.PostgreSQL" />
+    <PackageReference Include="WolverineFx.EntityFrameworkCore" />
+  </ItemGroup>
+  <ItemGroup>
+    <ProjectReference Include="$(SquirrelSourceRoot)\src\Squirrel.Integration.Wolverine.InMemory\Squirrel.Integration.Wolverine.InMemory.csproj" />
+    <ProjectReference Include="..\..\Aspire\FoodDelivery.ServiceDefaults\FoodDelivery.ServiceDefaults.csproj" />
     <ProjectReference Include="..\..\Modules\Catalogs\FoodDelivery.Modules.Catalogs\FoodDelivery.Modules.Catalogs.csproj" />
     <ProjectReference Include="..\..\Modules\Customers\FoodDelivery.Modules.Customers\FoodDelivery.Modules.Customers.csproj" />
     <ProjectReference Include="..\..\Modules\Identity\FoodDelivery.Modules.Identity\FoodDelivery.Modules.Identity.csproj" />

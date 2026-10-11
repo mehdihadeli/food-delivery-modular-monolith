@@ -1,4 +1,4 @@
-using BuildingBlocks.Core.Messaging;
+using Squirrel.Core.Messages;
 using FoodDelivery.Modules.Identity.Shared.Models;
 
 namespace FoodDelivery.Modules.Identity.Users.Features.UpdatingUserState.Events.Integration;

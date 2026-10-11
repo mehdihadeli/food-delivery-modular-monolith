@@ -1,4 +1,4 @@
-using BuildingBlocks.Core.Persistence.EfCore;
+using Squirrel.Core.Persistence.EfCore;
 using FoodDelivery.Modules.Catalogs.Brands;
 using FoodDelivery.Modules.Catalogs.Categories;
 using FoodDelivery.Modules.Catalogs.Products.Models;
@@ -12,7 +12,7 @@ public class CatalogDbContext : EfDbContextBase, ICatalogDbContext
 {
     public const string DefaultSchema = "catalog";
 
-    public CatalogDbContext(DbContextOptions options) : base(options)
+    public CatalogDbContext(DbContextOptions<CatalogDbContext> options) : base(options)
     {
     }
 

@@ -1,16 +1,18 @@
 using Ardalis.GuardClauses;
 using AutoMapper;
-using BuildingBlocks.Abstractions.CQRS.Command;
-using BuildingBlocks.Core.CQRS.Command;
+using Squirrel.Abstractions.Commands;
 using FoodDelivery.Modules.Customers.Customers.Models.Reads;
 using FoodDelivery.Modules.Customers.Shared.Data;
 
 namespace FoodDelivery.Modules.Customers.Customers.Features;
 
-public record CreateMongoCustomerReadModels : InternalCommand
+public record CreateMongoCustomerReadModels : IInternalCommand
 {
+    public Guid InternalCommandId { get; init; } = Guid.NewGuid();
+    public DateTime OccurredOn { get; init; } = DateTime.UtcNow;
+    public string Type => GetType().FullName!;
     public long CustomerId { get; init; }
-    public new Guid Id { get; init; }
+    public Guid Id { get; init; }
     public Guid IdentityId { get; init; }
     public string Email { get; init; } = null!;
     public string FirstName { get; init; } = null!;
@@ -36,7 +38,7 @@ internal class CreateMongoCustomerReadModelsHandler : ICommandHandler<CreateMong
         _mapper = mapper;
     }
 
-    public async Task<Unit> Handle(CreateMongoCustomerReadModels command, CancellationToken cancellationToken)
+    public async ValueTask<Unit> Handle(CreateMongoCustomerReadModels command, CancellationToken cancellationToken)
     {
         Guard.Against.Null(command, nameof(command));
 

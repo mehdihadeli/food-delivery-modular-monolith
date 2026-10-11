@@ -1,5 +1,5 @@
 using Ardalis.GuardClauses;
-using BuildingBlocks.Core.Exception;
+using Squirrel.Core.Exception;
 using FoodDelivery.Modules.Catalogs.Products.Exceptions.Domain;
 
 namespace FoodDelivery.Modules.Catalogs.Products.ValueObjects;
@@ -14,12 +14,12 @@ public record Name
     {
         return new Name
         {
-            Value = Guard.Against.NullOrEmpty(value, new ProductDomainException("Name can't be null mor empty."))
+            Value = Guard.Against.NullOrEmpty(value, exceptionCreator: () => new ProductDomainException("Name can't be null mor empty."))
         };
     }
 
     public static implicit operator Name(string value) => Create(value);
 
     public static implicit operator string(Name value) =>
-        Guard.Against.Null(value.Value, new ProductDomainException("Name can't be null."));
+        Guard.Against.Null(value.Value, exceptionCreator: () => new ProductDomainException("Name can't be null."));
 }

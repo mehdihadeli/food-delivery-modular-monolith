@@ -1,5 +1,5 @@
 using Asp.Versioning.Conventions;
-using BuildingBlocks.Abstractions.Web;
+using Squirrel.Abstractions.Web;
 
 namespace FoodDelivery.Modules.Identity.Identity.Features.VerifyEmail;
 

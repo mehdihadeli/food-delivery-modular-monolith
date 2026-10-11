@@ -1,4 +1,4 @@
-using BuildingBlocks.Core.CQRS.Query;
+using Squirrel.Core.Paging;
 
 namespace FoodDelivery.Modules.Identity.Users.Features.GettingUsers;
 

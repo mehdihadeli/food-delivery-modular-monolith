@@ -2,7 +2,7 @@ using Ardalis.ApiEndpoints;
 using Ardalis.GuardClauses;
 using Asp.Versioning;
 using Asp.Versioning.Conventions;
-using BuildingBlocks.Abstractions.CQRS.Query;
+using Squirrel.Abstractions.Queries;
 using Swashbuckle.AspNetCore.Annotations;
 
 
@@ -14,11 +14,11 @@ public class GetCustomersEndpoint : EndpointBaseAsync
     .WithRequest<GetCustomersRequest?>
     .WithActionResult<GetCustomersResponse>
 {
-    private readonly IQueryProcessor _queryProcessor;
+    private readonly IQueryBus _queryBus;
 
-    public GetCustomersEndpoint(IQueryProcessor queryProcessor)
+    public GetCustomersEndpoint(IQueryBus queryBus)
     {
-        _queryProcessor = queryProcessor;
+        _queryBus = queryBus;
     }
 
     [HttpGet(CustomersConfigs.CustomersPrefixUri, Name = "GetCustomers")]
@@ -37,15 +37,8 @@ public class GetCustomersEndpoint : EndpointBaseAsync
     {
         Guard.Against.Null(request, nameof(request));
 
-        var result = await _queryProcessor.SendAsync(
-            new GetCustomers
-            {
-                Filters = request.Filters,
-                Includes = request.Includes,
-                Page = request.Page,
-                Sorts = request.Sorts,
-                PageSize = request.PageSize
-            },
+        var result = await _queryBus.SendAsync(
+            GetCustomers.Of(request),
             cancellationToken);
 
         return Ok(result);

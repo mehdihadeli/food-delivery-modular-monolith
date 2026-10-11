@@ -1,5 +1,5 @@
-using BuildingBlocks.Abstractions.Persistence;
-using BuildingBlocks.Persistence.EfCore.Postgres;
+using Squirrel.Abstractions.Persistence;
+using Squirrel.Persistence.EfCore.Postgres;
 using FoodDelivery.Modules.Identity.Shared.Data;
 using FoodDelivery.Modules.Identity.Shared.Models;
 using Microsoft.AspNetCore.Builder;
@@ -17,17 +17,7 @@ public static partial class ServiceCollectionExtensions
         string optionSection = nameof(IdentityOptions),
         Action<IdentityOptions>? configure = null)
     {
-        AddCustomIdentity(builder.Services, configuration, optionSection, configure);
-
-        return builder;
-    }
-
-    public static IServiceCollection AddCustomIdentity(
-        this IServiceCollection services,
-        IConfiguration configuration,
-        string optionSection = nameof(IdentityOptions),
-        Action<IdentityOptions>? configure = null)
-    {
+        var services = builder.Services;
         // Problem with .net core identity - will override our default authentication scheme `JwtBearerDefaults.AuthenticationScheme` to unwanted `FoodDelivery.Modules.Identity.Application` in `AddIdentity()` method .net identity
         // https://github.com/IdentityServer/IdentityServer4/issues/1525
         if (configuration.GetValue<bool>(
@@ -37,13 +27,14 @@ public static partial class ServiceCollectionExtensions
                 options.UseInMemoryDatabase("FoodDelivery.Modules.Identity"));
 
             services.AddScoped<IDbFacadeResolver>(provider => provider.GetService<IdentityContext>()!);
+            services.AddScoped<IDomainEventContext>(provider => provider.GetRequiredService<IdentityContext>());
         }
         else
         {
             // Postgres
-            services.AddPostgresDbContext<IdentityContext>(
-                configuration,
-                $"{IdentityModuleConfiguration.ModuleName}:{nameof(PostgresOptions)}");
+            builder.Configuration["ConnectionStrings:IdentityWrite"] =
+                configuration[$"{IdentityModuleConfiguration.ModuleName}:{nameof(PostgresOptions)}:ConnectionString"];
+            builder.AddPostgresDbContext<IdentityContext>("IdentityWrite");
         }
 
         // https://github.com/IdentityServer/IdentityServer4/issues/1525
@@ -79,6 +70,6 @@ public static partial class ServiceCollectionExtensions
         if (configuration.GetSection(optionSection) is not null)
             services.Configure<IdentityOptions>(configuration.GetSection(optionSection));
 
-        return services;
+        return builder;
     }
 }

@@ -1,5 +1,5 @@
 using System.Security.Claims;
-using BuildingBlocks.Core.Exception.Types;
+using Squirrel.Core.Exception;
 
 namespace FoodDelivery.Modules.Identity.Identity.Exceptions;
 

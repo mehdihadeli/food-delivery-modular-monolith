@@ -1,5 +1,5 @@
 using Asp.Versioning.Conventions;
-using BuildingBlocks.Abstractions.Web;
+using Squirrel.Abstractions.Web;
 
 namespace FoodDelivery.Modules.Identity.Identity.Features.SendEmailVerificationCode;
 
@@ -32,9 +32,9 @@ public static class SendEmailVerificationCodeEndpoint
        {
            var command = new SendEmailVerificationCode(request.Email);
 
-           var result = await commandProcessor.SendAsync(command, cancellationToken);
+           await commandProcessor.SendAsync(command, cancellationToken);
 
-           return Results.Ok(result);
+           return Results.Ok();
        });
     }
 }

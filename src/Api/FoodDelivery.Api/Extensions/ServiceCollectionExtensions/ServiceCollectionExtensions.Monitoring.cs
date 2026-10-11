@@ -1,7 +1,6 @@
 using Ardalis.GuardClauses;
-using BuildingBlocks.Core.Extensions;
-using BuildingBlocks.Monitoring;
-using BuildingBlocks.Persistence.EfCore.Postgres;
+using Squirrel.Core.Extensions;
+using Squirrel.Persistence.EfCore.Postgres;
 using FoodDelivery.Modules.Catalogs;
 using FoodDelivery.Modules.Customers;
 using FoodDelivery.Modules.Identity;
@@ -11,14 +10,13 @@ namespace FoodDelivery.Api.Extensions.ServiceCollectionExtensions;
 
 public static partial class ServiceCollectionExtensions
 {
-    public static IServiceCollection AddFoodDeliveryMonitoring(
+    public static IServiceCollection AddFoodDeliveryHealthChecks(
         this IServiceCollection services,
         IConfiguration configuration)
     {
-        services.AddMonitoring(healthChecksBuilder =>
-        {
-            var catalogPostgresOptions = configuration.GetOptions<PostgresOptions>(
-                $"{CatalogModuleConfiguration.ModuleName}:{nameof(PostgresOptions)}");
+        var healthChecksBuilder = services.AddHealthChecks();
+            var catalogPostgresOptions = configuration.GetSection(
+                $"{CatalogModuleConfiguration.ModuleName}:{nameof(PostgresOptions)}").Get<PostgresOptions>();
 
             Guard.Against.Null(catalogPostgresOptions, nameof(catalogPostgresOptions));
 
@@ -28,8 +26,8 @@ public static partial class ServiceCollectionExtensions
                 tags: new[] {"catalogs-postgres"});
 
 
-            var customerPostgresOptions = configuration.GetOptions<PostgresOptions>(
-                $"{CustomersModuleConfiguration.ModuleName}:{nameof(PostgresOptions)}");
+            var customerPostgresOptions = configuration.GetSection(
+                $"{CustomersModuleConfiguration.ModuleName}:{nameof(PostgresOptions)}").Get<PostgresOptions>();
 
             Guard.Against.Null(customerPostgresOptions, nameof(customerPostgresOptions));
 
@@ -38,8 +36,8 @@ public static partial class ServiceCollectionExtensions
                 name: "Customers-Module-Postgres-Check",
                 tags: new[] {"customers-postgres"});
 
-            var identityPostgresOptions = configuration.GetOptions<PostgresOptions>(
-                $"{IdentityModuleConfiguration.ModuleName}:{nameof(PostgresOptions)}");
+            var identityPostgresOptions = configuration.GetSection(
+                $"{IdentityModuleConfiguration.ModuleName}:{nameof(PostgresOptions)}").Get<PostgresOptions>();
             Guard.Against.Null(identityPostgresOptions, nameof(identityPostgresOptions));
 
             healthChecksBuilder.AddNpgSql(
@@ -48,8 +46,8 @@ public static partial class ServiceCollectionExtensions
                 tags: new[] {"identity-postgres"});
 
             var orderPostgresOptions =
-                configuration.GetOptions<PostgresOptions>(
-                    $"{OrdersModuleConfiguration.ModuleName}:{nameof(PostgresOptions)}");
+                configuration.GetSection(
+                    $"{OrdersModuleConfiguration.ModuleName}:{nameof(PostgresOptions)}").Get<PostgresOptions>();
 
             Guard.Against.Null(orderPostgresOptions, nameof(orderPostgresOptions));
 
@@ -57,7 +55,6 @@ public static partial class ServiceCollectionExtensions
                 orderPostgresOptions.ConnectionString,
                 name: "Orders-Modules-Postgres-Check",
                 tags: new[] {"orders-postgres"});
-        });
 
         return services;
     }

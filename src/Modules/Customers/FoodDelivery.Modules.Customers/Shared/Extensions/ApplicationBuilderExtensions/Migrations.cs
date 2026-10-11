@@ -1,4 +1,4 @@
-using BuildingBlocks.Persistence.EfCore.Postgres;
+using Squirrel.Persistence.EfCore.Postgres;
 using FoodDelivery.Modules.Customers.Shared.Data;
 using Microsoft.EntityFrameworkCore;
 

@@ -1,6 +1,6 @@
 using Ardalis.GuardClauses;
 using AutoMapper;
-using BuildingBlocks.Abstractions.CQRS.Query;
+using Squirrel.Abstractions.Queries;
 using FoodDelivery.Modules.Identity.Shared.Extensions;
 using FoodDelivery.Modules.Identity.Shared.Models;
 using FoodDelivery.Modules.Identity.Users.Dtos;
@@ -31,7 +31,7 @@ internal class GetUserByIdHandler : IQueryHandler<GetUserById, UserByIdResponse>
         _userManager = Guard.Against.Null(userManager, nameof(userManager));
     }
 
-    public async Task<UserByIdResponse> Handle(GetUserById query, CancellationToken cancellationToken)
+    public async ValueTask<UserByIdResponse> Handle(GetUserById query, CancellationToken cancellationToken)
     {
         Guard.Against.Null(query, nameof(query));
 

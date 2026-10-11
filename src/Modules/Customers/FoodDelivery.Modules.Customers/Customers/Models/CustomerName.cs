@@ -1,4 +1,4 @@
-using BuildingBlocks.Core.Domain;
+using Squirrel.Core.Domain;
 using FoodDelivery.Modules.Customers.Customers.Exceptions.Domain;
 
 namespace FoodDelivery.Modules.Customers.Customers.Models;

@@ -1,4 +1,4 @@
-using BuildingBlocks.Core.Messaging;
+using Squirrel.Core.Messages;
 
 namespace FoodDelivery.Modules.Customers.RestockSubscriptions.Features.CreatingRestockSubscription.Events.Integration;
 

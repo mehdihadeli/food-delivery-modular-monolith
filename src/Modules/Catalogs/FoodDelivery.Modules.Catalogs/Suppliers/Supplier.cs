@@ -1,4 +1,4 @@
-using BuildingBlocks.Core.Domain;
+using Squirrel.Core.Domain;
 
 namespace FoodDelivery.Modules.Catalogs.Suppliers;
 
@@ -6,8 +6,9 @@ public class Supplier : Entity<SupplierId>
 {
     public string Name { get; private set; }
 
-    public Supplier(SupplierId id, string name) : base(id)
+    public Supplier(SupplierId id, string name)
     {
+        Id = id;
         Name = name;
     }
 }

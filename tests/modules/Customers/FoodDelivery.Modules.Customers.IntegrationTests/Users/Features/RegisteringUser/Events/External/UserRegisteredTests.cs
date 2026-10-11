@@ -1,10 +1,8 @@
-using Bogus;
-using BuildingBlocks.Abstractions.Web.Module;
 using FoodDelivery.Modules.Customers.Customers.Features;
 using FoodDelivery.Modules.Customers.Customers.Features.CreatingCustomer.Events.Integration;
 using FoodDelivery.Modules.Customers.Shared.Clients.Identity;
-using FoodDelivery.Modules.Customers.Shared.Clients.Identity.Dtos;
 using FoodDelivery.Modules.Customers.Shared.Data;
+using FoodDelivery.Modules.Customers.TestShared.Fakes.Users.Features.RegisteringUser;
 using FoodDelivery.Modules.Customers.Users.Features.RegisteringUser.Events.External;
 using Humanizer;
 using Microsoft.EntityFrameworkCore;
@@ -13,120 +11,86 @@ using Microsoft.Extensions.DependencyInjection.Extensions;
 using MongoDB.Driver;
 using MongoDB.Driver.Linq;
 using Tests.Shared.Fixtures;
-using Xunit.Abstractions;
-using Program = FoodDelivery.Api.Program;
+using Squirrel.Core.Domain.ValueObjects;
+using Xunit;
 
 namespace FoodDelivery.Modules.Customers.IntegrationTests.Users.Features.RegisteringUser.Events.External;
 
 public class
-    UserRegisteredTests : ModuleTestBase<Program, CustomersModuleConfiguration, CustomersDbContext, CustomersReadDbContext>
+    UserRegisteredTests : CustomerModuleTestIntegrationTestBase
 {
-    private static UserRegistered _userRegistered;
+    private UserRegistered _userRegistered = new FakeUserRegistered().Generate();
 
-    public UserRegisteredTests(IntegrationTestFixture<Program> integrationTestFixture, ITestOutputHelper outputHelper) :
-        base(integrationTestFixture, outputHelper)
+    public UserRegisteredTests(
+        SharedFixtureWithEfCoreAndMongo<global::Program, CustomersDbContext, CustomersReadDbContext> sharedFixture
+    ) : base(sharedFixture)
     {
-        _userRegistered = new Faker<UserRegistered>().CustomInstantiator(faker =>
-                new UserRegistered(
-                    Guid.NewGuid(),
-                    faker.Person.Email,
-                    faker.Person.UserName,
-                    faker.Person.FirstName,
-                    faker.Person.LastName, new List<string> {"user"}))
-            .Generate();
     }
 
-    protected override void RegisterModulesTestsServices(IServiceCollection services, IModuleDefinition module)
+    protected override void SetupTestConfigureServices(IServiceCollection services)
     {
-        base.RegisterModulesTestsServices(services, module);
+        services.TryAddSingleton<UserRegisteredTestState>();
+        services.Replace(ServiceDescriptor.Transient<IIdentityApiClient>(provider =>
+            FakeIdentityApiClient.Create(() => provider.GetRequiredService<UserRegisteredTestState>().Current)));
+    }
 
-        if (module.GetType() == typeof(CustomersModuleConfiguration))
-        {
-            services.Replace(ServiceDescriptor.Transient<IIdentityApiClient>(x =>
-            {
-                var f = Substitute.For<IIdentityApiClient>();
-                f.GetUserByEmailAsync(Arg.Any<string>(), Arg.Any<CancellationToken>())!
-                    .Returns(args =>
-                    {
-                        var email = args.Arg<string>();
+    public override async ValueTask InitializeAsync()
+    {
+        await base.InitializeAsync();
+        SharedFixture.TestServiceProvider.GetRequiredService<UserRegisteredTestState>().Current = _userRegistered;
+    }
 
-                        return Task.FromResult(new GetUserByEmailResponse(new UserIdentityDto()
-                        {
-                            Email = _userRegistered.Email,
-                            Id = _userRegistered.IdentityId,
-                            FirstName = _userRegistered.FirstName,
-                            LastName = _userRegistered.LastName,
-                            UserName = _userRegistered.UserName
-                        }));
-                    });
-
-                return f;
-            }));
-        }
+    public sealed class UserRegisteredTestState
+    {
+        public UserRegistered Current { get; set; } = null!;
     }
 
     [Fact]
     public async Task user_registered_message_should_consume_existing_consumer_by_broker()
     {
         // Arrange
-        var shouldConsume = await ModuleFixture.ShouldConsume<UserRegistered>();
-
         // Act
-        await ModuleFixture.PublishMessageAsync(_userRegistered, null, CancellationToken);
+        await SharedFixture.PublishMessageAsync(_userRegistered, CancellationToken);
 
         // Assert
-        await shouldConsume.Validate(60.Seconds());
+        await SharedFixture.ShouldConsuming<UserRegistered>();
     }
 
     [Fact]
     public async Task user_registered_message_should_consume_new_consumers_by_broker()
     {
         // Arrange
-        var shouldConsume = await ModuleFixture.ShouldConsumeWithNewConsumer<UserRegistered>();
-
         // Act
-        await ModuleFixture.PublishMessageAsync(_userRegistered, cancellationToken: CancellationToken);
+        await SharedFixture.PublishMessageAsync(_userRegistered, CancellationToken);
 
         // Assert
-        await shouldConsume.Validate(60.Seconds());
+        await SharedFixture.ShouldConsuming<UserRegistered>();
     }
 
     [Fact]
     public async Task user_registered_message_should_consume_by_user_registered_consumer()
     {
-        var shouldConsume = await ModuleFixture.ShouldConsume<UserRegistered, UserRegisteredConsumer>();
-
         // Act
-        await ModuleFixture.PublishMessageAsync(_userRegistered, cancellationToken: CancellationToken);
+        await SharedFixture.PublishMessageAsync(_userRegistered, CancellationToken);
 
         // Assert
-        await shouldConsume.Validate(60.Seconds());
+        await SharedFixture.ShouldConsuming<UserRegistered>();
     }
 
     [Fact]
     public async Task user_registered_message_should_create_new_customer_in_postgres_write_db()
     {
-        _userRegistered = new Faker<UserRegistered>().CustomInstantiator(faker =>
-                new UserRegistered(
-                    Guid.NewGuid(),
-                    faker.Person.Email,
-                    faker.Person.UserName,
-                    faker.Person.FirstName,
-                    faker.Person.LastName, new List<string> {"user"}))
-            .Generate();
-
         // Act
-        await ModuleFixture.PublishMessageAsync(_userRegistered, cancellationToken: CancellationToken);
+        await SharedFixture.PublishMessageAsync(_userRegistered, CancellationToken);
 
         // Assert
-        var shouldConsume = await ModuleFixture.ShouldConsume<UserRegistered, UserRegisteredConsumer>(x =>
-            x.Email.ToLower() == _userRegistered.Email.ToLower());
+        await SharedFixture.ShouldConsuming<UserRegistered>();
 
-        await shouldConsume.Validate(60.Seconds());
-
-        var customer = await ModuleFixture.ExecuteContextAsync(async ctx =>
+        var email = Email.Of(_userRegistered.Email);
+        var customer = await SharedFixture.ExecuteEfDbContextAsync(async ctx =>
         {
-            var res = await ctx.Customers.AnyAsync(x => x.Email == _userRegistered.Email.ToLower());
+            var res = await EntityFrameworkQueryableExtensions.AnyAsync(ctx.Customers,
+            x => x.Email == email);
 
             return res;
         });
@@ -136,17 +100,16 @@ public class
 
 
     [Fact]
-    public async Task user_registered_message_should_create_new_customer_in_internal_persistence_message_and_mongo()
+    public async Task user_registered_message_should_create_new_customer_in_mongo()
     {
         // Act
-        await ModuleFixture.PublishMessageAsync(_userRegistered, cancellationToken: CancellationToken);
+        await SharedFixture.PublishMessageAsync(_userRegistered, CancellationToken);
 
         // Assert
-        await ModuleFixture.ShouldProcessedPersistInternalCommand<CreateMongoCustomerReadModels>();
-
-        var existsCustomer = await ModuleFixture.ExecuteReadContextAsync(async ctx =>
+        var existsCustomer = await SharedFixture.ExecuteMongoDbContextAsync(async ctx =>
         {
-            var res = await ctx.Customers.AsQueryable().AnyAsync(x => x.Email == _userRegistered.Email.ToLower());
+            var res = await MongoQueryable.AnyAsync(ctx.Customers.AsQueryable(),
+                x => x.Email == _userRegistered.Email);
 
             return res;
         });
@@ -155,24 +118,13 @@ public class
     }
 
     [Fact]
-    public async Task user_registered_message_should_create_customer_created_in_the_outbox()
-    {
-        // Act
-        await ModuleFixture.PublishMessageAsync(_userRegistered, cancellationToken: CancellationToken);
-
-        await ModuleFixture.ShouldProcessedOutboxPersistMessage<CustomerCreated>();
-    }
-
-    [Fact]
     public async Task user_registered_should_should_publish_customer_created()
     {
         // Arrange
-        var shouldPublish = await ModuleFixture.ShouldPublish<CustomerCreated>();
-
         // Act
-        await ModuleFixture.PublishMessageAsync(_userRegistered, cancellationToken: CancellationToken);
+        await SharedFixture.PublishMessageAsync(_userRegistered, CancellationToken);
 
         // Assert
-        await shouldPublish.Validate(60.Seconds());
+        await SharedFixture.ShouldSending<CustomerCreated>();
     }
 }

@@ -1,7 +1,9 @@
 using Ardalis.ApiEndpoints;
 using Ardalis.GuardClauses;
 using Asp.Versioning;
-using BuildingBlocks.Abstractions.CQRS.Query;
+using Squirrel.Abstractions.Queries;
+using Squirrel.Abstractions.Web;
+using Squirrel.Validation.Extensions;
 using Swashbuckle.AspNetCore.Annotations;
 
 namespace FoodDelivery.Modules.Identity.Users.Features.GettingUsers;
@@ -12,11 +14,11 @@ public class GetUsersEndpoint : EndpointBaseAsync
     .WithRequest<GetUsersRequest?>
     .WithActionResult<GetUsersResponse>
 {
-    private readonly IQueryProcessor _queryProcessor;
+    private readonly IGatewayProcessor<IdentityModuleConfiguration> _gatewayProcessor;
 
-    public GetUsersEndpoint(IQueryProcessor queryProcessor)
+    public GetUsersEndpoint(IGatewayProcessor<IdentityModuleConfiguration> gatewayProcessor)
     {
-        _queryProcessor = queryProcessor;
+        _gatewayProcessor = gatewayProcessor;
     }
 
     [HttpGet(UsersConfigs.UsersPrefixUri, Name = "GetUsers")]
@@ -35,16 +37,15 @@ public class GetUsersEndpoint : EndpointBaseAsync
     {
         Guard.Against.Null(request, nameof(request));
 
-        var result = await _queryProcessor.SendAsync(
-            new GetUsers
+        var query = new GetUsers
             {
                 Filters = request.Filters,
-                Includes = request.Includes,
-                Page = request.Page,
-                Sorts = request.Sorts,
+                PageNumber = request.PageNumber,
+                SortOrder = request.SortOrder,
                 PageSize = request.PageSize
-            },
-            cancellationToken);
+            };
+        new GetUsersValidator().HandleValidation(query);
+        var result = await _gatewayProcessor.ExecuteQuery(async queryBus => await queryBus.SendAsync(query, cancellationToken));
 
         return Ok(result);
     }

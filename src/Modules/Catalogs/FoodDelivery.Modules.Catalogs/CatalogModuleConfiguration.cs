@@ -1,10 +1,10 @@
 using Asp.Versioning;
 using Asp.Versioning.Builder;
-using BuildingBlocks.Abstractions.Web.Module;
-using BuildingBlocks.Core;
-using BuildingBlocks.Core.Extensions;
-using BuildingBlocks.Core.Messaging.Extensions;
-using BuildingBlocks.Web.Extensions;
+using Squirrel.Abstractions.Web.Module;
+using Squirrel.Web.Module;
+using Squirrel.Core.Extensions;
+using Squirrel.Core.Messages.Extensions;
+using Squirrel.Web.Extensions;
 using FoodDelivery.Modules.Catalogs.Brands;
 using FoodDelivery.Modules.Catalogs.Categories;
 using FoodDelivery.Modules.Catalogs.Products;
@@ -14,48 +14,46 @@ using FoodDelivery.Modules.Catalogs.Suppliers;
 
 namespace FoodDelivery.Modules.Catalogs;
 
-public class CatalogModuleConfiguration : IModuleDefinition
+public class CatalogModuleConfiguration : IModuleConfiguration
 {
     public const string CatalogModulePrefixUri = "api/v{version:apiVersion}/catalogs";
     public const string ModuleName = "Catalogs";
-    public void AddModuleServices(
-        IServiceCollection services,
-        IConfiguration configuration,
-        IWebHostEnvironment environment)
+    public WebApplicationBuilder AddModuleServices(WebApplicationBuilder builder)
     {
-        services.AddInfrastructure(configuration);
-        services.AddStorage(configuration);
+        var services = builder.Services;
+        builder.AddInfrastructure(builder.Configuration);
+        builder.AddStorage(builder.Configuration);
 
         // Add Sub Modules Services
         services.AddBrandsServices();
         services.AddCategoriesServices();
         services.AddSuppliersServices();
         services.AddProductsServices();
+        return builder;
     }
 
-    public async Task ConfigureModule(
-        IApplicationBuilder app,
-        IConfiguration configuration,
-        ILogger logger,
-        IWebHostEnvironment environment)
+    public async Task<WebApplication> ConfigureModule(WebApplication app)
     {
-        if (environment.IsEnvironment("test") == false)
+        var moduleProvider = CompositionRootRegistry.GetByModule<CatalogModuleConfiguration>()?.ServiceProvider;
+        if (app.Environment.IsEnvironment("test") == false
+            && moduleProvider is not null
+            && !ReferenceEquals(moduleProvider, app.Services))
         {
-            // HostedServices just run on main service provider - It should not await because it will block the main thread.
-            await app.ApplicationServices.StartHostedServices();
+            foreach (var hostedService in moduleProvider.GetServices<IHostedService>())
+            {
+                await hostedService.StartAsync(app.Lifetime.ApplicationStopping);
+            }
         }
 
-        ServiceActivator.Configure(app.ApplicationServices);
-
-        app.SubscribeAllMessageFromAssemblyOfType<CatalogRoot>();
-
         app.UseInfrastructure();
-
-        await app.ApplyDatabaseMigrations(logger);
-        await app.SeedData(logger, environment);
+        var moduleApp = ((IApplicationBuilder)app).New();
+        moduleApp.ApplicationServices = moduleProvider ?? app.Services;
+        await moduleApp.ApplyDatabaseMigrations(app.Logger);
+        await moduleApp.SeedData(app.Logger, app.Environment);
+        return app;
     }
 
-    public void MapEndpoints(IEndpointRouteBuilder endpoints)
+    public IEndpointRouteBuilder MapEndpoints(IEndpointRouteBuilder endpoints)
     {
         // Add Sub Modules Endpoints
         endpoints.MapProductsEndpoints();
@@ -68,5 +66,6 @@ public class CatalogModuleConfiguration : IModuleDefinition
 
             return $"Catalogs Service Apis, RequestId: {requestId}";
         }).ExcludeFromDescription();
+        return endpoints;
     }
 }

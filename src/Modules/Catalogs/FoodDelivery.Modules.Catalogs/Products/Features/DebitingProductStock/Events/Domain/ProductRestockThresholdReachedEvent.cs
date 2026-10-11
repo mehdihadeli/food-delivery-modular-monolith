@@ -1,6 +1,6 @@
 using Ardalis.GuardClauses;
-using BuildingBlocks.Abstractions.CQRS.Event.Internal;
-using BuildingBlocks.Core.CQRS.Event.Internal;
+using Squirrel.Core.Events.Internal;
+using Squirrel.Core.Events.Internal;
 using FoodDelivery.Modules.Catalogs.Products.ValueObjects;
 using FoodDelivery.Modules.Catalogs.Shared.Contracts;
 
@@ -17,11 +17,11 @@ internal class ProductRestockThresholdReachedEventHandler : IDomainEventHandler<
         _catalogDbContext = catalogDbContext;
     }
 
-    public Task Handle(ProductRestockThresholdReachedEvent notification, CancellationToken cancellationToken)
+    public ValueTask Handle(ProductRestockThresholdReachedEvent notification, CancellationToken cancellationToken)
     {
         Guard.Against.Null(notification, nameof(notification));
 
         // For example send an email to get more products
-        return Task.CompletedTask;
+        return ValueTask.CompletedTask;
     }
 }

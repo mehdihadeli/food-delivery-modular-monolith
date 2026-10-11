@@ -1,8 +1,9 @@
 using Asp.Versioning;
 using Asp.Versioning.Builder;
-using BuildingBlocks.Abstractions.Web.Module;
-using BuildingBlocks.Core.Extensions;
-using BuildingBlocks.Core.Messaging.Extensions;
+using Squirrel.Abstractions.Web.Module;
+using Squirrel.Core.Extensions;
+using Squirrel.Core.Messages.Extensions;
+using Squirrel.Web.Module;
 using FoodDelivery.Modules.Identity.Identity;
 using FoodDelivery.Modules.Identity.Shared.Extensions.ApplicationBuilderExtensions;
 using FoodDelivery.Modules.Identity.Shared.Extensions.ServiceCollectionExtensions;
@@ -10,46 +11,48 @@ using FoodDelivery.Modules.Identity.Users;
 
 namespace FoodDelivery.Modules.Identity;
 
-public class IdentityModuleConfiguration : IModuleDefinition
+public class IdentityModuleConfiguration : IModuleConfiguration
 {
     public const string IdentityModulePrefixUri = "api/v{version:apiVersion}/identity";
     public const string ModuleName = "Identity";
     public static ApiVersionSet VersionSet { get; private set; } = default!;
 
-    public void AddModuleServices(
-        IServiceCollection services,
-        IConfiguration configuration,
-        IWebHostEnvironment environment)
+    public WebApplicationBuilder AddModuleServices(WebApplicationBuilder builder)
     {
-        services.AddInfrastructure(configuration);
+        var services = builder.Services;
+        builder.AddInfrastructure(builder.Configuration);
 
         // Add Sub Modules Endpoints
-        services.AddIdentityServices(configuration, environment);
-        services.AddUsersServices(configuration);
+        builder.AddIdentityServices(builder.Configuration, builder.Environment);
+        services.AddUsersServices(builder.Configuration);
+        return builder;
     }
 
-    public async Task ConfigureModule(
-        IApplicationBuilder app,
-        IConfiguration configuration,
-        ILogger logger,
-        IWebHostEnvironment environment)
+    public async Task<WebApplication> ConfigureModule(WebApplication app)
     {
-        if (environment.IsEnvironment("test") == false)
+        var moduleProvider = CompositionRootRegistry.GetByModule<IdentityModuleConfiguration>()?.ServiceProvider;
+        if (app.Environment.IsEnvironment("test") == false)
         {
-            // HostedServices just run on main service provider - It should not await because it will block the main thread.
-            await app.ApplicationServices.StartHostedServices();
+            if (moduleProvider is not null && !ReferenceEquals(moduleProvider, app.Services))
+            {
+                foreach (var hostedService in moduleProvider.GetServices<IHostedService>())
+                {
+                    await hostedService.StartAsync(app.Lifetime.ApplicationStopping);
+                }
+            }
             app.UseIdentityServer();
 
             // TODO: Add Monitoring
         }
 
-        app.SubscribeAllMessageFromAssemblyOfType<IdentityRoot>();
-
-        await app.ApplyDatabaseMigrations(logger);
-        await app.SeedData(logger, environment);
+        var moduleApp = ((IApplicationBuilder)app).New();
+        moduleApp.ApplicationServices = moduleProvider ?? app.Services;
+        await moduleApp.ApplyDatabaseMigrations(app.Logger);
+        await moduleApp.SeedData(app.Logger, app.Environment);
+        return app;
     }
 
-    public void MapEndpoints(IEndpointRouteBuilder endpoints)
+    public IEndpointRouteBuilder MapEndpoints(IEndpointRouteBuilder endpoints)
     {
         var v1 = new ApiVersion(1, 0);
         var v2 = new ApiVersion(2, 0);
@@ -73,5 +76,6 @@ public class IdentityModuleConfiguration : IModuleDefinition
         // Add Sub Modules Endpoints
         endpoints.MapIdentityEndpoints();
         endpoints.MapUsersEndpoints();
+        return endpoints;
     }
 }

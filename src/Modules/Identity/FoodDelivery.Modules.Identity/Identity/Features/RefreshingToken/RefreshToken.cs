@@ -1,7 +1,7 @@
 using System.Security.Claims;
 using Ardalis.GuardClauses;
-using BuildingBlocks.Abstractions.CQRS.Command;
-using BuildingBlocks.Security.Jwt;
+using Squirrel.Abstractions.Commands;
+using Squirrel.Security.Jwt;
 using FoodDelivery.Modules.Identity.Identity.Exceptions;
 using FoodDelivery.Modules.Identity.Identity.Features.GenerateJwtToken;
 using FoodDelivery.Modules.Identity.Identity.Features.GenerateRefreshToken;
@@ -29,21 +29,21 @@ internal class RefreshTokenValidator : AbstractValidator<RefreshToken>
 
 internal class RefreshTokenHandler : ICommandHandler<RefreshToken, RefreshTokenResponse>
 {
-    private readonly ICommandProcessor _commandProcessor;
+    private readonly ICommandBus _commandProcessor;
     private readonly IJwtService _jwtService;
     private readonly UserManager<ApplicationUser> _userManager;
 
     public RefreshTokenHandler(
         IJwtService jwtService,
         UserManager<ApplicationUser> userManager,
-        ICommandProcessor commandProcessor)
+        ICommandBus commandProcessor)
     {
         _jwtService = jwtService;
         _userManager = userManager;
         _commandProcessor = commandProcessor;
     }
 
-    public async Task<RefreshTokenResponse> Handle(RefreshToken request, CancellationToken cancellationToken)
+    public async ValueTask<RefreshTokenResponse> Handle(RefreshToken request, CancellationToken cancellationToken)
     {
         Guard.Against.Null(request, nameof(RefreshToken));
 

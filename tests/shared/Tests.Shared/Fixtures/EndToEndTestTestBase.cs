@@ -1,16 +1,17 @@
 using System.Net.Http.Json;
-using BuildingBlocks.Abstractions.Web.Module;
-using BuildingBlocks.Core.Extensions;
-using BuildingBlocks.Persistence.Mongo;
+using Squirrel.Abstractions.Web.Module;
+using Squirrel.Core.Extensions;
+using Squirrel.Core.Web.Extensions;
+using Squirrel.Persistence.Mongo;
 using Microsoft.EntityFrameworkCore;
 using Tests.Shared.Mocks;
-using Xunit.Abstractions;
+using Xunit;
 
 namespace Tests.Shared.Fixtures;
 
 public class EndToEndTestTestBase<TEntryPoint, TModule, TWContext, TRContext> :
     ModuleTestBase<TEntryPoint, TModule, TWContext, TRContext>
-    where TModule : class, IModuleDefinition
+    where TModule : class, IModuleConfiguration
     where TWContext : DbContext
     where TRContext : MongoDbContext
     where TEntryPoint : class

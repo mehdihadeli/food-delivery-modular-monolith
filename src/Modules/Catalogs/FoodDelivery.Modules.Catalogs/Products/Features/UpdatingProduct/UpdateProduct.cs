@@ -1,6 +1,6 @@
 using Ardalis.GuardClauses;
-using BuildingBlocks.Abstractions.CQRS.Command;
-using BuildingBlocks.Core.Exception;
+using Squirrel.Abstractions.Commands;
+using Squirrel.Core.Exception;
 using FoodDelivery.Modules.Catalogs.Brands.Exceptions.Application;
 using FoodDelivery.Modules.Catalogs.Categories.Exceptions.Application;
 using FoodDelivery.Modules.Catalogs.Products.Exceptions.Application;
@@ -27,7 +27,7 @@ public record UpdateProduct(
     long CategoryId,
     long SupplierId,
     long BrandId,
-    string? Description = null) : ITxUpdateCommand;
+    string? Description = null) : ITxCommand;
 
 internal class UpdateProductValidator : AbstractValidator<UpdateProduct>
 {
@@ -47,21 +47,25 @@ internal class UpdateProductCommandHandler : ICommandHandler<UpdateProduct>
         _catalogDbContext = catalogDbContext;
     }
 
-    public async Task<Unit> Handle(UpdateProduct command, CancellationToken cancellationToken)
+    public async ValueTask<Unit> Handle(UpdateProduct command, CancellationToken cancellationToken)
     {
         Guard.Against.Null(command, nameof(command));
 
         var product = await _catalogDbContext.FindProductByIdAsync(command.Id);
-        Guard.Against.NotFound(product, new ProductNotFoundException(command.Id));
+        if (product is null)
+            throw new ProductNotFoundException(command.Id);
 
         var category = await _catalogDbContext.FindCategoryAsync(command.CategoryId);
-        Guard.Against.NotFound(category, new CategoryNotFoundException(command.CategoryId));
+        if (category is null)
+            throw new CategoryNotFoundException(command.CategoryId);
 
         var brand = await _catalogDbContext.FindBrandAsync(command.BrandId);
-        Guard.Against.NotFound(brand, new BrandNotFoundException(command.BrandId));
+        if (brand is null)
+            throw new BrandNotFoundException(command.BrandId);
 
         var supplier = await _catalogDbContext.FindSupplierByIdAsync(command.SupplierId);
-        Guard.Against.NotFound(supplier, new SupplierNotFoundException(command.SupplierId));
+        if (supplier is null)
+            throw new SupplierNotFoundException(command.SupplierId);
 
         product!.ChangeCategory(command.CategoryId);
         product.ChangeBrand(command.BrandId);

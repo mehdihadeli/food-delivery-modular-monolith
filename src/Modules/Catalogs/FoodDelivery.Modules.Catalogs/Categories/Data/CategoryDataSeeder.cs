@@ -1,10 +1,11 @@
-using BuildingBlocks.Abstractions.Persistence;
+using Squirrel.Abstractions.Persistence;
+using FoodDelivery.Modules.Catalogs.Shared.Data;
 using FoodDelivery.Modules.Catalogs.Shared.Contracts;
 using Microsoft.EntityFrameworkCore;
 
 namespace FoodDelivery.Modules.Catalogs.Categories.Data;
 
-public class CategoryDataSeeder : IDataSeeder
+public class CategoryDataSeeder : IDataSeeder<CatalogDbContext>
 {
     private readonly ICatalogDbContext _dbContext;
 
@@ -13,7 +14,7 @@ public class CategoryDataSeeder : IDataSeeder
         _dbContext = dbContext;
     }
 
-    public async Task SeedAllAsync()
+    public async Task SeedAsync(CatalogDbContext context)
     {
         if (await _dbContext.Categories.AnyAsync())
             return;
