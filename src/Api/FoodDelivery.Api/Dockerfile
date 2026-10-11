@@ -20,6 +20,7 @@ RUN dotnet publish src/Api/FoodDelivery.Api/FoodDelivery.Api.csproj \
   --configuration Release \
   --no-restore \
   -a $TARGETARCH \
+  -p:IsPublishable=true \
   -p:SkipVersion=true \
   -p:RunAnalyzers=false \
   -o /app
