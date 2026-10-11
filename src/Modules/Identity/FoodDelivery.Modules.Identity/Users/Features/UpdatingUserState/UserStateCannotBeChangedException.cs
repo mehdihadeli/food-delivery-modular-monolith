@@ -1,5 +1,6 @@
 using Squirrel.Core.Exception;
 using Squirrel.Core.Extensions;
+using Squirrel.Core.Types.Extensions;
 using FoodDelivery.Modules.Identity.Shared.Models;
 
 namespace FoodDelivery.Modules.Identity.Users.Features.UpdatingUserState;

@@ -14,7 +14,7 @@ public record SupplierInformation
 
     public SupplierInformation(SupplierId id, Name name)
     {
-        Id = Guard.Against.Null(id, new ProductDomainException("SupplierId can not be null."));
-        Name = Guard.Against.Null(name, new ProductDomainException("Name cannot be null."));
+        Id = Guard.Against.Null(id, exceptionCreator: () => new ProductDomainException("SupplierId can not be null."));
+        Name = Guard.Against.Null(name, exceptionCreator: () => new ProductDomainException("Name cannot be null."));
     }
 }

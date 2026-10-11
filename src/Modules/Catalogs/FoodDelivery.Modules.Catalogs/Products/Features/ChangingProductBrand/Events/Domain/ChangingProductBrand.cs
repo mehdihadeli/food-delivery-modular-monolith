@@ -7,7 +7,7 @@ using FoodDelivery.Modules.Catalogs.Shared.Extensions;
 
 namespace FoodDelivery.Modules.Catalogs.Products.Features.ChangingProductBrand.Events.Domain;
 
-internal record ChangingProductBrand(BrandId BrandId) : DomainEvent;
+public record ChangingProductBrand(BrandId BrandId) : DomainEvent;
 
 internal class ChangingProductBrandValidationHandler :
     IDomainEventHandler<ChangingProductBrand>
@@ -19,7 +19,7 @@ internal class ChangingProductBrandValidationHandler :
         _catalogDbContext = catalogDbContext;
     }
 
-    public async Task Handle(ChangingProductBrand notification, CancellationToken cancellationToken)
+    public async ValueTask Handle(ChangingProductBrand notification, CancellationToken cancellationToken)
     {
         // Handling some validations
         Guard.Against.Null(notification, nameof(notification));

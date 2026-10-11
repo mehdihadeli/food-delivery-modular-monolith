@@ -40,7 +40,7 @@ internal class ProcessRestockNotificationHandler : ICommandHandler<ProcessRestoc
 
     public async ValueTask<Unit> Handle(ProcessRestockNotification command, CancellationToken cancellationToken)
     {
-        Guard.Against.Null(command, new RestockSubscriptionDomainException("Command cannot be null"));
+        Guard.Against.Null(command, exceptionCreator: () => new RestockSubscriptionDomainException("Command cannot be null"));
 
         var subscribedCustomers =
             _customersDbContext.RestockSubscriptions.Where(x =>

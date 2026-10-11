@@ -20,7 +20,7 @@ internal class ProductCreatedHandler : IDomainEventHandler<ProductCreated>
         _dbContext = dbContext;
     }
 
-    public async Task Handle(ProductCreated notification, CancellationToken cancellationToken)
+    public async ValueTask Handle(ProductCreated notification, CancellationToken cancellationToken)
     {
         Guard.Against.Null(notification, nameof(notification));
 
@@ -35,7 +35,8 @@ internal class ProductCreatedHandler : IDomainEventHandler<ProductCreated>
                 .Include(x => x.Supplier)
                 .SingleOrDefaultAsync(x => x.Id == notification.Product.Id.Value, cancellationToken);
 
-            Guard.Against.NotFound(product, new ProductNotFoundException(notification.Product.Id));
+            if (product is null)
+                throw new ProductNotFoundException(notification.Product.Id);
 
             var productView = new ProductView
             {
@@ -62,10 +63,10 @@ internal class ProductCreatedDomainEventToIntegrationMappingHandler : IDomainEve
     {
     }
 
-    public Task Handle(ProductCreated domainEvent, CancellationToken cancellationToken)
+    public ValueTask Handle(ProductCreated domainEvent, CancellationToken cancellationToken)
     {
         // 1. Mapping DomainEvent To IntegrationEvent
         // 2. Save Integration Event to Outbox
-        return Task.CompletedTask;
+        return ValueTask.CompletedTask;
     }
 }

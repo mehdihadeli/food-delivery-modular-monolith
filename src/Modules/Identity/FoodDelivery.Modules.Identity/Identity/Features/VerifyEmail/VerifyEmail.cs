@@ -29,7 +29,7 @@ internal class VerifyEmailHandler : ICommandHandler<VerifyEmail>
     }
 
 
-    public async Task<Unit> Handle(VerifyEmail request, CancellationToken cancellationToken)
+    public async ValueTask<Unit> Handle(VerifyEmail request, CancellationToken cancellationToken)
     {
         Guard.Against.Null(request, nameof(VerifyEmail));
 

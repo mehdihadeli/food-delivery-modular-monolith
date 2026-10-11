@@ -25,7 +25,7 @@ internal class RestockSubscriptionDeletedHandler : IDomainEventHandler<RestockSu
         _customersDbContext = customersDbContext;
     }
 
-    public async Task Handle(RestockSubscriptionDeleted notification, CancellationToken cancellationToken)
+    public async ValueTask Handle(RestockSubscriptionDeleted notification, CancellationToken cancellationToken)
     {
         Guard.Against.Null(notification, nameof(notification));
 

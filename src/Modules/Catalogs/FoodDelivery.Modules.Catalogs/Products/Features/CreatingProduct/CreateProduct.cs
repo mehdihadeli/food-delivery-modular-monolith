@@ -2,7 +2,9 @@ using Ardalis.GuardClauses;
 using AutoMapper;
 using Squirrel.Abstractions.Commands;
 using Squirrel.Core.Exception;
-using BuildingBlocks.Core.IdsGenerator;
+using Squirrel.Core.IdsGenerator;
+using Squirrel.Abstractions.Domain;
+using Squirrel.Validation.Extensions;
 using FoodDelivery.Modules.Catalogs.Brands.Exceptions.Application;
 using FoodDelivery.Modules.Catalogs.Categories.Exceptions.Domain;
 using FoodDelivery.Modules.Catalogs.Products.Dtos;
@@ -33,16 +35,39 @@ public record CreateProduct(
     long SupplierId,
     long BrandId,
     string? Description = null,
-    IEnumerable<CreateProductImageRequest>? Images = null) : ITxCreateCommand<CreateProductResponse>
+    IEnumerable<CreateProductImageRequest>? Images = null) : ITxCommand<CreateProductResponse>
 {
     public long Id { get; init; } = SnowFlakIdGenerator.NewId();
+
+    public static CreateProduct Of(CreateProductRequest request)
+    {
+        var command = new CreateProduct(
+            request.Name,
+            request.Price,
+            request.Stock,
+            request.RestockThreshold,
+            request.MaxStockThreshold,
+            request.Status,
+            request.Width,
+            request.Height,
+            request.Depth,
+            request.Size,
+            request.Color,
+            request.CategoryId,
+            request.SupplierId,
+            request.BrandId,
+            request.Description,
+            request.Images);
+        return new CreateProductValidator().HandleValidation(command);
+    }
 }
 
 public class CreateProductValidator : AbstractValidator<CreateProduct>
 {
     public CreateProductValidator()
     {
-        CascadeMode = CascadeMode.Stop;
+        RuleLevelCascadeMode = CascadeMode.Stop;
+        ClassLevelCascadeMode = CascadeMode.Stop;
 
         RuleFor(x => x.Id)
             .NotEmpty()
@@ -103,23 +128,26 @@ public class CreateProductHandler : ICommandHandler<CreateProduct, CreateProduct
         _catalogDbContext = Guard.Against.Null(catalogDbContext, nameof(catalogDbContext));
     }
 
-    public async Task<CreateProductResponse> Handle(
+    public async ValueTask<CreateProductResponse> Handle(
         CreateProduct command,
         CancellationToken cancellationToken)
     {
         Guard.Against.Null(command, nameof(command));
 
         var images = command.Images?.Select(x =>
-            new ProductImage(SnowFlakIdGenerator.NewId(), x.ImageUrl, x.IsMain, command.Id)).ToList();
+            new ProductImage(EntityId.Of(SnowFlakIdGenerator.NewId()), x.ImageUrl, x.IsMain, command.Id)).ToList();
 
         var category = await _catalogDbContext.FindCategoryAsync(command.CategoryId);
-        Guard.Against.NotFound(category, new CategoryDomainException(command.CategoryId));
+        if (category is null)
+            throw new CategoryDomainException(command.CategoryId);
 
         var brand = await _catalogDbContext.FindBrandAsync(command.BrandId);
-        Guard.Against.NotFound(brand, new BrandNotFoundException(command.BrandId));
+        if (brand is null)
+            throw new BrandNotFoundException(command.BrandId);
 
         var supplier = await _catalogDbContext.FindSupplierByIdAsync(command.SupplierId);
-        Guard.Against.NotFound(supplier, new SupplierNotFoundException(command.SupplierId));
+        if (supplier is null)
+            throw new SupplierNotFoundException(command.SupplierId);
 
         // await _domainEventDispatcher.DispatchAsync(cancellationToken, new Events.Domain.CreatingProduct());
         var product = Product.Create(

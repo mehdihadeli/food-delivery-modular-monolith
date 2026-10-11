@@ -1,8 +1,9 @@
 using FoodDelivery.Modules.Customers.Customers.ValueObjects;
+using FoodDelivery.Modules.Customers.UnitTests.Common;
 
 namespace FoodDelivery.Modules.Customers.UnitTests.Customers.ValueObjects;
 
-public class CustomerIdTests
+public class CustomerIdTests : CustomerModuleUnitTestBase
 {
     [Fact]
     public void constructor_with_positive_value_preserves_value()

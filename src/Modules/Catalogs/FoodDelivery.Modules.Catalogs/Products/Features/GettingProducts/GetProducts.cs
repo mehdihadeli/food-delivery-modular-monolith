@@ -1,4 +1,9 @@
 using AutoMapper;
+using AutoMapper.QueryableExtensions;
+using Squirrel.Core.Extensions;
+using Squirrel.Core.Paging;
+using Squirrel.Validation.Extensions;
+using Sieve.Services;
 using Squirrel.Abstractions.Queries;
 using Squirrel.Core.Queries;
 using Squirrel.Core.Persistence.EfCore;
@@ -11,15 +16,29 @@ using Microsoft.EntityFrameworkCore;
 
 namespace FoodDelivery.Modules.Catalogs.Products.Features.GettingProducts;
 
-public record GetProducts : ListQuery<GetProductsResponse>;
+public record GetProducts : PageQuery<GetProductsResponse>
+{
+    public static GetProducts Of(PageRequest request)
+    {
+        var query = new GetProducts
+        {
+            PageNumber = request.PageNumber,
+            PageSize = request.PageSize,
+            SortOrder = request.SortOrder,
+            Filters = request.Filters,
+        };
+        return new GetProductsValidator().HandleValidation(query);
+    }
+}
 
 public class GetProductsValidator : AbstractValidator<GetProducts>
 {
     public GetProductsValidator()
     {
-        CascadeMode = CascadeMode.Stop;
+        RuleLevelCascadeMode = CascadeMode.Stop;
+        ClassLevelCascadeMode = CascadeMode.Stop;
 
-        RuleFor(x => x.Page)
+        RuleFor(x => x.PageNumber)
             .GreaterThanOrEqualTo(1).WithMessage("Page should at least greater than or equal to 1.");
 
         RuleFor(x => x.PageSize)
@@ -31,21 +50,25 @@ public class GetProductsHandler : IQueryHandler<GetProducts, GetProductsResponse
 {
     private readonly ICatalogDbContext _catalogDbContext;
     private readonly IMapper _mapper;
+    private readonly ISieveProcessor _sieveProcessor;
 
-    public GetProductsHandler(ICatalogDbContext catalogDbContext, IMapper mapper)
+    public GetProductsHandler(ICatalogDbContext catalogDbContext, IMapper mapper, ISieveProcessor sieveProcessor)
     {
         _catalogDbContext = catalogDbContext;
         _mapper = mapper;
+        _sieveProcessor = sieveProcessor;
     }
 
-    public async Task<GetProductsResponse> Handle(GetProducts request, CancellationToken cancellationToken)
+    public async ValueTask<GetProductsResponse> Handle(GetProducts request, CancellationToken cancellationToken)
     {
         var products = await _catalogDbContext.Products
-            .OrderByDescending(x => x.Created)
-            .ApplyIncludeList(request.Includes)
-            .ApplyFilter(request.Filters)
             .AsNoTracking()
-            .ApplyPagingAsync<Product, ProductDto>(_mapper.ConfigurationProvider, request.Page, request.PageSize, cancellationToken: cancellationToken);
+            .ApplyPagingAsync<Product, ProductDto, DateTime?>(
+                request,
+                _sieveProcessor,
+                query => query.ProjectTo<ProductDto>(_mapper.ConfigurationProvider),
+                product => product.Created,
+                cancellationToken: cancellationToken);
 
         return new GetProductsResponse(products);
     }

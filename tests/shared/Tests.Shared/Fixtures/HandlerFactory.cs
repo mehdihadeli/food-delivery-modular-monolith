@@ -1,5 +1,6 @@
 using Squirrel.Abstractions.Messages;
 using Squirrel.Core.Extensions;
+using Squirrel.Core.Types.Extensions;
 using Hypothesist;
 using Microsoft.Extensions.DependencyInjection;
 

@@ -8,12 +8,21 @@ using Hypothesist;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.DependencyInjection;
 using Tests.Shared.Probing;
+using Wolverine;
+using Wolverine.Tracking;
+using ICommandBus = Squirrel.Abstractions.Commands.ICommandBus;
+using IExternalEventBus = Squirrel.Abstractions.Messages.IExternalEventBus;
+using IMessage = Squirrel.Abstractions.Messages.IMessage;
+using IQueryBus = Squirrel.Abstractions.Queries.IQueryBus;
+using IMessageContext = Wolverine.IMessageContext;
 
 namespace Tests.Shared.Fixtures;
 
 public class ModuleFixture<TModule> : IAsyncDisposable
     where TModule : class, IModuleConfiguration
 {
+    private readonly List<Func<ITrackedSession, Task>> _trackingAssertions = [];
+
     public ModuleFixture(IServiceProvider serviceProvider)
     {
         ServiceProvider = serviceProvider;
@@ -22,7 +31,7 @@ public class ModuleFixture<TModule> : IAsyncDisposable
 
     public IServiceProvider ServiceProvider { get; }
 
-    public IBus Bus => ServiceProvider.GetRequiredService<IBus>();
+    public IExternalEventBus Bus => ServiceProvider.GetRequiredService<IExternalEventBus>();
     public AsyncServiceScope Scope { get; }
 
     public async Task AssertEventually(IProbe probe, int timeout)
@@ -39,10 +48,7 @@ public class ModuleFixture<TModule> : IAsyncDisposable
     public async ValueTask<T> ExecuteScopeAsync<T>(Func<IServiceProvider, ValueTask<T>> action)
     {
         await using var scope = ServiceProvider.CreateAsyncScope();
-
-        var result = await action(scope.ServiceProvider);
-
-        return result;
+        return await action(scope.ServiceProvider);
     }
 
     public async Task<TResponse> SendAsync<TResponse>(
@@ -52,31 +58,30 @@ public class ModuleFixture<TModule> : IAsyncDisposable
     {
         return await ExecuteScopeAsync(async sp =>
         {
-            var commandProcessor = sp.GetRequiredService<ICommandProcessor>();
-
-            return await commandProcessor.SendAsync(request, cancellationToken);
+            var commandBus = sp.GetRequiredService<ICommandBus>();
+            return await commandBus.SendAsync(request, cancellationToken);
         });
     }
 
-    public async Task SendAsync<T>(T request, CancellationToken cancellationToken = default) where T : class, ICommand
+    public async Task SendAsync<T>(T request, CancellationToken cancellationToken = default)
+        where T : class, ICommand
     {
         await ExecuteScopeAsync(async sp =>
         {
-            var commandProcessor = sp.GetRequiredService<ICommandProcessor>();
-
-            return await commandProcessor.SendAsync(request, cancellationToken);
+            var commandBus = sp.GetRequiredService<ICommandBus>();
+            await commandBus.SendAsync(request, cancellationToken);
         });
     }
 
     public async Task<TResponse> QueryAsync<TResponse>(
         IQuery<TResponse> query,
-        CancellationToken cancellationToken = default) where TResponse : class
+        CancellationToken cancellationToken = default)
+        where TResponse : class
     {
         return await ExecuteScopeAsync(async sp =>
         {
-            var queryProcessor = sp.GetRequiredService<IQueryProcessor>();
-
-            return await queryProcessor.SendAsync(query, cancellationToken);
+            var queryBus = sp.GetRequiredService<IQueryBus>();
+            return await queryBus.SendAsync(query, cancellationToken);
         });
     }
 
@@ -89,9 +94,17 @@ public class ModuleFixture<TModule> : IAsyncDisposable
     {
         await ExecuteScopeAsync(async sp =>
         {
-            var bus = sp.GetRequiredService<IBus>();
+            var bus = sp.GetRequiredService<IExternalEventBus>();
+                var trackedSession = await sp.TrackActivity()
+                    .ExecuteAndWaitAsync((Func<IMessageContext, Task>)(async _ =>
+                        await bus.PublishAsync(message, cancellationToken)));
 
-            await bus.PublishAsync(message, headers, cancellationToken);
+                foreach (var assertion in _trackingAssertions.ToArray())
+                {
+                    await assertion(trackedSession);
+                }
+
+                _trackingAssertions.Clear();
         });
     }
 
@@ -118,11 +131,7 @@ public class ModuleFixture<TModule> : IAsyncDisposable
             .For<object>()
             .Any(match ?? (_ => true));
 
-        Bus.MessagePublished += async message =>
-        {
-            if (message.GetType() == typeof(object))
-                await hypothesis.Test(message);
-        };
+        _trackingAssertions.Add(session => TestTrackedMessagesAsync(session, MessageEventType.Sent, hypothesis, match));
 
         return hypothesis;
     }
@@ -134,11 +143,7 @@ public class ModuleFixture<TModule> : IAsyncDisposable
             .For<TMessage>()
             .Any(match ?? (_ => true));
 
-        Bus.MessagePublished += async message =>
-        {
-            if (message.GetType() == typeof(TMessage) && message is TMessage messageData)
-                await hypothesis.Test(messageData);
-        };
+        _trackingAssertions.Add(session => TestTrackedMessagesAsync(session, MessageEventType.Sent, hypothesis, match));
 
         return hypothesis;
     }
@@ -150,13 +155,7 @@ public class ModuleFixture<TModule> : IAsyncDisposable
             .For<TMessage>()
             .Any(match ?? (_ => true));
 
-        Bus.MessageConsumed += async (message, _) =>
-        {
-            if (message.GetType() == typeof(TMessage) && message is TMessage messageData)
-            {
-                await hypothesis.Test(messageData);
-            }
-        };
+        _trackingAssertions.Add(session => TestTrackedMessagesAsync(session, MessageEventType.MessageSucceeded, hypothesis, match));
 
         return hypothesis;
     }
@@ -170,14 +169,7 @@ public class ModuleFixture<TModule> : IAsyncDisposable
             .For<TMessage>()
             .Any(match ?? (_ => true));
 
-        Bus.MessageConsumed += async (message, handlerType) =>
-        {
-            if (message.GetType() == typeof(TMessage) && message is TMessage messageData &&
-                typeof(TMessageHandler).IsAssignableTo(handlerType))
-            {
-                await hypothesis.Test(messageData);
-            }
-        };
+        _trackingAssertions.Add(session => TestTrackedMessagesAsync(session, MessageEventType.MessageSucceeded, hypothesis, match));
 
         return hypothesis;
     }
@@ -190,13 +182,7 @@ public class ModuleFixture<TModule> : IAsyncDisposable
             .For<TMessage>()
             .Any(match ?? (_ => true));
 
-        // Bus.Consume(hypothesis.AsMessageHandler());
-
-        Bus.Consume<TMessage>(async
-            (consumeContext, ct) =>
-        {
-            await hypothesis.Test(consumeContext.Message);
-        });
+        _trackingAssertions.Add(session => TestTrackedMessagesAsync(session, MessageEventType.MessageSucceeded, hypothesis, match));
 
         return hypothesis;
     }
@@ -210,9 +196,25 @@ public class ModuleFixture<TModule> : IAsyncDisposable
             .For<TMessage>()
             .Any(match ?? (_ => true));
 
-        Bus.Consume(hypothesis.AsMessageHandler<TMessage, TMessageHandler>(ServiceProvider));
+        _trackingAssertions.Add(session => TestTrackedMessagesAsync(session, MessageEventType.MessageSucceeded, hypothesis, match));
 
         return hypothesis;
+    }
+
+    private static async Task TestTrackedMessagesAsync<TMessage>(
+        ITrackedSession session,
+        MessageEventType eventType,
+        IHypothesis<TMessage> hypothesis,
+        Predicate<TMessage>? match)
+        where TMessage : class
+    {
+        foreach (var envelope in session.FindEnvelopesWithMessageType<TMessage>(eventType))
+        {
+            if (envelope.Message is TMessage message && (match is null || match(message)))
+            {
+                await hypothesis.Test(message);
+            }
+        }
     }
 
     public async ValueTask DisposeAsync()
@@ -281,16 +283,16 @@ public class ModuleFixture<TModule, TContext> : ModuleFixture<TModule>
     public ValueTask ExecuteContextAsync(Func<TContext, ValueTask> action)
         => ExecuteScopeAsync(sp => action(sp.GetRequiredService<TContext>()));
 
-    public ValueTask ExecuteContextAsync(Func<TContext, ICommandProcessor, ValueTask> action)
+    public ValueTask ExecuteContextAsync(Func<TContext, ICommandBus, ValueTask> action)
         => ExecuteScopeAsync(sp =>
-            action(sp.GetRequiredService<TContext>(), sp.GetRequiredService<ICommandProcessor>()));
+            action(sp.GetRequiredService<TContext>(), sp.GetRequiredService<ICommandBus>()));
 
     public ValueTask<T> ExecuteContextAsync<T>(Func<TContext, ValueTask<T>> action)
         => ExecuteScopeAsync(sp => action(sp.GetRequiredService<TContext>()));
 
-    public ValueTask<T> ExecuteContextAsync<T>(Func<TContext, ICommandProcessor, ValueTask<T>> action)
+    public ValueTask<T> ExecuteContextAsync<T>(Func<TContext, ICommandBus, ValueTask<T>> action)
         => ExecuteScopeAsync(sp =>
-            action(sp.GetRequiredService<TContext>(), sp.GetRequiredService<ICommandProcessor>()));
+            action(sp.GetRequiredService<TContext>(), sp.GetRequiredService<ICommandBus>()));
 
     public async ValueTask<int> InsertAsync<T>(params T[] entities) where T : class
     {
@@ -381,14 +383,14 @@ public class ModuleFixture<TModule, TWContext, TRContext> : ModuleFixture<TModul
     public ValueTask ExecuteReadContextAsync(Func<TRContext, ValueTask> action)
         => ExecuteScopeAsync(sp => action(sp.GetRequiredService<TRContext>()));
 
-    public ValueTask ExecuteReadContextAsync(Func<TRContext, ICommandProcessor, ValueTask> action)
+    public ValueTask ExecuteReadContextAsync(Func<TRContext, ICommandBus, ValueTask> action)
         => ExecuteScopeAsync(sp =>
-            action(sp.GetRequiredService<TRContext>(), sp.GetRequiredService<ICommandProcessor>()));
+            action(sp.GetRequiredService<TRContext>(), sp.GetRequiredService<ICommandBus>()));
 
     public ValueTask<T> ExecuteReadContextAsync<T>(Func<TRContext, ValueTask<T>> action)
         => ExecuteScopeAsync(sp => action(sp.GetRequiredService<TRContext>()));
 
-    public ValueTask<T> ExecuteReadContextAsync<T>(Func<TRContext, ICommandProcessor, ValueTask<T>> action)
+    public ValueTask<T> ExecuteReadContextAsync<T>(Func<TRContext, ICommandBus, ValueTask<T>> action)
         => ExecuteScopeAsync(sp =>
-            action(sp.GetRequiredService<TRContext>(), sp.GetRequiredService<ICommandProcessor>()));
+            action(sp.GetRequiredService<TRContext>(), sp.GetRequiredService<ICommandBus>()));
 }

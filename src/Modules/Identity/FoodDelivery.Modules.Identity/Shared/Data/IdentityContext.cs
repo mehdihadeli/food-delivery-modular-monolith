@@ -20,7 +20,7 @@ public class IdentityContext : IdentityDbContext<ApplicationUser, ApplicationRol
     IDomainEventContext,
     ITxDbContextExecution
 {
-    public IdentityContext(DbContextOptions options) : base(options)
+    public IdentityContext(DbContextOptions<IdentityContext> options) : base(options)
     {
     }
 
@@ -101,7 +101,7 @@ public class IdentityContext : IdentityDbContext<ApplicationUser, ApplicationRol
         });
     }
 
-    public IReadOnlyList<IDomainEvent> GetAllUncommittedEvents()
+    public IReadOnlyList<IDomainEvent> DequeueUncommittedDomainEvents()
     {
         return new List<IDomainEvent>();
     }

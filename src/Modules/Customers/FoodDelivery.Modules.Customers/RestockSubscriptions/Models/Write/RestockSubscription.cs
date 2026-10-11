@@ -26,11 +26,11 @@ public class RestockSubscription : Aggregate<RestockSubscriptionId>, IHaveSoftDe
         ProductInformation productInformation,
         Email email)
     {
-        Guard.Against.Null(id, new RestockSubscriptionDomainException("Id cannot be null"));
-        Guard.Against.Null(customerId, new RestockSubscriptionDomainException("CustomerId cannot be null"));
+        Guard.Against.Null(id, exceptionCreator: () => new RestockSubscriptionDomainException("Id cannot be null"));
+        Guard.Against.Null(customerId, exceptionCreator: () => new RestockSubscriptionDomainException("CustomerId cannot be null"));
         Guard.Against.Null(
             productInformation,
-            new RestockSubscriptionDomainException("ProductInformation cannot be null"));
+            exceptionCreator: () => new RestockSubscriptionDomainException("ProductInformation cannot be null"));
 
         var restockSubscription = new RestockSubscription
         {
@@ -46,7 +46,7 @@ public class RestockSubscription : Aggregate<RestockSubscriptionId>, IHaveSoftDe
 
     public void ChangeEmail(Email email)
     {
-        Email = Guard.Against.Null(email, new RestockSubscriptionDomainException("Email can't be null."));
+        Email = Guard.Against.Null(email, exceptionCreator: () => new RestockSubscriptionDomainException("Email can't be null."));
     }
 
     public void Delete()

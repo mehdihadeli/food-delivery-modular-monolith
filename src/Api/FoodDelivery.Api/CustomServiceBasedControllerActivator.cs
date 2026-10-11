@@ -19,8 +19,8 @@ public class CustomServiceBasedControllerActivator : IControllerActivator
 
         var controllerAssembly = context.ActionDescriptor.ControllerTypeInfo.Assembly;
 
-        IModuleDefinition? selectedModuleToRoute = null;
-        foreach (var moduleDefinition in ModuleRegistry.ModuleDefinitions)
+        IModuleConfiguration? selectedModuleToRoute = null;
+        foreach (var moduleDefinition in context.HttpContext.RequestServices.GetServices<IModuleConfiguration>())
         {
             if (moduleDefinition.GetType().Assembly.GetName().Name == controllerAssembly.GetName().Name)
             {

@@ -38,14 +38,7 @@ public class GetCustomersEndpoint : EndpointBaseAsync
         Guard.Against.Null(request, nameof(request));
 
         var result = await _queryBus.SendAsync(
-            new GetCustomers
-            {
-                Filters = request.Filters,
-                Includes = request.Includes,
-                Page = request.Page,
-                Sorts = request.Sorts,
-                PageSize = request.PageSize
-            },
+            GetCustomers.Of(request),
             cancellationToken);
 
         return Ok(result);

@@ -39,7 +39,7 @@ public class RestockSubscriptionEntityConfiguration : IEntityTypeConfiguration<R
         });
 
         builder.Property(x => x.Email)
-            .HasConversion(email => email.Value, email => Email.Create(email));
+            .HasConversion(email => email.Value, email => Email.Of(email));
 
         builder.Property(x => x.Created).HasDefaultValueSql(EfConstants.DateAlgorithm);
     }

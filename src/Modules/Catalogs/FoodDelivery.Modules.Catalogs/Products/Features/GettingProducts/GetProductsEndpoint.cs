@@ -1,6 +1,7 @@
 using Ardalis.ApiEndpoints;
 using Ardalis.GuardClauses;
 using Squirrel.Abstractions.Queries;
+using Squirrel.Abstractions.Web;
 using Swashbuckle.AspNetCore.Annotations;
 
 namespace FoodDelivery.Modules.Catalogs.Products.Features.GettingProducts;
@@ -11,11 +12,11 @@ public class GetProductsEndpoint : EndpointBaseAsync
     .WithRequest<GetProductsRequest?>
     .WithActionResult<GetProductsResponse>
 {
-    private readonly IQueryProcessor _queryProcessor;
+    private readonly IGatewayProcessor<CatalogModuleConfiguration> _gatewayProcessor;
 
-    public GetProductsEndpoint(IQueryProcessor queryProcessor)
+    public GetProductsEndpoint(IGatewayProcessor<CatalogModuleConfiguration> gatewayProcessor)
     {
-        _queryProcessor = queryProcessor;
+        _gatewayProcessor = gatewayProcessor;
     }
 
     [HttpGet(ProductsConfigs.ProductsPrefixUri, Name = "GetProducts")]
@@ -34,16 +35,8 @@ public class GetProductsEndpoint : EndpointBaseAsync
         Guard.Against.Null(request, nameof(request));
 
 
-        var result = await _queryProcessor.SendAsync(
-            new GetProducts
-            {
-                Page = request.Page,
-                Sorts = request.Sorts,
-                PageSize = request.PageSize,
-                Filters = request.Filters,
-                Includes = request.Includes,
-            },
-            cancellationToken);
+        var query = GetProducts.Of(request);
+        var result = await _gatewayProcessor.ExecuteQuery(async queryBus => await queryBus.SendAsync(query, cancellationToken));
 
         return Ok(result);
     }

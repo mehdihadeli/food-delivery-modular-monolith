@@ -39,15 +39,14 @@ internal class RestockSubscriptionCreatedHandler : IDomainEventHandler<RestockSu
         _customersDbContext = customersDbContext;
     }
 
-    public async Task Handle(RestockSubscriptionCreated notification, CancellationToken cancellationToken)
+    public async ValueTask Handle(RestockSubscriptionCreated notification, CancellationToken cancellationToken)
     {
         Guard.Against.Null(notification, nameof(notification));
 
         var customer = await _customersDbContext.FindCustomerByIdAsync(notification.RestockSubscription.CustomerId);
 
-        Guard.Against.NotFound(
-            customer,
-            new CustomerNotFoundException(notification.RestockSubscription.CustomerId));
+        if (customer is null)
+            throw new CustomerNotFoundException(notification.RestockSubscription.CustomerId);
 
         var mongoReadCommand =
             notification.ToCreateMongoRestockSubscriptionReadModels(customer!.Id, customer.Name.FullName);

@@ -43,7 +43,8 @@ internal class GetRestockSubscriptionByIdHandler
         var customer = await _customersReadDbContext.Customers.AsQueryable()
             .SingleOrDefaultAsync(x => x.CustomerId == query.Id, cancellationToken: cancellationToken);
 
-        Guard.Against.NotFound(customer, new CustomerNotFoundException(query.Id));
+        if (customer is null)
+            throw new CustomerNotFoundException(query.Id);
 
         var customerDto = _mapper.Map<CustomerReadDto>(customer);
 

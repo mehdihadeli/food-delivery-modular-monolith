@@ -1,6 +1,7 @@
 using System.Net.Http.Json;
 using Squirrel.Abstractions.Web.Module;
 using Squirrel.Core.Extensions;
+using Squirrel.Core.Web.Extensions;
 using Squirrel.Persistence.Mongo;
 using Microsoft.EntityFrameworkCore;
 using Tests.Shared.Mocks;

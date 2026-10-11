@@ -1,9 +1,10 @@
 using FoodDelivery.Modules.Customers.Customers.Exceptions.Domain;
 using FoodDelivery.Modules.Customers.Customers.Models;
+using FoodDelivery.Modules.Customers.UnitTests.Common;
 
 namespace FoodDelivery.Modules.Customers.UnitTests.Customers.ValueObjects;
 
-public class CustomerNameTests
+public class CustomerNameTests : CustomerModuleUnitTestBase
 {
     [Fact]
     public void create_with_valid_names_populates_all_name_fields()

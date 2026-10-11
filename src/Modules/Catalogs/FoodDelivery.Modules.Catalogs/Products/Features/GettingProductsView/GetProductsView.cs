@@ -18,7 +18,8 @@ public class GetProductsViewValidator : AbstractValidator<GetProductsView>
 {
     public GetProductsViewValidator()
     {
-        CascadeMode = CascadeMode.Stop;
+        RuleLevelCascadeMode = CascadeMode.Stop;
+        ClassLevelCascadeMode = CascadeMode.Stop;
 
         RuleFor(x => x.Page)
             .GreaterThanOrEqualTo(1).WithMessage("Page should at least greater than or equal to 1.");
@@ -28,7 +29,7 @@ public class GetProductsViewValidator : AbstractValidator<GetProductsView>
     }
 }
 
-internal class GetProductsViewQueryHandler : IRequestHandler<GetProductsView, GetProductsViewResponse>
+internal class GetProductsViewQueryHandler : IQueryHandler<GetProductsView, GetProductsViewResponse>
 {
     private readonly IDbFacadeResolver _facadeResolver;
     private readonly IMapper _mapper;
@@ -39,7 +40,7 @@ internal class GetProductsViewQueryHandler : IRequestHandler<GetProductsView, Ge
         _mapper = mapper;
     }
 
-    public async Task<GetProductsViewResponse> Handle(
+    public async ValueTask<GetProductsViewResponse> Handle(
         GetProductsView request,
         CancellationToken cancellationToken)
     {

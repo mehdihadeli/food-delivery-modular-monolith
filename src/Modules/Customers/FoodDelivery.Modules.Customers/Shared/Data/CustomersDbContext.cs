@@ -10,7 +10,7 @@ public class CustomersDbContext : EfDbContextBase, ICustomersDbContext
 {
     public const string DefaultSchema = "customer";
 
-    public CustomersDbContext(DbContextOptions options) : base(options)
+    public CustomersDbContext(DbContextOptions<CustomersDbContext> options) : base(options)
     {
     }
 
@@ -18,6 +18,8 @@ public class CustomersDbContext : EfDbContextBase, ICustomersDbContext
     {
         modelBuilder.HasPostgresExtension(EfConstants.UuidGenerator);
         modelBuilder.ApplyConfigurationsFromAssembly(Assembly.GetExecutingAssembly());
+        modelBuilder.Entity<Customer>().Property<long>("OriginalVersion");
+        modelBuilder.Entity<RestockSubscription>().Property<long>("OriginalVersion");
 
         base.OnModelCreating(modelBuilder);
     }

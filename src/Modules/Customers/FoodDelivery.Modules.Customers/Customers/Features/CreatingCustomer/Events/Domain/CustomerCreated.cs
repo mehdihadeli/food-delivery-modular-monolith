@@ -19,7 +19,7 @@ internal class CustomerCreatedHandler : IDomainEventHandler<CustomerCreated>
         _mapper = mapper;
     }
 
-    public Task Handle(CustomerCreated notification, CancellationToken cancellationToken)
+    public async ValueTask Handle(CustomerCreated notification, CancellationToken cancellationToken)
     {
         Guard.Against.Null(notification, nameof(notification));
 
@@ -27,6 +27,6 @@ internal class CustomerCreatedHandler : IDomainEventHandler<CustomerCreated>
 
         // https://github.com/kgrzybek/modular-monolith-with-ddd#38-internal-processing
         // Schedule multiple read sides to execute here
-        return _commandBus.ScheduleAsync(new IInternalCommand[] { mongoReadCommand }, cancellationToken);
+        await _commandBus.ScheduleAsync(new IInternalCommand[] { mongoReadCommand }, cancellationToken);
     }
 }

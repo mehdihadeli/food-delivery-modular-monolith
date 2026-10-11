@@ -20,7 +20,7 @@ public class ProductUpdatedHandler : IDomainEventHandler<ProductUpdated>
         _dbContext = dbContext;
     }
 
-    public async Task Handle(ProductUpdated notification, CancellationToken cancellationToken)
+    public async ValueTask Handle(ProductUpdated notification, CancellationToken cancellationToken)
     {
         Guard.Against.Null(notification, nameof(notification));
 
@@ -35,7 +35,8 @@ public class ProductUpdatedHandler : IDomainEventHandler<ProductUpdated>
                 .Include(x => x.Supplier)
                 .SingleOrDefaultAsync(x => x.Id == notification.Product.Id, cancellationToken);
 
-            Guard.Against.NotFound(product, new ProductNotFoundException(notification.Product.Id));
+            if (product is null)
+                throw new ProductNotFoundException(notification.Product.Id);
 
             existed.ProductId = product!.Id;
             existed.ProductName = product.Name;

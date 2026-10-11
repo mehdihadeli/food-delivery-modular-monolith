@@ -33,7 +33,7 @@ internal class SendEmailVerificationCodeHandler : ICommandHandler<SendEmailVerif
         _logger = logger;
     }
 
-    public async Task<Unit> Handle(SendEmailVerificationCode request, CancellationToken cancellationToken)
+    public async ValueTask<Unit> Handle(SendEmailVerificationCode request, CancellationToken cancellationToken)
     {
         Guard.Against.Null(request, nameof(SendEmailVerificationCode));
 

@@ -52,7 +52,7 @@ internal class SendRestockNotificationHandler : ICommandHandler<SendRestockNotif
 
     public async ValueTask<Unit> Handle(SendRestockNotification command, CancellationToken cancellationToken)
     {
-        Guard.Against.Null(command, new RestockSubscriptionDomainException("Command cannot be null"));
+        Guard.Against.Null(command, exceptionCreator: () => new RestockSubscriptionDomainException("Command cannot be null"));
 
         var restockSubscription =
             await _customersDbContext.RestockSubscriptions

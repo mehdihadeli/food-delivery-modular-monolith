@@ -32,6 +32,7 @@
     <PackageVersion Include="Testcontainers.PostgreSql" Version="3.9.0" />
     <PackageVersion Include="Testcontainers.MongoDb" Version="3.9.0" />
     <PackageVersion Include="Testcontainers.RabbitMq" Version="3.9.0" />
+    <PackageVersion Include="Testcontainers.Redis" Version="3.9.0" />
     <PackageVersion Include="Verify.Xunit" Version="25.3.2" />
     <PackageVersion Include="XunitContext" Version="3.3.2" />
     <PackageVersion Include="WebMotions.Fake.Authentication.JwtBearer" Version="9.0.0" />

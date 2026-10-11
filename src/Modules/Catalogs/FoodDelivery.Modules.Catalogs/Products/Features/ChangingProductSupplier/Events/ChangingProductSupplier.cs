@@ -19,7 +19,7 @@ internal class ChangingSupplierValidationHandler :
         _catalogDbContext = catalogDbContext;
     }
 
-    public async Task Handle(ChangingProductSupplier notification, CancellationToken cancellationToken)
+    public async ValueTask Handle(ChangingProductSupplier notification, CancellationToken cancellationToken)
     {
         Guard.Against.Null(notification, nameof(notification));
         Guard.Against.NegativeOrZero(notification.SupplierId, nameof(notification.SupplierId));

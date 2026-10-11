@@ -15,7 +15,8 @@ internal class DebitProductStockValidator : AbstractValidator<DebitProductStock>
     public DebitProductStockValidator()
     {
         // https://docs.fluentvalidation.net/en/latest/conditions.html#stop-vs-stoponfirstfailure
-        CascadeMode = CascadeMode.Stop;
+        RuleLevelCascadeMode = CascadeMode.Stop;
+        ClassLevelCascadeMode = CascadeMode.Stop;
 
         RuleFor(x => x.Quantity)
             .GreaterThan(0);
@@ -35,7 +36,7 @@ internal class DebitProductStockHandler : ICommandHandler<DebitProductStock>
         _catalogDbContext = Guard.Against.Null(catalogDbContext, nameof(catalogDbContext));
     }
 
-    public async Task<Unit> Handle(DebitProductStock command, CancellationToken cancellationToken)
+    public async ValueTask<Unit> Handle(DebitProductStock command, CancellationToken cancellationToken)
     {
         Guard.Against.Null(command, nameof(command));
 
@@ -43,7 +44,8 @@ internal class DebitProductStockHandler : ICommandHandler<DebitProductStock>
             await _catalogDbContext.Products.FirstOrDefaultAsync(x => x.Id == command.ProductId, cancellationToken);
 
         await _catalogDbContext.SaveChangesAsync(cancellationToken);
-        Guard.Against.NotFound(product, new ProductNotFoundException(command.ProductId));
+        if (product is null)
+            throw new ProductNotFoundException(command.ProductId);
         product!.DebitStock(command.Quantity);
 
         await _catalogDbContext.SaveChangesAsync(cancellationToken);

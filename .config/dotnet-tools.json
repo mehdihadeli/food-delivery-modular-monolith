@@ -2,20 +2,17 @@
   "version": 1,
   "isRoot": true,
   "tools": {
-    "altcover.global": {
-      "version": "8.8.74",
+    "nbgv": {
+      "version": "3.10.94",
       "commands": [
-        "altcover"
-      ],
-      "rollForward": false
+        "nbgv"
+      ]
     },
-    "cake.tool": {
-      "version": "2.3.0",
-      "commands": [
-        "dotnet-cake"
-      ],
-      "rollForward": false
-    },
+	"husky": {
+	"version": "0.9.1",
+	"commands": ["husky"],
+	"rollForward": false
+	},
     "dotnet-format": {
       "version": "5.1.250801",
       "commands": [

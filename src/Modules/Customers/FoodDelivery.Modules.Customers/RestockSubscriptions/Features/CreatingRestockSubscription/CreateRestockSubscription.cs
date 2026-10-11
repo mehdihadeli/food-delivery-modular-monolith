@@ -66,10 +66,12 @@ internal class CreateRestockSubscriptionHandler
         Guard.Against.Null(request, nameof(request));
 
         var existsCustomer = await _customersDbContext.ExistsCustomerByIdAsync(request.CustomerId);
-        Guard.Against.NotExists(existsCustomer, new CustomerNotFoundException(request.CustomerId));
+        if (!existsCustomer)
+            throw new CustomerNotFoundException(request.CustomerId);
 
         var product = (await _catalogApiClient.GetProductByIdAsync(request.ProductId, cancellationToken))?.Product;
-        Guard.Against.NotFound(product, new ProductNotFoundException(request.ProductId));
+        if (product is null)
+            throw new ProductNotFoundException(request.ProductId);
 
         if (product!.AvailableStock > 0)
             throw new ProductHaveStockException(product.Id, product.AvailableStock, product.Name);
@@ -85,7 +87,7 @@ internal class CreateRestockSubscriptionHandler
                 request.Id,
                 request.CustomerId,
                 ProductInformation.Create(product!.Id, product.Name),
-                Email.Create(request.Email));
+                Email.Of(request.Email));
 
         await _customersDbContext.AddAsync(restockSubscription, cancellationToken);
 

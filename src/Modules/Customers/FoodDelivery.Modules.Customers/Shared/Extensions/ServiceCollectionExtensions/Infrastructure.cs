@@ -1,6 +1,10 @@
 using Ardalis.GuardClauses;
+using Mediator;
+using Squirrel.Abstractions.Caching;
 using Squirrel.Caching;
+using Squirrel.Caching.Behaviors;
 using Squirrel.Core.Extensions;
+using Squirrel.Core.Pipelines;
 using Squirrel.Core.IdsGenerator;
 using Squirrel.Core.Persistence.EfCore;
 using Squirrel.Email;
@@ -9,53 +13,46 @@ using Squirrel.SerilogLogging;
 using Squirrel.OpenTelemetry;
 using Squirrel.Persistence.EfCore.Postgres;
 using Squirrel.Validation;
-using Squirrel.Web.Extensions.ServiceCollectionExtensions;
+using Squirrel.Validation.Extensions;
 
 namespace FoodDelivery.Modules.Customers.Shared.Extensions.ServiceCollectionExtensions;
 
 public static partial class ServiceCollectionExtensions
 {
-    public static IServiceCollection AddInfrastructure(this IServiceCollection services, IConfiguration configuration)
+    public static WebApplicationBuilder AddInfrastructure(this WebApplicationBuilder builder, IConfiguration configuration)
     {
-        services.AddCqrs(
-            doMoreActions: s =>
-            {
-                s.AddScoped(typeof(IPipelineBehavior<,>), typeof(RequestValidationBehavior<,>))
-                    .AddScoped(typeof(IStreamPipelineBehavior<,>), typeof(StreamRequestValidationBehavior<,>))
-                    .AddScoped(typeof(IStreamPipelineBehavior<,>), typeof(StreamLoggingBehavior<,>))
-                    .AddScoped(typeof(IStreamPipelineBehavior<,>), typeof(StreamCachingBehavior<,>))
-                    .AddScoped(typeof(IPipelineBehavior<,>), typeof(LoggingBehavior<,>))
-                    .AddScoped(typeof(IPipelineBehavior<,>), typeof(CachingBehavior<,>))
-                    .AddScoped(typeof(IPipelineBehavior<,>), typeof(InvalidateCachingBehavior<,>))
-                    .AddScoped(typeof(IPipelineBehavior<,>), typeof(EfTxBehavior<,>));
-            });
+        var services = builder.Services;
+        services.AddMediator(options =>
+        {
+            options.ServiceLifetime = ServiceLifetime.Scoped;
+            options.Namespace = "FoodDelivery.Modules.Customers";
+        });
 
-        services.AddControllersAsServices();
+        builder.AddCoreServices();
+        services.AddScoped(typeof(IPipelineBehavior<,>), typeof(RequestValidationBehavior<,>))
+            .AddScoped(typeof(IStreamPipelineBehavior<,>), typeof(StreamRequestValidationBehavior<,>))
+            .AddScoped(typeof(IStreamPipelineBehavior<,>), typeof(StreamLoggingBehavior<,>))
+            .AddScoped(typeof(IStreamPipelineBehavior<,>), typeof(StreamCachingBehavior<,>))
+            .AddScoped(typeof(IPipelineBehavior<,>), typeof(LoggingBehavior<,>))
+            .AddScoped(typeof(IPipelineBehavior<,>), typeof(CachingBehavior<,>))
+            .AddScoped(typeof(IPipelineBehavior<,>), typeof(InvalidateCachingBehavior<,>))
+            .AddScoped(typeof(IPipelineBehavior<,>), typeof(EfTxBehavior<,>));
 
-        SnowFlakIdGenerator.Configure(2);
-
-        services.AddCore(
-            configuration,
-            CustomersModuleConfiguration.ModuleName,
-            Assembly.GetExecutingAssembly());
-
-        services.AddEmailService(configuration, $"{CustomersModuleConfiguration.ModuleName}:{nameof(EmailOptions)}");
-
-        services.AddInMemoryMessagePersistence();
-        services.AddInMemoryCommandScheduler();
-        services.AddInMemoryBroker(configuration);
+        services.AddControllers().AddControllersAsServices();
+        services.AddEmailService(configuration.GetSection(CustomersModuleConfiguration.ModuleName));
 
         services.AddCustomValidators(Assembly.GetExecutingAssembly());
 
         services.AddAutoMapper(Assembly.GetExecutingAssembly());
 
-        services.AddCustomInMemoryCache(configuration)
-            .AddCachingRequestPolicies(Assembly.GetExecutingAssembly());
+        services.AddOptions<CacheOptions>().Bind(configuration.GetSection(nameof(CacheOptions)));
+        services.AddHybridCache();
+        services.AddSingleton<ICacheService, CacheService>();
 
         services.AddCustomHttpClients(configuration);
 
         services.AddSingleton<ILoggerFactory>(new Serilog.Extensions.Logging.SerilogLoggerFactory());
 
-        return services;
+        return builder;
     }
 }

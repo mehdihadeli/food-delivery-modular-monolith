@@ -1,19 +1,29 @@
 <?xml version="1.0" encoding="utf-8"?>
 <Project Sdk="Microsoft.NET.Sdk">
   <ItemGroup>
-    <ProjectReference Include="..\..\..\src\BuildingBlocks\src\Squirrel.Abstractions\Squirrel.Abstractions.csproj" />
-    <ProjectReference Include="..\..\..\src\BuildingBlocks\src\Squirrel.Core\Squirrel.Core.csproj" />
-    <ProjectReference Include="..\..\..\src\BuildingBlocks\src\Squirrel.SerilogLogging\Squirrel.SerilogLogging.csproj" />
-    <ProjectReference Include="..\..\..\src\BuildingBlocks\src\Squirrel.Persistence.EfCore.Postgres\Squirrel.Persistence.EfCore.Postgres.csproj" />
-    <ProjectReference Include="..\..\..\src\BuildingBlocks\src\Squirrel.Persistence.Mongo\Squirrel.Persistence.Mongo.csproj" />
-    <ProjectReference Include="..\..\..\src\BuildingBlocks\src\Squirrel.Security\Squirrel.Security.csproj" />
-    <ProjectReference Include="..\..\..\src\BuildingBlocks\src\Squirrel.Web\Squirrel.Web.csproj" />
+    <ProjectReference Include="$(SquirrelSourceRoot)\src\Squirrel.Abstractions\Squirrel.Abstractions.csproj" />
+    <ProjectReference Include="$(SquirrelSourceRoot)\src\Squirrel.Caching\Squirrel.Caching.csproj" />
+    <ProjectReference Include="$(SquirrelSourceRoot)\src\Squirrel.Core\Squirrel.Core.csproj" />
+    <ProjectReference Include="$(SquirrelSourceRoot)\src\Squirrel.Integration.Wolverine\Squirrel.Integration.Wolverine.csproj" />
+    <ProjectReference Include="$(SquirrelSourceRoot)\src\Squirrel.SerilogLogging\Squirrel.SerilogLogging.csproj" />
+    <ProjectReference Include="$(SquirrelSourceRoot)\src\Squirrel.Persistence.EfCore.Postgres\Squirrel.Persistence.EfCore.Postgres.csproj" />
+    <ProjectReference Include="$(SquirrelSourceRoot)\src\Squirrel.Persistence.Mongo\Squirrel.Persistence.Mongo.csproj" />
+    <ProjectReference Include="$(SquirrelSourceRoot)\src\Squirrel.Security\Squirrel.Security.csproj" />
+    <ProjectReference Include="$(SquirrelSourceRoot)\src\Squirrel.Web\Squirrel.Web.csproj" />
   </ItemGroup>
   <ItemGroup>
     <PackageReference Include="Hypothesist" />
     <PackageReference Include="Microsoft.VisualStudio.TestPlatform" />
     <PackageReference Include="Mongo2Go" />
+    <PackageReference Include="MongoDB.Driver" />
+    <PackageReference Include="Microsoft.EntityFrameworkCore" />
     <PackageReference Include="Respawn" />
+    <PackageReference Include="Testcontainers" />
+    <PackageReference Include="Testcontainers.MongoDb" />
+    <PackageReference Include="Testcontainers.PostgreSql" />
+    <PackageReference Include="Testcontainers.RabbitMq" />
+    <PackageReference Include="Testcontainers.Redis" />
+    <PackageReference Include="WireMock.Net" />
     <PackageReference Include="xunit.v3.extensibility.core" />
     <PackageReference Include="Shouldly" />
     <PackageReference Include="FluentAssertions" />

@@ -1,5 +1,4 @@
 using Squirrel.Abstractions.Messages;
-using Squirrel.Abstractions.Messages.Context;
 using Squirrel.Abstractions.Persistence;
 using Squirrel.Core.Messages;
 
@@ -9,8 +8,8 @@ public record CustomerCreated(long CustomerId) : IntegrationEvent, ITxRequest;
 
 public class CustomerCreatedConsumer : IMessageHandler<CustomerCreated>
 {
-    public Task HandleAsync(
-        IConsumeContext<CustomerCreated> messageContext,
+    public Task Handle(
+        CustomerCreated message,
         CancellationToken cancellationToken = default)
     {
         return Task.CompletedTask;

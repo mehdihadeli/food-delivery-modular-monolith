@@ -1,6 +1,7 @@
 using AutoMapper;
 using Squirrel.Abstractions.Queries;
 using Squirrel.Core.Queries;
+using Sieve.Services;
 using Squirrel.Core.Persistence.EfCore;
 using Squirrel.Core.Types;
 using FoodDelivery.Modules.Identity.Shared.Extensions;
@@ -12,15 +13,16 @@ using Microsoft.EntityFrameworkCore;
 
 namespace FoodDelivery.Modules.Identity.Users.Features.GettingUsers;
 
-public record GetUsers : ListQuery<GetUsersResponse>;
+public record GetUsers : PageQuery<GetUsersResponse>;
 
 public class GetUsersValidator : AbstractValidator<GetUsers>
 {
     public GetUsersValidator()
     {
-        CascadeMode = CascadeMode.Stop;
+        RuleLevelCascadeMode = CascadeMode.Stop;
+        ClassLevelCascadeMode = CascadeMode.Stop;
 
-        RuleFor(x => x.Page)
+        RuleFor(x => x.PageNumber)
             .GreaterThanOrEqualTo(1).WithMessage("Page should at least greater than or equal to 1.");
 
         RuleFor(x => x.PageSize)
@@ -32,16 +34,18 @@ public class GetUsersHandler : IQueryHandler<GetUsers, GetUsersResponse>
 {
     private readonly UserManager<ApplicationUser> _userManager;
     private readonly IMapper _mapper;
+    private readonly ISieveProcessor _sieveProcessor;
 
-    public GetUsersHandler(UserManager<ApplicationUser> userManager, IMapper mapper)
+    public GetUsersHandler(UserManager<ApplicationUser> userManager, IMapper mapper, ISieveProcessor sieveProcessor)
     {
         _userManager = userManager;
         _mapper = mapper;
+        _sieveProcessor = sieveProcessor;
     }
 
-    public async Task<GetUsersResponse> Handle(GetUsers request, CancellationToken cancellationToken)
+    public async ValueTask<GetUsersResponse> Handle(GetUsers request, CancellationToken cancellationToken)
     {
-        var customer = await _userManager.FindAllUsersByPageAsync<IdentityUserDto>(_mapper, request, cancellationToken);
+        var customer = await _userManager.FindAllUsersByPageAsync<IdentityUserDto>(_mapper, request, _sieveProcessor, cancellationToken);
 
         return new GetUsersResponse(customer);
     }

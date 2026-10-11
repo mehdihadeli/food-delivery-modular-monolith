@@ -15,7 +15,8 @@ internal class ReplenishingProductStockValidator : AbstractValidator<Replenishin
     public ReplenishingProductStockValidator()
     {
         // https://docs.fluentvalidation.net/en/latest/conditions.html#stop-vs-stoponfirstfailure
-        CascadeMode = CascadeMode.Stop;
+        RuleLevelCascadeMode = CascadeMode.Stop;
+        ClassLevelCascadeMode = CascadeMode.Stop;
 
         RuleFor(x => x.Quantity)
             .GreaterThan(0);
@@ -35,12 +36,13 @@ internal class ReplenishingProductStockHandler : ICommandHandler<ReplenishingPro
         _catalogDbContext = Guard.Against.Null(catalogDbContext, nameof(catalogDbContext));
     }
 
-    public async Task<Unit> Handle(ReplenishingProductStock command, CancellationToken cancellationToken)
+    public async ValueTask<Unit> Handle(ReplenishingProductStock command, CancellationToken cancellationToken)
     {
         Guard.Against.Null(command, nameof(command));
 
         var product = await _catalogDbContext.FindProductByIdAsync(command.ProductId);
-        Guard.Against.NotFound(product, new ProductNotFoundException(command.ProductId));
+        if (product is null)
+            throw new ProductNotFoundException(command.ProductId);
 
         product!.ReplenishStock(command.Quantity);
         await _catalogDbContext.SaveChangesAsync(cancellationToken);

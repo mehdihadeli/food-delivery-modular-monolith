@@ -1,0 +1,8 @@
+<Project Sdk="Microsoft.NET.Sdk">
+  <ItemGroup>
+    <ProjectReference Include="$(SquirrelSourceRoot)\src\Squirrel.HealthCheck\Squirrel.HealthCheck.csproj" />
+    <ProjectReference Include="$(SquirrelSourceRoot)\src\Squirrel.OpenTelemetry\Squirrel.OpenTelemetry.csproj" />
+    <ProjectReference Include="$(SquirrelSourceRoot)\src\Squirrel.Resiliency\Squirrel.Resiliency.csproj" />
+    <ProjectReference Include="$(SquirrelSourceRoot)\src\Squirrel.Web\Squirrel.Web.csproj" />
+  </ItemGroup>
+</Project>

@@ -23,5 +23,5 @@ public record Size
     public static implicit operator Size(string value) => Create(value);
 
     public static implicit operator string(Size value) =>
-        Guard.Against.Null(value.Value, new ProductDomainException("Size can't be null."));
+        Guard.Against.Null(value.Value, exceptionCreator: () => new ProductDomainException("Size can't be null."));
 }

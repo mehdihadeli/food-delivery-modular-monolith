@@ -15,16 +15,16 @@ public record ProductCreatedNotification
     public int Stock => DomainEvent.Product.Stock.Available;
 }
 
-internal class ProductCreatedNotificationHandler : IDomainNotificationEventHandler<ProductCreatedNotification>
+internal class ProductCreatedNotificationHandler : IDomainNotificationEventHandler<ProductCreatedNotification, ProductCreated>
 {
-    private readonly IBus _bus;
+    private readonly IExternalEventBus _bus;
 
-    public ProductCreatedNotificationHandler(IBus bus)
+    public ProductCreatedNotificationHandler(IExternalEventBus bus)
     {
         _bus = bus;
     }
 
-    public async Task Handle(ProductCreatedNotification notification, CancellationToken cancellationToken)
+    public async ValueTask Handle(ProductCreatedNotification notification, CancellationToken cancellationToken)
     {
         // We could publish integration event to bus here
         // await _bus.PublishAsync(

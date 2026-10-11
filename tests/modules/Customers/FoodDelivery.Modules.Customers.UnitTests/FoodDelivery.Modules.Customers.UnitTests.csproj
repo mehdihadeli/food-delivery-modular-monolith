@@ -1,6 +1,11 @@
 <Project Sdk="Microsoft.NET.Sdk">
 
   <ItemGroup>
+    <PackageReference Include="FluentAssertions" />
+    <PackageReference Include="NSubstitute" />
+  </ItemGroup>
+
+  <ItemGroup>
     <None Update="xunit.runner.json">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </None>
@@ -8,6 +13,7 @@
 
   <ItemGroup>
     <ProjectReference Include="..\..\..\..\src\Modules\Customers\FoodDelivery.Modules.Customers\FoodDelivery.Modules.Customers.csproj" />
+    <ProjectReference Include="..\FoodDelivery.Modules.Customers.TestShared\FoodDelivery.Modules.Customers.TestShared.csproj" />
   </ItemGroup>
 
 </Project>

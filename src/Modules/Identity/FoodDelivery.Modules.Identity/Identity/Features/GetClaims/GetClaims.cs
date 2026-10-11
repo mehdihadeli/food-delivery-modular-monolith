@@ -16,13 +16,13 @@ public class GetClaimsHandler : IQueryHandler<GetClaims, GetClaimsResponse>
         _httpContextAccessor = httpContextAccessor;
     }
 
-    public Task<GetClaimsResponse> Handle(GetClaims request, CancellationToken cancellationToken)
+    public ValueTask<GetClaimsResponse> Handle(GetClaims request, CancellationToken cancellationToken)
     {
         var claims = _httpContextAccessor.HttpContext?.User.Claims.Select(x => new ClaimDto
         {
             Type = x.Type, Value = x.Value
         });
 
-        return Task.FromResult(new GetClaimsResponse(claims));
+        return ValueTask.FromResult(new GetClaimsResponse(claims));
     }
 }

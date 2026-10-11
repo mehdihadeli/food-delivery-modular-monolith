@@ -1,4 +1,4 @@
-using Squirrel.Core.Queries;
+using Squirrel.Core.Paging;
 
 namespace FoodDelivery.Modules.Catalogs.Products.Features.GettingProducts;
 

@@ -173,6 +173,11 @@ namespace FoodDelivery.Modules.Customers.Shared.Data.Migrations.Customer
                                 .HasColumnType("character varying(50)")
                                 .HasColumnName("address_detail");
 
+                            b1.Property<string>("PostalCode")
+                                .HasMaxLength(25)
+                                .HasColumnType("character varying(25)")
+                                .HasColumnName("address_postal_code");
+
                             b1.HasKey("CustomerId");
 
                             b1.ToTable("customers", "customer");

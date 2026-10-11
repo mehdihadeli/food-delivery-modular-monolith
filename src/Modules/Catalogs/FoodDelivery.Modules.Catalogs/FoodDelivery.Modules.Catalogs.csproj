@@ -22,29 +22,33 @@
 
     <ItemGroup>
         <PackageReference Include="Ardalis.ApiEndpoints" />
+      <PackageReference Include="Ardalis.GuardClauses" />
+      <PackageReference Include="AutoMapper" />
+      <PackageReference Include="AutoMapper.Extensions.Microsoft.DependencyInjection" />
         <PackageReference Include="Bogus" />
         <PackageReference Include="Dapper" />
     </ItemGroup>
 
     <ItemGroup>
+      <PackageReference Include="Mediator.SourceGenerator" PrivateAssets="all" IncludeAssets="runtime; build; native; contentfiles; analyzers; buildtransitive" />
         <PackageReference Include="Microsoft.EntityFrameworkCore.Design" />
     </ItemGroup>
 
     <ItemGroup>
-      <ProjectReference Include="..\..\..\BuildingBlocks\src\Squirrel.Abstractions\Squirrel.Abstractions.csproj" />
-      <ProjectReference Include="..\..\..\BuildingBlocks\src\Squirrel.Caching\Squirrel.Caching.csproj" />
-      <ProjectReference Include="..\..\..\BuildingBlocks\src\Squirrel.Core\Squirrel.Core.csproj" />
-      <ProjectReference Include="..\..\..\BuildingBlocks\src\Squirrel.Email\Squirrel.Email.csproj" />
-      <ProjectReference Include="..\..\..\BuildingBlocks\src\Squirrel.OpenTelemetry\Squirrel.OpenTelemetry.csproj" />
-      <ProjectReference Include="..\..\..\BuildingBlocks\src\Squirrel.Persistence.EfCore.Postgres\Squirrel.Persistence.EfCore.Postgres.csproj" />
-      <ProjectReference Include="..\..\..\BuildingBlocks\src\Squirrel.Persistence.Mongo\Squirrel.Persistence.Mongo.csproj" />
-      <ProjectReference Include="..\..\..\BuildingBlocks\src\Squirrel.Resiliency\Squirrel.Resiliency.csproj" />
-      <ProjectReference Include="..\..\..\BuildingBlocks\src\Squirrel.Security\Squirrel.Security.csproj" />
-      <ProjectReference Include="..\..\..\BuildingBlocks\src\Squirrel.OpenApi\Squirrel.OpenApi.csproj" />
-      <ProjectReference Include="..\..\..\BuildingBlocks\src\Squirrel.Validation\Squirrel.Validation.csproj" />
-      <ProjectReference Include="..\..\..\BuildingBlocks\src\Squirrel.SerilogLogging\Squirrel.SerilogLogging.csproj" />
-      <ProjectReference Include="..\..\..\BuildingBlocks\src\Squirrel.Web\Squirrel.Web.csproj" />
-      <ProjectReference Include="..\..\..\BuildingBlocks\src\Squirrel.Integration.Wolverine\Squirrel.Integration.Wolverine.csproj" />
+      <ProjectReference Include="$(SquirrelSourceRoot)\src\Squirrel.Abstractions\Squirrel.Abstractions.csproj" />
+      <ProjectReference Include="$(SquirrelSourceRoot)\src\Squirrel.Caching\Squirrel.Caching.csproj" />
+      <ProjectReference Include="$(SquirrelSourceRoot)\src\Squirrel.Core\Squirrel.Core.csproj" />
+      <ProjectReference Include="$(SquirrelSourceRoot)\src\Squirrel.Email\Squirrel.Email.csproj" />
+      <ProjectReference Include="$(SquirrelSourceRoot)\src\Squirrel.OpenTelemetry\Squirrel.OpenTelemetry.csproj" />
+      <ProjectReference Include="$(SquirrelSourceRoot)\src\Squirrel.Persistence.EfCore.Postgres\Squirrel.Persistence.EfCore.Postgres.csproj" />
+      <ProjectReference Include="$(SquirrelSourceRoot)\src\Squirrel.Persistence.Mongo\Squirrel.Persistence.Mongo.csproj" />
+      <ProjectReference Include="$(SquirrelSourceRoot)\src\Squirrel.Resiliency\Squirrel.Resiliency.csproj" />
+      <ProjectReference Include="$(SquirrelSourceRoot)\src\Squirrel.Security\Squirrel.Security.csproj" />
+      <ProjectReference Include="$(SquirrelSourceRoot)\src\Squirrel.OpenApi\Squirrel.OpenApi.csproj" />
+      <ProjectReference Include="$(SquirrelSourceRoot)\src\Squirrel.Validation\Squirrel.Validation.csproj" />
+      <ProjectReference Include="$(SquirrelSourceRoot)\src\Squirrel.SerilogLogging\Squirrel.SerilogLogging.csproj" />
+      <ProjectReference Include="$(SquirrelSourceRoot)\src\Squirrel.Web\Squirrel.Web.csproj" />
+      <ProjectReference Include="$(SquirrelSourceRoot)\src\Squirrel.Integration.Wolverine\Squirrel.Integration.Wolverine.csproj" />
     </ItemGroup>
 
   <ItemGroup>
@@ -53,7 +57,9 @@
   </ItemGroup>
 
   <ItemGroup>
-    <Using Include="MediatR" />
+    <Using Include="Mediator.Unit" Alias="Unit" />
+    <Using Include="Squirrel.Abstractions.Events" />
+    <Using Include="Squirrel.Core.Exception" />
     <Using Include="System.Collections.Generic" />
     <Using Include="System.Reflection" />
     <Using Include="System.Threading.Tasks" />

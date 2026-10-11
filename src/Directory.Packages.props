@@ -7,10 +7,6 @@
   </PropertyGroup>
 
   <ItemGroup>
-    <PackageVersion Include="AspNetCore.HealthChecks.Network" Version="8.0.1" />
-    <PackageVersion Include="AspNetCore.HealthChecks.Prometheus.Metrics" Version="8.0.1" />
-    <PackageVersion Include="AspNetCore.HealthChecks.Publisher.Prometheus" Version="8.0.1" />
-    <PackageVersion Include="AspNetCore.HealthChecks.System" Version="8.0.1" />
     <PackageVersion Include="Ben.Demystifier" Version="0.4.1" />
     <PackageVersion Include="EventStore.Client.Grpc.Streams" Version="23.3.3" />
     <PackageVersion Include="Marten" Version="7.24.0" />
@@ -61,12 +57,12 @@
     <PackageVersion Include="AspNetCore.HealthChecks.MongoDb" Version="9.0.0" />
     <PackageVersion Include="AspNetCore.HealthChecks.NpgSql" Version="9.0.0" />
     <PackageVersion Include="AspNetCore.HealthChecks.Rabbitmq" Version="9.0.0" />
-    <PackageVersion Include="AspNetCore.HealthChecks.UI" Version="8.0.1" />
-    <PackageVersion Include="AspNetCore.HealthChecks.UI.Client" Version="8.0.1" />
-    <PackageVersion Include="AspNetCore.HealthChecks.UI.InMemory.Storage" Version="8.0.1" />
-    <PackageVersion Include="AspNetCore.HealthChecks.UI.SQLite.Storage" Version="8.0.1" />
-    <PackageVersion Include="AspNetCore.HealthChecks.Uris" Version="8.0.1" />
-    <PackageVersion Include="AspNetCore.HealthChecks.EventStore" Version="8.0.1" />
+    <PackageVersion Include="AspNetCore.HealthChecks.UI" Version="9.0.0" />
+    <PackageVersion Include="AspNetCore.HealthChecks.UI.Client" Version="9.0.0" />
+    <PackageVersion Include="AspNetCore.HealthChecks.UI.InMemory.Storage" Version="9.0.0" />
+    <PackageVersion Include="AspNetCore.HealthChecks.UI.SQLite.Storage" Version="9.0.0" />
+    <PackageVersion Include="AspNetCore.HealthChecks.Uris" Version="9.0.0" />
+    <PackageVersion Include="AspNetCore.HealthChecks.EventStore" Version="9.0.0" />
     <PackageVersion Include="prometheus-net.AspNetCore" Version="8.2.1" />
     <PackageVersion Include="prometheus-net.AspNetCore.Grpc" Version="8.2.1" />
     <PackageVersion Include="prometheus-net.AspNetCore.HealthChecks" Version="8.2.1" />

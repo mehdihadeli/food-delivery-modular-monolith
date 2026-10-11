@@ -16,7 +16,7 @@ internal class RestockNotificationProcessedHandler : IDomainEventHandler<Restock
         _commandBus = commandBus;
     }
 
-    public async Task Handle(RestockNotificationProcessed notification, CancellationToken cancellationToken)
+    public async ValueTask Handle(RestockNotificationProcessed notification, CancellationToken cancellationToken)
     {
         Guard.Against.Null(notification, nameof(notification));
 

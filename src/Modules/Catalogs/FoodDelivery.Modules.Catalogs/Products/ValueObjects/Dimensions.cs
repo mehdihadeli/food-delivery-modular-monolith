@@ -15,9 +15,9 @@ public record Dimensions
 
     public static Dimensions Create(int width, int height, int depth)
     {
-        Guard.Against.NegativeOrZero(height, new ProductDomainException("Height must be greater than zero"));
-        Guard.Against.NegativeOrZero(width, new ProductDomainException("Width must be greater than zero"));
-        Guard.Against.NegativeOrZero(depth, new ProductDomainException("Depth must be greater than zero"));
+        Guard.Against.NegativeOrZero(height, exceptionCreator: () => new ProductDomainException("Height must be greater than zero"));
+        Guard.Against.NegativeOrZero(width, exceptionCreator: () => new ProductDomainException("Width must be greater than zero"));
+        Guard.Against.NegativeOrZero(depth, exceptionCreator: () => new ProductDomainException("Depth must be greater than zero"));
 
         return new Dimensions { Height = height, Width = width, Depth = depth, };
     }

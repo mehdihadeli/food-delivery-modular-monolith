@@ -8,6 +8,8 @@
   
   <ItemGroup>
     <ProjectReference Include="..\..\..\shared\Tests.Shared\Tests.Shared.csproj" />
+    <ProjectReference Include="..\..\..\..\src\Api\FoodDelivery.Api\FoodDelivery.Api.csproj" />
+    <ProjectReference Include="..\FoodDelivery.Modules.Customers.TestShared\FoodDelivery.Modules.Customers.TestShared.csproj" />
   </ItemGroup>
 
 </Project>

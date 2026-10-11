@@ -25,7 +25,7 @@ public class GenerateRefreshTokenCommandHandler : ICommandHandler<GenerateJwtTok
         _logger = logger;
     }
 
-    public async Task<string> Handle(
+    public async ValueTask<string> Handle(
         GenerateJwtToken request,
         CancellationToken cancellationToken)
     {
@@ -46,9 +46,9 @@ public class GenerateRefreshTokenCommandHandler : ICommandHandler<GenerateJwtTok
             allClaims.Roles.ToImmutableList(),
             allClaims.PermissionClaims.ToImmutableList());
 
-        _logger.LogInformation("access-token generated, \n: {AccessToken}", accessToken);
+        _logger.LogInformation("Access token generated for user {UserId}", identityUser.Id);
 
-        return accessToken;
+        return accessToken.AccessToken;
     }
 
     public async Task<(IList<Claim> UserClaims, IList<string> Roles, IList<string> PermissionClaims)>
@@ -56,11 +56,11 @@ public class GenerateRefreshTokenCommandHandler : ICommandHandler<GenerateJwtTok
     {
         var appUser = await _userManager.FindByNameAsync(userName);
         var userClaims =
-            (await _userManager.GetClaimsAsync(appUser)).Where(x => x.Type != CustomClaimTypes.Permission).ToList();
+            (await _userManager.GetClaimsAsync(appUser)).Where(x => x.Type != ClaimsType.Permission).ToList();
         var roles = await _userManager.GetRolesAsync(appUser);
 
         var permissions = (await _userManager.GetClaimsAsync(appUser))
-            .Where(x => x.Type == CustomClaimTypes.Permission)?.Select(x => x
+            .Where(x => x.Type == ClaimsType.Permission)?.Select(x => x
                 .Value).ToList();
 
         return (UserClaims: userClaims, Roles: roles, PermissionClaims: permissions);

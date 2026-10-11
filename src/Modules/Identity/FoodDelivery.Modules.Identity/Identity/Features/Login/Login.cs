@@ -30,18 +30,18 @@ internal class LoginValidator : AbstractValidator<Login>
 
 internal class LoginHandler : ICommandHandler<Login, LoginResponse>
 {
-    private readonly ICommandProcessor _commandProcessor;
+    private readonly ICommandBus _commandProcessor;
     private readonly IJwtService _jwtService;
     private readonly JwtOptions _jwtOptions;
     private readonly ILogger<LoginHandler> _logger;
-    private readonly IQueryProcessor _queryProcessor;
+    private readonly IQueryBus _queryProcessor;
     private readonly SignInManager<ApplicationUser> _signInManager;
     private readonly UserManager<ApplicationUser> _userManager;
 
     public LoginHandler(
         UserManager<ApplicationUser> userManager,
-        ICommandProcessor commandProcessor,
-        IQueryProcessor queryProcessor,
+        ICommandBus commandProcessor,
+        IQueryBus queryProcessor,
         IJwtService jwtService,
         IOptions<JwtOptions> jwtOptions,
         SignInManager<ApplicationUser> signInManager,
@@ -56,14 +56,15 @@ internal class LoginHandler : ICommandHandler<Login, LoginResponse>
         _logger = logger;
     }
 
-    public async Task<LoginResponse> Handle(Login request, CancellationToken cancellationToken)
+    public async ValueTask<LoginResponse> Handle(Login request, CancellationToken cancellationToken)
     {
         Guard.Against.Null(request, nameof(Login));
 
         var identityUser = await _userManager.FindByNameAsync(request.UserNameOrEmail) ??
                            await _userManager.FindByEmailAsync(request.UserNameOrEmail);
 
-        Guard.Against.Null(identityUser, new UserNotFoundException(request.UserNameOrEmail));
+        if (identityUser is null)
+            throw new UserNotFoundException(request.UserNameOrEmail);
 
         // instead of PasswordSignInAsync, we use CheckPasswordSignInAsync because we don't want set cookie, instead we use JWT
         var signinResult = await _signInManager.CheckPasswordSignInAsync(

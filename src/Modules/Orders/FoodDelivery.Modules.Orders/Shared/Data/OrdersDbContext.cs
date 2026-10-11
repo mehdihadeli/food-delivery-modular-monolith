@@ -10,7 +10,7 @@ public class OrdersDbContext : EfDbContextBase, IOrdersDbContext
 {
     public const string DefaultSchema = "order";
 
-    public OrdersDbContext(DbContextOptions options) : base(options)
+    public OrdersDbContext(DbContextOptions<OrdersDbContext> options) : base(options)
     {
     }
 

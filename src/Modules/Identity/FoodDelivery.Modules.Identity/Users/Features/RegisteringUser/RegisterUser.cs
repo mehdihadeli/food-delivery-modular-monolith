@@ -17,7 +17,7 @@ public record RegisterUser(
     string Email,
     string Password,
     string ConfirmPassword,
-    List<string>? Roles = null) : ITxCreateCommand<RegisterUserResponse>
+    List<string>? Roles = null) : ITxCommand<RegisterUserResponse>
 {
     public DateTime CreatedAt { get; init; } = DateTime.Now;
     public Guid Id { get; init; } = Guid.NewGuid();
@@ -27,7 +27,8 @@ internal class RegisterUserValidator : AbstractValidator<RegisterUser>
 {
     public RegisterUserValidator()
     {
-        CascadeMode = CascadeMode.Stop;
+        RuleLevelCascadeMode = CascadeMode.Stop;
+        ClassLevelCascadeMode = CascadeMode.Stop;
 
         RuleFor(v => v.FirstName)
             .NotEmpty()
@@ -71,17 +72,17 @@ internal class RegisterUserValidator : AbstractValidator<RegisterUser>
 // https://www.youtube.com/watch?v=PrJIMTZsbDw
 internal class RegisterUserHandler : ICommandHandler<RegisterUser, RegisterUserResponse>
 {
-    private readonly IBus _bus;
+    private readonly IExternalEventBus _bus;
 
     private readonly UserManager<ApplicationUser> _userManager;
 
-    public RegisterUserHandler(UserManager<ApplicationUser> userManager, IBus bus)
+    public RegisterUserHandler(UserManager<ApplicationUser> userManager, IExternalEventBus bus)
     {
         _bus = bus;
         _userManager = Guard.Against.Null(userManager, nameof(userManager));
     }
 
-    public async Task<RegisterUserResponse> Handle(RegisterUser request, CancellationToken cancellationToken)
+    public async ValueTask<RegisterUserResponse> Handle(RegisterUser request, CancellationToken cancellationToken)
     {
         var applicationUser = new ApplicationUser
         {
@@ -114,9 +115,8 @@ internal class RegisterUserHandler : ICommandHandler<RegisterUser, RegisterUserR
                 applicationUser.UserName,
                 applicationUser.FirstName,
                 applicationUser.LastName,
-                request.Roles),
-            null,
-            cancellationToken);
+                request.Roles ?? new List<string> {Constants.Role.User}),
+            cancellationToken: cancellationToken);
 
         return new RegisterUserResponse(new IdentityUserDto
         {

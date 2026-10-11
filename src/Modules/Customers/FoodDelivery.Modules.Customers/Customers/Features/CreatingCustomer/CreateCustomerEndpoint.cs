@@ -1,5 +1,6 @@
 using Ardalis.GuardClauses;
 using Asp.Versioning.Conventions;
+using Microsoft.AspNetCore.Http.HttpResults;
 using Squirrel.Abstractions.Web;
 using Squirrel.Abstractions.Web.MinimalApi;
 using Swashbuckle.AspNetCore.Annotations;
@@ -25,7 +26,7 @@ public class CreateCustomerEndpoint : IMinimalEndpointDefinition
         return builder;
     }
 
-    private static Task<IResult> CreateCustomer(
+    private static Task<Created<CreateCustomerResponse>> CreateCustomer(
         CreateCustomerRequest request,
         IGatewayProcessor<CustomersModuleConfiguration> gatewayProcessor,
         CancellationToken cancellationToken)
@@ -34,11 +35,11 @@ public class CreateCustomerEndpoint : IMinimalEndpointDefinition
 
         return gatewayProcessor.ExecuteCommand(async commandProcessor =>
         {
-            var command = new CreateCustomer(request.Email);
+            var command = Features.CreatingCustomer.CreateCustomer.Of(request.Email);
 
             var result = await commandProcessor.SendAsync(command, cancellationToken);
 
-            return Results.Created($"{CustomersConfigs.CustomersPrefixUri}/{result.CustomerId}", result);
+            return TypedResults.Created($"{CustomersConfigs.CustomersPrefixUri}/{result.CustomerId}", result);
         });
     }
 }

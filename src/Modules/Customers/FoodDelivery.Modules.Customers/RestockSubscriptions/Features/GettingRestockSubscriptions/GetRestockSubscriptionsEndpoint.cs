@@ -39,11 +39,10 @@ public class GetRestockSubscriptionsEndpoint : EndpointBaseAsync
         var result = await _queryBus.SendAsync(
             new GetRestockSubscriptions
             {
-                Page = request.Page,
-                Sorts = request.Sorts,
+                PageNumber = request.PageNumber,
+                SortOrder = request.SortOrder,
                 PageSize = request.PageSize,
                 Filters = request.Filters,
-                Includes = request.Includes,
                 Emails = request.Emails,
                 From = request.From,
                 To = request.To

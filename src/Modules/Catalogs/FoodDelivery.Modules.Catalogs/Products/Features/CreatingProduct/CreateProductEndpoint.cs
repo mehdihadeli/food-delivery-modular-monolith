@@ -45,9 +45,9 @@ public static class CreateProductEndpoint
     {
         Guard.Against.Null(request, nameof(request));
 
-        return gatewayProcessor.ExecuteCommand(async (commandProcessor, mapper) =>
+        var command = Features.CreatingProduct.CreateProduct.Of(request);
+        return gatewayProcessor.ExecuteCommand(async commandProcessor =>
         {
-            var command = mapper.Map<CreateProduct>(request);
             var result = await commandProcessor.SendAsync(command, cancellationToken);
 
             return Results.CreatedAtRoute("GetProductById", new {id = result.Product.Id}, result);

@@ -19,7 +19,7 @@ internal class ChangingProductCategoryValidationHandler :
         _catalogDbContext = catalogDbContext;
     }
 
-    public async Task Handle(ChangingProductCategory notification, CancellationToken cancellationToken)
+    public async ValueTask Handle(ChangingProductCategory notification, CancellationToken cancellationToken)
     {
         Guard.Against.Null(notification, nameof(notification));
         Guard.Against.NegativeOrZero(notification.CategoryId, nameof(notification.CategoryId));

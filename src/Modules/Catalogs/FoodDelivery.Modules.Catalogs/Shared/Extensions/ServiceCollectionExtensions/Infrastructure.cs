@@ -1,25 +1,28 @@
-using Ardalis.GuardClauses;
+using Mediator;
+using Squirrel.Abstractions.Caching;
 using Squirrel.Caching;
-using BuildingBlocks.Core.Caching;
+using Squirrel.Caching.Behaviors;
 using Squirrel.Core.Extensions;
-using BuildingBlocks.Core.IdsGenerator;
+using Squirrel.Core.Pipelines;
 using Squirrel.Core.Persistence.EfCore;
-using BuildingBlocks.Core.Registrations;
 using Squirrel.Email;
-using Squirrel.Email.Options;
-using Squirrel.SerilogLogging;
 using Squirrel.Validation;
-using Squirrel.Web.Extensions.ServiceCollectionExtensions;
+using Squirrel.Validation.Extensions;
 
 namespace FoodDelivery.Modules.Catalogs.Shared.Extensions.ServiceCollectionExtensions;
 
 public static partial class ServiceCollectionExtensions
 {
-    public static IServiceCollection AddInfrastructure(this IServiceCollection services, IConfiguration configuration)
+    public static WebApplicationBuilder AddInfrastructure(this WebApplicationBuilder builder, IConfiguration configuration)
     {
-        services.AddCqrs(doMoreActions: s =>
+        var services = builder.Services;
+        services.AddMediator(options =>
         {
-            s.AddScoped(typeof(IPipelineBehavior<,>), typeof(RequestValidationBehavior<,>))
+            options.ServiceLifetime = ServiceLifetime.Scoped;
+            options.Namespace = "FoodDelivery.Modules.Catalogs";
+        });
+        builder.AddCoreServices();
+        services.AddScoped(typeof(IPipelineBehavior<,>), typeof(RequestValidationBehavior<,>))
                 .AddScoped(typeof(IStreamPipelineBehavior<,>), typeof(StreamRequestValidationBehavior<,>))
                 .AddScoped(typeof(IStreamPipelineBehavior<,>), typeof(StreamLoggingBehavior<,>))
                 .AddScoped(typeof(IStreamPipelineBehavior<,>), typeof(StreamCachingBehavior<,>))
@@ -27,32 +30,19 @@ public static partial class ServiceCollectionExtensions
                 .AddScoped(typeof(IPipelineBehavior<,>), typeof(CachingBehavior<,>))
                 .AddScoped(typeof(IPipelineBehavior<,>), typeof(InvalidateCachingBehavior<,>))
                 .AddScoped(typeof(IPipelineBehavior<,>), typeof(EfTxBehavior<,>));
-        });
-
-        services.AddControllersAsServices();
-
-        SnowFlakIdGenerator.Configure(1);
-
-        services.AddCore(
-            configuration,
-            CatalogModuleConfiguration.ModuleName,
-            Assembly.GetExecutingAssembly());
-
-        services.AddEmailService(configuration, $"{CatalogModuleConfiguration.ModuleName}:{nameof(EmailOptions)}");
-
-        services.AddInMemoryMessagePersistence();
-        services.AddInMemoryCommandScheduler();
-        services.AddInMemoryBroker(configuration);
+            services.AddControllers().AddControllersAsServices();
+            services.AddEmailService(configuration.GetSection(CatalogModuleConfiguration.ModuleName));
 
         services.AddCustomValidators(Assembly.GetExecutingAssembly());
         services.AddAutoMapper(Assembly.GetExecutingAssembly());
 
-        services.AddCustomInMemoryCache(configuration)
-            .AddCachingRequestPolicies(Assembly.GetExecutingAssembly());
+        services.AddOptions<CacheOptions>().Bind(configuration.GetSection(nameof(CacheOptions)));
+        services.AddHybridCache();
+        services.AddSingleton<ICacheService, CacheService>();
 
 
         services.AddSingleton<ILoggerFactory>(new Serilog.Extensions.Logging.SerilogLoggerFactory());
 
-        return services;
+        return builder;
     }
 }

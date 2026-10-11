@@ -1,11 +1,12 @@
 using Bogus;
 using Squirrel.Abstractions.Persistence;
+using FoodDelivery.Modules.Catalogs.Shared.Data;
 using FoodDelivery.Modules.Catalogs.Shared.Contracts;
 using Microsoft.EntityFrameworkCore;
 
 namespace FoodDelivery.Modules.Catalogs.Suppliers.Data;
 
-public class SupplierDataSeeder : IDataSeeder
+public class SupplierDataSeeder : IDataSeeder<CatalogDbContext>
 {
     private readonly ICatalogDbContext _dbContext;
 
@@ -14,7 +15,7 @@ public class SupplierDataSeeder : IDataSeeder
         _dbContext = dbContext;
     }
 
-    public async Task SeedAllAsync()
+    public async Task SeedAsync(CatalogDbContext context)
     {
         if (await _dbContext.Suppliers.AnyAsync())
             return;

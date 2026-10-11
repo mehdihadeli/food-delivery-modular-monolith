@@ -1,31 +1,30 @@
-using Ardalis.GuardClauses;
+using Mediator;
+using Squirrel.Abstractions.Caching;
 using Squirrel.Caching;
-using BuildingBlocks.Core.Caching;
+using Squirrel.Caching.Behaviors;
 using Squirrel.Core.Extensions;
+using Squirrel.Core.Pipelines;
 using Squirrel.Core.Persistence.EfCore;
-using BuildingBlocks.Core.Registrations;
 using Squirrel.Email;
-using Squirrel.Email.Options;
-using Squirrel.SerilogLogging;
-using Squirrel.OpenTelemetry;
-using Squirrel.Persistence.EfCore.Postgres;
-using Squirrel.Security;
-using Squirrel.Security.Extensions;
 using Squirrel.Security.Jwt;
 using Squirrel.Validation;
-using Squirrel.Web.Extensions.ServiceCollectionExtensions;
+using Squirrel.Validation.Extensions;
 
 namespace FoodDelivery.Modules.Identity.Shared.Extensions.ServiceCollectionExtensions;
 
 public static partial class ServiceCollectionExtensions
 {
-    public static IServiceCollection AddInfrastructure(this IServiceCollection services, IConfiguration configuration)
+    public static WebApplicationBuilder AddInfrastructure(this WebApplicationBuilder builder, IConfiguration configuration)
     {
-        services.AddControllersAsServices();
-
-        services.AddCqrs(doMoreActions: s =>
+        var services = builder.Services;
+        services.AddMediator(options =>
         {
-            s.AddScoped(typeof(IPipelineBehavior<,>), typeof(RequestValidationBehavior<,>))
+            options.ServiceLifetime = ServiceLifetime.Scoped;
+            options.Namespace = "FoodDelivery.Modules.Identity";
+        });
+        builder.AddCoreServices();
+        services.AddControllers().AddControllersAsServices();
+        services.AddScoped(typeof(IPipelineBehavior<,>), typeof(RequestValidationBehavior<,>))
                 .AddScoped(typeof(IStreamPipelineBehavior<,>), typeof(StreamRequestValidationBehavior<,>))
                 .AddScoped(typeof(IStreamPipelineBehavior<,>), typeof(StreamLoggingBehavior<,>))
                 .AddScoped(typeof(IStreamPipelineBehavior<,>), typeof(StreamCachingBehavior<,>))
@@ -33,31 +32,20 @@ public static partial class ServiceCollectionExtensions
                 .AddScoped(typeof(IPipelineBehavior<,>), typeof(CachingBehavior<,>))
                 .AddScoped(typeof(IPipelineBehavior<,>), typeof(InvalidateCachingBehavior<,>))
                 .AddScoped(typeof(IPipelineBehavior<,>), typeof(EfTxBehavior<,>));
-        });
-
-        services.AddCore(
-            configuration,
-            IdentityModuleConfiguration.ModuleName,
-            Assembly.GetExecutingAssembly());
-
-        services.AddEmailService(configuration, $"{IdentityModuleConfiguration.ModuleName}:{nameof(EmailOptions)}");
+            services.AddEmailService(configuration.GetSection(IdentityModuleConfiguration.ModuleName));
 
         services.AddCustomValidators(Assembly.GetExecutingAssembly());
 
         services.AddAutoMapper(Assembly.GetExecutingAssembly());
 
-        services.AddJwtServices(configuration);
-
-        services.AddInMemoryMessagePersistence();
-        services.AddInMemoryCommandScheduler();
-        services.AddInMemoryBroker(configuration);
-
-
-        services.AddCustomInMemoryCache(configuration)
-            .AddCachingRequestPolicies(Assembly.GetExecutingAssembly());
+        builder.AddCustomJwtAuthentication(configuration.GetSection(IdentityModuleConfiguration.ModuleName));
+        services.AddCustomJwtAuthorization();
+        services.AddOptions<CacheOptions>().Bind(configuration.GetSection(nameof(CacheOptions)));
+        services.AddHybridCache();
+        services.AddSingleton<ICacheService, CacheService>();
 
         services.AddSingleton<ILoggerFactory>(new Serilog.Extensions.Logging.SerilogLoggerFactory());
 
-        return services;
+        return builder;
     }
 }

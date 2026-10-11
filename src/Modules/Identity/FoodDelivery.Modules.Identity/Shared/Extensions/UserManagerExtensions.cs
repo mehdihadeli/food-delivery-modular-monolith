@@ -1,4 +1,8 @@
 using AutoMapper;
+using AutoMapper.QueryableExtensions;
+using Squirrel.Abstractions.Core.Paging;
+using Squirrel.Core.Extensions;
+using Sieve.Services;
 using Squirrel.Abstractions.Queries;
 using Squirrel.Core.Queries;
 using Squirrel.Core.Persistence.EfCore;
@@ -19,24 +23,23 @@ public static class UserManagerExtensions
             .ToListAsync();
     }
 
-    public static async Task<ListResultModel<TResult>> FindAllUsersByPageAsync<TResult>(
+    public static async Task<IPageList<TResult>> FindAllUsersByPageAsync<TResult>(
         this UserManager<ApplicationUser> userManager,
         IMapper mapper,
         IPageRequest request,
+        ISieveProcessor sieveProcessor,
         CancellationToken cancellationToken)
-        where TResult : notnull
+        where TResult : class
     {
         // https://benjii.me/2018/01/expression-projection-magic-entity-framework-core/
         // we don't use include for loading nested navigation because with mapping we load them explicitly
         return await userManager.Users
-            .OrderByDescending(x => x.CreatedAt)
-            .ApplyIncludeList(request.Includes)
-            .ApplyFilter(request.Filters)
             .AsNoTracking()
-            .ApplyPagingAsync<ApplicationUser, TResult>(
-                mapper.ConfigurationProvider,
-                request.Page,
-                request.PageSize,
+            .ApplyPagingAsync<ApplicationUser, TResult, DateTime>(
+                request,
+                sieveProcessor,
+                query => query.ProjectTo<TResult>(mapper.ConfigurationProvider),
+                user => user.CreatedAt,
                 cancellationToken: cancellationToken);
     }
 

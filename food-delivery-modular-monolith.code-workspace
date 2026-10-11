@@ -1,0 +1,23 @@
+{
+  "folders": [
+    {
+      "name": "Food Delivery Modular Monolith",
+      "path": ".",
+    },
+    {
+      "name": "CloudNativeKit Squirrel",
+      "path": "d:/OpenSource/CloudNativeKit",
+    },
+    {
+      "name": "FoodDelivery.Services.Customers.IntegrationTests",
+      "path": "../food-delivery-microservices/tests/Services/Customers/FoodDelivery.Services.Customers.IntegrationTests",
+    },
+  ],
+  "settings": {
+    "files.exclude": {
+      "**/bin": true,
+      "**/obj": true,
+    },
+    "dotnet.defaultSolution": "CloudNativeKit Squirrel/Squirrel.slnx",
+  },
+}

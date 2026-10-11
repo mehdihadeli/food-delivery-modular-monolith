@@ -59,8 +59,8 @@ public class Product : Aggregate<ProductId>
     {
         var product = new Product
         {
-            Id = Guard.Against.Null(id, new ProductDomainException("Product id can not be null")),
-            Stock = Guard.Against.Null(stock, new ProductDomainException("Product stock can not be null"))
+            Id = Guard.Against.Null(id, exceptionCreator: () => new ProductDomainException("Product id can not be null")),
+            Stock = Guard.Against.Null(stock, exceptionCreator: () => new ProductDomainException("Product stock can not be null"))
         };
 
         product.ChangeName(name);
@@ -87,14 +87,14 @@ public class Product : Aggregate<ProductId>
 
     public void ChangeDimensions(Dimensions dimensions)
     {
-        Guard.Against.Null(dimensions, new ProductDomainException("Dimensions cannot be null."));
+        Guard.Against.Null(dimensions, exceptionCreator: () => new ProductDomainException("Dimensions cannot be null."));
 
         Dimensions = dimensions;
     }
 
     public void ChangeSize(Size size)
     {
-        Guard.Against.Null(size, new ProductDomainException("Size cannot be null."));
+        Guard.Against.Null(size, exceptionCreator: () => new ProductDomainException("Size cannot be null."));
 
         Size = size;
     }
@@ -110,7 +110,7 @@ public class Product : Aggregate<ProductId>
     /// <param name="name">The name to be changed.</param>
     public void ChangeName(Name name)
     {
-        Guard.Against.Null(name, new ProductDomainException("Product name cannot be null."));
+        Guard.Against.Null(name, exceptionCreator: () => new ProductDomainException("Product name cannot be null."));
 
         Name = name;
     }
@@ -133,7 +133,7 @@ public class Product : Aggregate<ProductId>
     /// <param name="price">The price to be changed.</param>
     public void ChangePrice(Price price)
     {
-        Guard.Against.Null(price, new ProductDomainException("Price cannot be null."));
+        Guard.Against.Null(price, exceptionCreator: () => new ProductDomainException("Price cannot be null."));
 
         if (Price == price)
             return;
@@ -231,10 +231,10 @@ public class Product : Aggregate<ProductId>
     /// <param name="categoryId">The categoryId to be changed.</param>
     public void ChangeCategory(CategoryId categoryId)
     {
-        Guard.Against.Null(categoryId, new ProductDomainException("CategoryId cannot be null"));
+        Guard.Against.Null(categoryId, exceptionCreator: () => new ProductDomainException("CategoryId cannot be null"));
 
         // raising domain event immediately for checking some validation rule with some dependencies such as database
-        DomainEventsInvoker.RaiseDomainEvent(new ChangingProductCategory(categoryId));
+        AddDomainEvents(new ChangingProductCategory(categoryId));
 
         CategoryId = categoryId;
 
@@ -248,9 +248,9 @@ public class Product : Aggregate<ProductId>
     /// <param name="supplierId">The supplierId to be changed.</param>
     public void ChangeSupplier(SupplierId supplierId)
     {
-        Guard.Against.Null(supplierId, new ProductDomainException("SupplierId cannot be null"));
+        Guard.Against.Null(supplierId, exceptionCreator: () => new ProductDomainException("SupplierId cannot be null"));
 
-        DomainEventsInvoker.RaiseDomainEvent(new ChangingProductSupplier(supplierId));
+        AddDomainEvents(new ChangingProductSupplier(supplierId));
 
         SupplierId = supplierId;
 
@@ -263,9 +263,9 @@ public class Product : Aggregate<ProductId>
     /// <param name="brandId">The brandId to be changed.</param>
     public void ChangeBrand(BrandId brandId)
     {
-        Guard.Against.Null(brandId, new ProductDomainException("brandId cannot be null"));
+        Guard.Against.Null(brandId, exceptionCreator: () => new ProductDomainException("brandId cannot be null"));
 
-        DomainEventsInvoker.RaiseDomainEvent(new ChangingProductBrand(brandId));
+        AddDomainEvents(new ChangingProductBrand(brandId));
 
         BrandId = brandId;
 

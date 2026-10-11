@@ -29,13 +29,13 @@ public record Stock
         {
             Available = Guard.Against.Negative(
                 available,
-                new ProductDomainException("Available stock cannot be negative.")),
+                exceptionCreator: () => new ProductDomainException("Available stock cannot be negative.")),
             RestockThreshold = Guard.Against.NegativeOrZero(
                 restockThreshold,
-                new ProductDomainException("Restock threshold cannot be negative or zero.")),
+                exceptionCreator: () => new ProductDomainException("Restock threshold cannot be negative or zero.")),
             MaxStockThreshold = Guard.Against.NegativeOrZero(
                 maxStockThreshold,
-                new ProductDomainException("Max stock threshold cannot be negative or zero.")),
+                exceptionCreator: () => new ProductDomainException("Max stock threshold cannot be negative or zero.")),
         };
 
         if (stock.Available > stock.MaxStockThreshold)

@@ -8,7 +8,7 @@ namespace FoodDelivery.Modules.Orders.Shared.Data;
 
 public class OrderReadDbContext : MongoDbContext
 {
-    public OrderReadDbContext(IOptions<MongoOptions> options) : base(options)
+    public OrderReadDbContext(IMongoClient mongoClient, IMongoDatabase mongoDatabase) : base(mongoClient, mongoDatabase)
     {
         Orders = GetCollection<OrderReadModel>(nameof(Orders).Underscore());
     }

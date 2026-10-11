@@ -2,6 +2,7 @@ using Asp.Versioning.Builder;
 using Squirrel.Abstractions.Persistence;
 using Squirrel.Abstractions.Web.Module;
 using FoodDelivery.Modules.Customers.Customers.Data;
+using FoodDelivery.Modules.Customers.Shared.Data;
 
 namespace FoodDelivery.Modules.Customers.Customers;
 

@@ -3,6 +3,7 @@ using Asp.Versioning.Builder;
 using Squirrel.Abstractions.Web.Module;
 using Squirrel.Core.Extensions;
 using Squirrel.Core.Messages.Extensions;
+using Squirrel.Web.Module;
 using FoodDelivery.Modules.Customers.Customers;
 using FoodDelivery.Modules.Customers.RestockSubscriptions;
 using FoodDelivery.Modules.Customers.Shared.Extensions.ApplicationBuilderExtensions;
@@ -20,9 +21,9 @@ public class CustomersModuleConfiguration : IModuleConfiguration
         var services = builder.Services;
         var configuration = builder.Configuration;
 
-        services.AddInfrastructure(configuration);
+        builder.AddInfrastructure(configuration);
 
-        services.AddStorage(configuration);
+        builder.AddStorage(configuration);
 
         // Add Sub Modules Services
         services.AddCustomersServices();
@@ -33,18 +34,21 @@ public class CustomersModuleConfiguration : IModuleConfiguration
 
     public async Task<WebApplication> ConfigureModule(WebApplication app)
     {
-        if (app.Environment.IsEnvironment("test") == false)
+        var moduleProvider = CompositionRootRegistry.GetByModule<CustomersModuleConfiguration>()?.ServiceProvider;
+        if (app.Environment.IsEnvironment("test") == false
+            && moduleProvider is not null
+            && !ReferenceEquals(moduleProvider, app.Services))
         {
-            // HostedServices just run on main service provider - It should not await because it will block the main thread.
-            await app.ApplicationServices.StartHostedServices();
+            foreach (var hostedService in moduleProvider.GetServices<IHostedService>())
+            {
+                await hostedService.StartAsync(app.Lifetime.ApplicationStopping);
+            }
         }
 
-        ServiceActivator.Configure(app.ApplicationServices);
-
-        app.SubscribeAllMessageFromAssemblyOfType<CustomersRoot>();
-
-        await app.ApplyDatabaseMigrations(app.Logger);
-        await app.SeedData(app.Logger, app.Environment);
+        var moduleApp = ((IApplicationBuilder)app).New();
+        moduleApp.ApplicationServices = moduleProvider ?? app.Services;
+        await moduleApp.ApplyDatabaseMigrations(app.Logger);
+        await moduleApp.SeedData(app.Logger, app.Environment);
 
         return app;
     }

@@ -2,15 +2,15 @@ using Squirrel.Abstractions.Commands;
 
 namespace FoodDelivery.Modules.Catalogs.Products.Features.ChangingProductCategory;
 
-internal record ChangeProductCategory : ITxCommand<ChangeProductCategoryResponse>;
+public record ChangeProductCategory : ITxCommand<ChangeProductCategoryResponse>;
 
 internal class ChangeProductCategoryHandler :
     ICommandHandler<ChangeProductCategory, ChangeProductCategoryResponse>
 {
-    public Task<ChangeProductCategoryResponse> Handle(
+    public ValueTask<ChangeProductCategoryResponse> Handle(
         ChangeProductCategory command,
         CancellationToken cancellationToken)
     {
-        return Task.FromResult<ChangeProductCategoryResponse>(null!);
+        return ValueTask.FromResult<ChangeProductCategoryResponse>(null!);
     }
 }

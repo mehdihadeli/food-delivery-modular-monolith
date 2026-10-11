@@ -1,6 +1,9 @@
 using Squirrel.Abstractions.Persistence;
+using Squirrel.Abstractions.Events;
 using Squirrel.Persistence.EfCore.Postgres;
 using Squirrel.Persistence.Mongo;
+using Squirrel.Persistence.Mongo.Extensions;
+using MongoDB.Driver;
 using FoodDelivery.Modules.Orders.Shared.Contracts;
 using FoodDelivery.Modules.Orders.Shared.Data;
 using Microsoft.AspNetCore.Builder;
@@ -13,43 +16,39 @@ public static partial class ServiceCollectionExtensions
 {
     public static WebApplicationBuilder AddStorage(this WebApplicationBuilder builder, IConfiguration configuration)
     {
-        AddStorage(builder.Services, configuration);
-
+        AddPostgresWriteStorage(builder, configuration);
+        AddMongoReadStorage(builder, configuration);
         return builder;
     }
 
-    public static IServiceCollection AddStorage(this IServiceCollection services, IConfiguration configuration)
+    private static void AddPostgresWriteStorage(WebApplicationBuilder builder, IConfiguration configuration)
     {
-        AddPostgresWriteStorage(services, configuration);
-        AddMongoReadStorage(services, configuration);
-
-        return services;
-    }
-
-    private static void AddPostgresWriteStorage(IServiceCollection services, IConfiguration configuration)
-    {
+        var services = builder.Services;
         if (configuration.GetValue<bool>(
                 $"{OrdersModuleConfiguration.ModuleName}:{nameof(PostgresOptions)}:UseInMemory"))
         {
             services.AddDbContext<OrdersDbContext>(options =>
-                options.UseInMemoryDatabase("FoodDelivery.Modules.Customers"));
+                options.UseInMemoryDatabase("FoodDelivery.Modules.Orders"));
 
             services.AddScoped<IDbFacadeResolver>(provider => provider.GetService<OrdersDbContext>()!);
+            services.AddScoped<IDomainEventContext>(provider => provider.GetRequiredService<OrdersDbContext>());
         }
         else
         {
-            services.AddPostgresDbContext<OrdersDbContext>(
-                configuration,
-                $"{OrdersModuleConfiguration.ModuleName}:{nameof(PostgresOptions)}");
+            builder.Configuration["ConnectionStrings:OrdersWrite"] =
+                configuration[$"{OrdersModuleConfiguration.ModuleName}:{nameof(PostgresOptions)}:ConnectionString"];
+            builder.AddPostgresDbContext<OrdersDbContext>("OrdersWrite");
         }
 
         services.AddScoped<IOrdersDbContext>(provider => provider.GetRequiredService<OrdersDbContext>());
     }
 
-    private static void AddMongoReadStorage(IServiceCollection services, IConfiguration configuration)
+    private static void AddMongoReadStorage(WebApplicationBuilder builder, IConfiguration configuration)
     {
-        services.AddMongoDbContext<OrderReadDbContext>(
-            configuration,
-            $"{OrdersModuleConfiguration.ModuleName}:{nameof(MongoOptions)}");
+        var mongoSection = configuration.GetSection($"{OrdersModuleConfiguration.ModuleName}:{nameof(MongoOptions)}");
+        var mongoUrl = new MongoUrlBuilder(mongoSection["ConnectionString"]);
+        mongoUrl.DatabaseName ??= mongoSection["DatabaseName"];
+        builder.Configuration["ConnectionStrings:OrdersRead"] = mongoUrl.ToString();
+        builder.AddMongoDbContext<OrderReadDbContext>("OrdersRead");
     }
 }

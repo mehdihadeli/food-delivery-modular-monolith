@@ -31,7 +31,7 @@ public class ProductEventMapper : IEventMapper
         };
     }
 
-    public IDomainNotificationEvent? MapToDomainNotificationEvent(IDomainEvent domainEvent)
+    public IDomainNotificationEvent<IDomainEvent>? MapToDomainNotificationEvent(IDomainEvent domainEvent)
     {
         return domainEvent switch
         {
@@ -45,7 +45,7 @@ public class ProductEventMapper : IEventMapper
         return domainEvents.Select(MapToIntegrationEvent).ToList().AsReadOnly();
     }
 
-    public IReadOnlyList<IDomainNotificationEvent?> MapToDomainNotificationEvents(
+    public IReadOnlyList<IDomainNotificationEvent<IDomainEvent>?> MapToDomainNotificationEvents(
         IReadOnlyList<IDomainEvent> domainEvents)
     {
         return domainEvents.Select(MapToDomainNotificationEvent).ToList().AsReadOnly();

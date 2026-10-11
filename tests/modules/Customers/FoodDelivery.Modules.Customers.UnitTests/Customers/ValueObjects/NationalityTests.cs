@@ -1,9 +1,10 @@
 using FoodDelivery.Modules.Customers.Customers.Exceptions.Domain;
 using FoodDelivery.Modules.Customers.Customers.ValueObjects;
+using FoodDelivery.Modules.Customers.UnitTests.Common;
 
 namespace FoodDelivery.Modules.Customers.UnitTests.Customers.ValueObjects;
 
-public class NationalityTests
+public class NationalityTests : CustomerModuleUnitTestBase
 {
     [Theory]
     [InlineData("IR")]

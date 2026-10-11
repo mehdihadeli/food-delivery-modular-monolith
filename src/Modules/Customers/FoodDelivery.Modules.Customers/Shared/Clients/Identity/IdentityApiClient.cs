@@ -1,6 +1,7 @@
 using System.Net.Http.Json;
 using Ardalis.GuardClauses;
 using Squirrel.Core.Exception;
+using Squirrel.Core.Extensions;
 using FoodDelivery.Modules.Customers.Shared.Clients.Identity.Dtos;
 using Microsoft.Extensions.Options;
 
@@ -27,7 +28,7 @@ public class IdentityApiClient : IIdentityApiClient
         CancellationToken cancellationToken = default)
     {
         Guard.Against.NullOrEmpty(email, nameof(email));
-        Guard.Against.InvalidEmail(email);
+        email.NotBeInvalidEmail();
 
         var userIdentity = await _httpClient.GetFromJsonAsync<GetUserByEmailResponse>(
             $"{_options.UsersEndpoint}/by-email/{email}",

@@ -1,4 +1,4 @@
-using Squirrel.Abstractions.Events;
+using Squirrel.Abstractions.Messages;
 using Squirrel.Core.Messages;
 
 namespace FoodDelivery.Modules.Catalogs.Suppliers.Features.SupplierUpdated.Events.External;
@@ -6,7 +6,7 @@ namespace FoodDelivery.Modules.Catalogs.Suppliers.Features.SupplierUpdated.Event
 public record SupplierUpdated(long Id, string Name) : IntegrationEvent;
 
 
-public class SupplierUpdatedConsumer : IEventHandler<SupplierUpdated>
+public class SupplierUpdatedConsumer : IMessageHandler<SupplierUpdated>
 {
     public Task Handle(SupplierUpdated notification, CancellationToken cancellationToken)
     {

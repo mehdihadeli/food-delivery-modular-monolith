@@ -3,6 +3,7 @@
 <Project>
 
   <PropertyGroup>
+    <SquirrelSourceRoot Condition="'$(SquirrelSourceRoot)' == ''">$(MSBuildThisFileDirectory)BuildingBlocks</SquirrelSourceRoot>
     <LangVersion>latest</LangVersion>
     <TargetFramework>net10.0</TargetFramework>
     <ImplicitUsings>enable</ImplicitUsings>
