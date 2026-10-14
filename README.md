@@ -3,8 +3,6 @@
 [![.NET](https://github.com/mehdihadeli/food-delivery-modular-monolith/actions/workflows/build-test.yml/badge.svg?branch=main&style=flat-square)](https://github.com/mehdihadeli/food-delivery-modular-monolith/actions/workflows/build-test.yml)
 
 
-![food-delivery-modular-monolith](https://socialify.git.ci/mehdihadeli/food-delivery-modular-monolith/image?description=1&forks=1&issues=1&language=1&owner=1&pulls=1&stargazers=1)
-
 > `Food Delivery Modular Monolith` is a .NET 10 sample using **Modular Monolith Architecture**, **Vertical Slice Architecture**, **CQRS**, **Domain-Driven Design**, and **Event-Driven Architecture**. The public API dispatches requests into isolated module providers. Asynchronous integration events use one host-owned Wolverine runtime with PostgreSQL-backed durable local queues; synchronous lookups use module client APIs where needed.
 
 💡 This application is not business-oriented and my focus is mostly on the technical part, I just want to implement a sample using different technologies, software architecture design, principles, and all the things we need for creating a modular monolith app.
@@ -29,14 +27,18 @@ Thanks a bunch for supporting me!
   - [Application Architecture](#application-architecture)
     - [PostgreSQL-Backed In-Process Messaging](#postgresql-backed-in-process-messaging)
       - [Transaction Flow](#transaction-flow)
+        - [Architecture Flow](#architecture-flow)
+        - [Integration Event Routes](#integration-event-routes)
+        - [Event Route Flow](#event-route-flow)
       - [Configuration And Deployment](#configuration-and-deployment)
       - [Delivery Limits](#delivery-limits)
   - [Application Structure](#application-structure)
     - [High Level Structure](#high-level-structure)
   - [Vertical Slice Flow in Modules](#vertical-slice-flow-in-modules)
-  - [Prerequisites](#prerequisites)
-  - [Clone With Submodules](#clone-with-submodules)
-  - [How to Run](#how-to-run)
+  - [Getting Started](#getting-started)
+    - [Prerequisites](#prerequisites)
+    - [Clone With Submodules](#clone-with-submodules)
+    - [How to Run](#how-to-run)
   - [Contribution](#contribution)
   - [Project References](#project-references)
   - [License](#license)
@@ -240,7 +242,9 @@ This organization aims to reduce coupling between features, not eliminate it. Ch
 
 An HTTP endpoint dispatches a command or query through the gateway into its module's mediator. Validation and other pipeline behaviors run before the feature handler. Transactional requests enlist integration events with their PostgreSQL writes; commit releases those events for asynchronous delivery. Queries return the module's response without opening a producer transaction. Internal commands may update MongoDB projections inline, outside PostgreSQL atomicity.
 
-## Prerequisites
+## Getting Started
+
+### Prerequisites
 
 1. Install [Git](https://git-scm.com/downloads).
 2. Install the [.NET 10 SDK](https://dotnet.microsoft.com/download/dotnet/10.0). [global.json](global.json) selects SDK `10.0.100` with `latestFeature` roll-forward.
@@ -248,13 +252,19 @@ An HTTP endpoint dispatches a command or query through the gateway into its modu
 4. Use VS Code, Rider, or another IDE with .NET 10 support.
 5. Configure an HTTPS development certificate if using the API's HTTPS launch profile.
 
-## Clone With Submodules
+### Clone With Submodules
 
-Clone the project with its BuildingBlocks submodule:
+Clone the project together with its Git submodules. The `--recurse-submodules` option automatically initializes the Squirrel BuildingBlocks source under `src/BuildingBlocks`:
 
 ```powershell
 git clone --recurse-submodules https://github.com/mehdihadeli/food-delivery-modular-monolith.git
 cd food-delivery-modular-monolith
+```
+
+After cloning, verify that the submodule is initialized:
+
+```powershell
+git submodule status
 ```
 
 If you already cloned without submodules, run this from the repository root:
@@ -263,7 +273,7 @@ If you already cloned without submodules, run this from the repository root:
 git submodule update --init --recursive
 ```
 
-## How to Run
+### How to Run
 
 Run these PowerShell commands from the repository root after cloning with submodules. They use the Compose file's default development credentials and ports; adjust the connection strings if you override those settings.
 
@@ -305,12 +315,7 @@ The application is in development status. You are feel free to submit pull reque
 
 ##  Project References
 - [https://github.com/kgrzybek/modular-monolith-with-ddd](https://github.com/kgrzybek/modular-monolith-with-ddd)
-- [https://github.com/oskardudycz/EventSourcing.NetCore](https://github.com/oskardudycz/EventSourcing.NetCore)
-- [https://github.com/dotnet-architecture/eShopOnContainers](https://github.com/dotnet-architecture/eShopOnContainers)
-- [https://github.com/jbogard/ContosoUniversityDotNetCore-Pages](https://github.com/jbogard/ContosoUniversityDotNetCore-Pages)
-- [https://github.com/thangchung/clean-architecture-dotnet](https://github.com/thangchung/clean-architecture-dotnet)
-- [https://github.com/jasontaylordev/CleanArchitecture](https://github.com/jasontaylordev/CleanArchitecture)
-- [https://github.com/DijanaPenic/DDD-VShop](https://github.com/DijanaPenic/DDD-VShop)
+- [https://github.com/oskardudycz/EventSourcing.NetCore](https://github.com/
 
 ## License
 The project is under [MIT license](https://github.com/mehdihadeli/food-delivery-modular-monolith/blob/main/LICENSE).
